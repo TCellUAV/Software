@@ -766,10 +766,10 @@ struct rt_event para_rdwr_event;
 
 /********** 互斥锁(资源保护) ***********/
 /*=== I2C通信 ===*/
-struct rt_mutex i2c_mutex;
-struct rt_mutex gps_mag_i2c_mutex;
+//struct rt_mutex i2c_mutex;
+//struct rt_mutex gps_mag_i2c_mutex;
 /*=== SPI通信 ===*/
-struct rt_mutex spi_mutex;
+//struct rt_mutex spi_mutex;
 
 void rtos_unit_init(void)
 {	
@@ -804,10 +804,10 @@ void rtos_unit_init(void)
 	
 	/********************************互斥锁*****************************/	
 	/*=== I2C通信 ===*/	
-	rt_mutex_init(&i2c_mutex, "i2c_mutex", RT_IPC_FLAG_FIFO);
-	rt_mutex_init(&gps_mag_i2c_mutex, "gmag_i2c_mutex", RT_IPC_FLAG_FIFO);	
+//	rt_mutex_init(&i2c_mutex, "i2c_mutex", RT_IPC_FLAG_FIFO);
+//	rt_mutex_init(&gps_mag_i2c_mutex, "gmag_i2c_mutex", RT_IPC_FLAG_FIFO);	
 	
 	/*=== SPI通信 ===*/
-	rt_mutex_init(&spi_mutex, "spi_mutex", RT_IPC_FLAG_FIFO);	
+//	rt_mutex_init(&spi_mutex, "spi_mutex", RT_IPC_FLAG_FIFO);	
 }
 

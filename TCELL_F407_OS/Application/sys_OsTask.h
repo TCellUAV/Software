@@ -150,10 +150,10 @@ extern struct rt_event para_rdwr_event;
 
 /********** 互斥锁(资源保护) ***********/
 /*=== I2C通信 ===*/
-extern struct rt_mutex i2c_mutex;
-extern struct rt_mutex gps_mag_i2c_mutex;
+//extern struct rt_mutex i2c_mutex;
+//extern struct rt_mutex gps_mag_i2c_mutex;
 /*=== SPI通信 ===*/
-extern struct rt_mutex spi_mutex;
+//extern struct rt_mutex spi_mutex;
 #endif
 
 #endif
