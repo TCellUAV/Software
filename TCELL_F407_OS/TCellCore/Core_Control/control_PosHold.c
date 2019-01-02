@@ -91,12 +91,12 @@ Vector2f *horizontal_Acc_Convert_To_Dip_Angle(Vector2f acc2f, Vector2f *angle2f)
 void horizontal_Control_PosHold(fp32 controlDeltaT)
 {
 	/*GPS定点模式(切定点时判断)*/
-	if (g_psAircraftStatus->HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_GPS_SENSOR)
+	if (g_sUav_Status.UavSenmodStatus.Horizontal.CURRENT_USE == UAV_HORIZONTAL_SENMOD_CURRENT_USE_GPS)
 	{
 		horizontal_Control_GPS_PosHold(controlDeltaT);
 	}
 	/*光流定点模式(切定点时判断)*/
-	else if (g_psAircraftStatus->HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_OPTICFLOW_SENSOR)
+	else if (g_sUav_Status.UavSenmodStatus.Horizontal.CURRENT_USE == UAV_HORIZONTAL_SENMOD_CURRENT_USE_OPTICFLOW)
 	{
 		horizontal_Control_OpticFlow_PosHold(controlDeltaT);
 	}	

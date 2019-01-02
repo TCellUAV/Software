@@ -10,10 +10,33 @@ ControlLand	g_sControlLand =
 
 ControlLand *g_psControlLand = &g_sControlLand;
 
+/*获取着陆油门输出检测最大值*/
+u16 ctrl_Landing_ThrottleOutput_Min_Get(Uav_Status *uavStatus, ControlLand *controlLand)
+{
+	/*未解锁*/
+	if (uavStatus->LOCK_STATUS == UAV_LOCK_YES)
+	{
+		controlLand->land_throttle_min_check = CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MAX;
+	}
+	else if (uavStatus->LOCK_STATUS == UAV_LOCK_NOT)
+	{
+		if (uavStatus->UavLandStatus.ThisTime == UAV_LAND_YES)
+		{
+			controlLand->land_throttle_min_check = CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MAX;
+		}
+		else if (uavStatus->UavLandStatus.ThisTime == UAV_LAND_NOT)
+		{
+			controlLand->land_throttle_min_check = CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN;			
+		}
+	}
+	
+	return (controlLand->land_throttle_min_check);
+}
+
 vu16 g_vu16LandCheckContinueTicks = 0; /*飞行器检测着陆持续ticks*/
 
 /*自检触地进入怠速模式*/
-AIRCRAFT_FLY_STATUS ctrl_Landing_Check_And_Idling(void)
+UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus)
 {
 	/*油门控制处于较低行程:
 	  1.姿态模式下,油门杆处于低位
@@ -21,18 +44,21 @@ AIRCRAFT_FLY_STATUS ctrl_Landing_Check_And_Idling(void)
       3.加速度控制输出由于长时间积分,到负的较大值,使得油门控制较低*/
 	
 	/*记录上次飞行状态*/
-	g_psAircraftStatus->LAST_FLY_STATUS = g_psAircraftStatus->CUR_FLY_STATUS;
+	uavStatus->UavLandStatus.LastTime = uavStatus->UavLandStatus.ThisTime;
 	
-	/*1.当前油门低于起转油门,2.触地后无旋转(合角速度小于20deg/s),3.惯导竖直方向速度<±25cm/s*/
-	if ((g_psControlAircraft->throttleOutput <= CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN) && \
+	/*1.当前油门输出,2.触地后无旋转(合角速度小于20deg/s),3.惯导竖直方向速度<±25cm/s*/
+	/*  i.未解锁: <= 1500
+	   ii.先切定高/定点 再解锁: 起飞前<=1500, 起飞后<=1150
+	  iii.先解锁: 起飞前<=1500, 起飞后 <=1150	*/
+	if ((g_psControlAircraft->throttleOutput <= ctrl_Landing_ThrottleOutput_Min_Get(uavStatus, g_psControlLand)) && \
 		(g_GyroLenth <= 20.0f) && \
 		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_Z]) <= 25.0f))
 	{
-		g_vu16LandCheckContinueTicks++; /*5ms执行一次*/
+		g_vu16LandCheckContinueTicks++; /*5ms执行一次*/	
 	}
 	else
 	{
-		g_vu16LandCheckContinueTicks /= 2; /*快速削减*/
+		g_vu16LandCheckContinueTicks /= 2; /*快速削减*/		
 	}
 	
 	/*检测Ticks计数状态*/
@@ -43,24 +69,37 @@ AIRCRAFT_FLY_STATUS ctrl_Landing_Check_And_Idling(void)
 	
 	if (g_vu16LandCheckContinueTicks >= 300) /*持续1.5S检测满足着陆标记*/
 	{
-		g_psAircraftStatus->CUR_FLY_STATUS = AIRCRAFT_LANDING;	/*标记飞行器飞行状态为着陆状态*/
+		/*标记飞行器飞行状态为着陆状态*/		
+		uavStatus->UavLandStatus.ThisTime = UAV_LAND_YES;
 		
-		/*着陆状态复位状态机*/
-		g_psAircraftStatus->ONEKEY_TAKEOFF_TARGET_SET_STATUS = AIRCRAFT_ONEKEY_TARGET_SET_NO; /*标记未设置目标高度,为下次一键起飞*/
+		/*允许一键起飞,禁止一键着陆*/
+		uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.ENABLE_STATUS = UAV_MISSION_ENABLE; 
+		uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.ENABLE_STATUS       = UAV_MISSION_DISABLE;
 		
-		/*着陆后标记禁止自动返航*/
+		/*着陆后标记禁止 失联自动返航*/
 		g_psControlAircraft->GO_HOME_STATUS = CTRL_AIRCRAFT_GO_HOME_DISABLE;
+		
+		/*着陆状态,禁止清除起飞任务*/
+		if ((uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION != UAV_FLY_MISSION_ONEKEY_FLY) && \
+			(uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION != UAV_FLY_MISSION_NULL))
+		{
+			control_fly_mission_clear(uavStatus, uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION);
+		}
 	}
 	else
 	{
 		/*标记飞行器飞行状态为飞行状态*/		
-		g_psAircraftStatus->CUR_FLY_STATUS = AIRCRAFT_FLYING;	
-		
-		/*起飞后标记使能自动返航*/
+		uavStatus->UavLandStatus.ThisTime = UAV_LAND_NOT;	
+
+		/*允许一键降落,禁止一键起飞*/
+		uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.ENABLE_STATUS       = UAV_MISSION_ENABLE;		
+		uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.ENABLE_STATUS = UAV_MISSION_DISABLE; 
+
+		/*起飞后标记使能 失联自动返航*/
 		g_psControlAircraft->GO_HOME_STATUS = CTRL_AIRCRAFT_GO_HOME_ENABLE;
 	}
 	
-	return (g_psAircraftStatus->CUR_FLY_STATUS);	/*返回飞行器飞行状态*/
+	return (uavStatus->UavLandStatus.ThisTime);	/*返回飞行器飞行状态*/
 }
 
 
@@ -267,9 +306,9 @@ void ctrl_Go_Home_Horizontal_Control(Vector2s_Nav targPos, Vector2s_Nav curPos, 
 	/*得到相对目标点N、E方向偏移,即期望位置偏移*/
 	g_psControlLand->RelativeHomeDistance = land_Gps_Offset_Relative_To_Home(targPos, curPos);
 	
-	if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_FLYING)
+	if (g_psUav_Status->UavLandStatus.ThisTime == UAV_LAND_NOT)
 	{
-		if (status_GPS_Fix_Ava_Check(&g_sAircraftStatus) == GPS_POS_FIX_AVA_TRUE)
+		if (status_GPS_Fix_Ava_Check(g_psUav_Status) == UAV_SENMOD_USE_CONTROL_ALLOW)
 		{
 			/************************** 水平位置控制器 开始 ********************************/
 			/*遥控居中,水平方向无遥控给定期望角度*/
@@ -423,7 +462,7 @@ void ctrl_Go_Home_Horizontal_Control(Vector2s_Nav targPos, Vector2s_Nav curPos, 
 			}
 		}
 	}
-	else if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+	else if (g_psUav_Status->UavLandStatus.ThisTime == UAV_LAND_YES)		
 	{
 		/*水平期望姿态角为0*/
 		g_psPidSystem->PitchAngle.expect = 0;
@@ -438,8 +477,9 @@ void ctrl_Go_Home_Horizontal_Control(Vector2s_Nav targPos, Vector2s_Nav curPos, 
 /*返航控制*/
 void ctrl_Go_Home_Control(fp32 controlDeltaT)
 {
-	/*GPS可用且HOME已设置,执行返航*/
-	if (status_GPS_Fix_Ava_Check(&g_sAircraftStatus) == GPS_POS_FIX_AVA_TRUE)
+	/*GPS可用且HOME已设置,且处于定点模式,执行返航*/
+	if ((status_GPS_Fix_Ava_Check(g_psUav_Status) == UAV_SENMOD_USE_CONTROL_ALLOW) && \
+		(g_psUav_Status->UavControlMode.Horizontal.CONTROL_MODE == UAV_HORIZONTAL_CONTROL_FIX_POS))
 	{
 		/*GPS参与返航*/
 		ctrl_Go_Home_GPS_Control(controlDeltaT);
@@ -448,11 +488,11 @@ void ctrl_Go_Home_Control(fp32 controlDeltaT)
 	else
 	{
 		/*普通原地着陆控制*/
-		ctrl_Land_Ground_Control(controlDeltaT);
+		ctrl_Land_Ground_Control(controlDeltaT, g_psUav_Status);
 	}
 }
 
-/*返航时手动干预高度*/
+/*检测返航时手动干预高度*/
 CTRL_GO_HOME_HAND_MEDDLE_STATUS ctrl_Go_Home_Vertical_Hand_Meddle(void)
 {
 	CTRL_GO_HOME_HAND_MEDDLE_STATUS verticalStatus = CTRL_GO_HOME_HAND_MEDDLE_FALSE;
@@ -467,7 +507,7 @@ CTRL_GO_HOME_HAND_MEDDLE_STATUS ctrl_Go_Home_Vertical_Hand_Meddle(void)
 	return verticalStatus;	
 }
 
-/*返航时手动干预水平*/
+/*检测返航时手动干预水平*/
 CTRL_GO_HOME_HAND_MEDDLE_STATUS ctrl_Go_Home_Horizontal_Hand_Meddle(void)
 {
 	CTRL_GO_HOME_HAND_MEDDLE_STATUS horizontalStatus = CTRL_GO_HOME_HAND_MEDDLE_FALSE;
@@ -584,7 +624,7 @@ void ctrl_Go_Home_GPS_Control(fp32 controlDeltaT)
 	ctrl_Go_Home_Status_Update();
 	
 	/*未着地,有姿态控制参与*/
-	if (g_psAircraftStatus->CUR_FLY_STATUS != AIRCRAFT_LANDING)
+	if (g_psUav_Status->UavLandStatus.ThisTime != UAV_LAND_YES)
 	{
 		/*无水平打杆动作*/
 		if (g_psControlLand->HORIZONTAL_HAND_MEDDLE_STATUS == CTRL_GO_HOME_HAND_MEDDLE_FALSE)
@@ -862,7 +902,7 @@ void ctrl_Go_Home_GPS_Control(fp32 controlDeltaT)
 		}
 	}
 	/*飞行器已着地*/
-	else if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+	else if (g_psUav_Status->UavLandStatus.ThisTime == UAV_LAND_YES)
 	{
 		/*水平期望角给0*/
 		g_psPidSystem->PitchAngle.expect = 0;
@@ -883,10 +923,10 @@ void ctrl_Go_Home_GPS_Control(fp32 controlDeltaT)
 }
 
 /*普通原地着陆控制(NO GPS)*/
-void ctrl_Land_Ground_Control(fp32 controlDeltaT)
+void ctrl_Land_Ground_Control(fp32 controlDeltaT, Uav_Status *uavStatus)
 {
 	/*未着地,有姿态控制参与*/
-	if (g_psAircraftStatus->CUR_FLY_STATUS != AIRCRAFT_LANDING)
+	if (uavStatus->UavLandStatus.ThisTime != UAV_LAND_YES)		
 	{
 		/*更新水平自稳控制下的ROLL(横滚)和PITCH(俯仰)期望角*/
 		g_psPidSystem->PitchAngle.expect = g_psControlAircraft->RemotExpectAutoAngle.pitch; /*遥控期待自稳角pitch*/
@@ -908,7 +948,7 @@ void ctrl_Land_Ground_Control(fp32 controlDeltaT)
 		ctrl_Go_Home_Vertical_Control(g_psControlLand->verticalSpeedExpect, g_psControlLand->heightExpect, controlDeltaT);
 	}
 	/*飞行器已着地*/
-	else if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+	else if (uavStatus->UavLandStatus.ThisTime == UAV_LAND_YES)
 	{
 		/*水平期望角给0*/
 		g_psPidSystem->PitchAngle.expect = 0;

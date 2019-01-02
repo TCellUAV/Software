@@ -132,9 +132,8 @@ void sins_get_body_relative_earth_acc(Acc3f *sinsAcc)
 	g_sSinsAccBody.y = -g_sSinsAccEarth.x * SIN_YAW + g_sSinsAccEarth.y * COS_YAW;	 /*机头正向运动加速度,Y轴正向*/
 }
 
-
 /*竖直方向,气压计和超声波切换*/
-void sins_vertical_bero_ultr_auto_change(AircraftStatus *aircraftStatus)
+void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 {
 	u16 i;
 	
@@ -150,32 +149,28 @@ void sins_vertical_bero_ultr_auto_change(AircraftStatus *aircraftStatus)
 	*/
 	
 	/*状态更迭*/
-	aircraftStatus->LAST_VERTICAL_SENSOR = aircraftStatus->CUR_VERTICAL_SENSOR;
+	uavStatus->UavSenmodStatus.Vertical.LAST_USE = uavStatus->UavSenmodStatus.Vertical.CURRENT_USE;
 	
-	/*是否使用超声波:当超声波有效时(高度范围内),切换为超声波*/
-	if (g_psAircraftStatus->ULTR_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_OK)
+	/*是否使用超声波:当超声波有效时(高度范围内),且遥控切换为超声波作为高度传感器,则惯导数据来源为超声波观测高度*/
+	if ((get_ultr_estimate_data_status(uavStatus) == UAV_SENMOD_DATA_OK) && \
+		(g_psUav_Status->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR))
 	{
 		/*竖直高度观测值为气压计观测高度*/
 		g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowUltrAltitude;
-	
-		/*标记为传感器为超声波*/
-		aircraftStatus->CUR_VERTICAL_SENSOR = VERTICAL_SENSOR_USE_ULTR;
 	}
-	/*是否使用气压计:当气压计有效时,切换为气压计,但当超声波任有效时,保持超声波*/		
-	else if (g_psAircraftStatus->BERO_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_OK)
+	/*是否使用气压计:当气压计有效时,且遥控切换为气压计作为高度传感器,则惯导数据来源为气压计观测高度*/		
+	else if ((get_bero_estimate_data_status(uavStatus) == UAV_SENMOD_DATA_OK) && \
+			 (g_psUav_Status->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_BERO))
 	{
 		/*竖直高度观测值为气压计观测高度*/		
 		g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowBeroAltitude;
-	
-		/*标记为传感器为气压计*/
-		aircraftStatus->CUR_VERTICAL_SENSOR = VERTICAL_SENSOR_USE_BERO;		
 	}
 	
 	/*气压计切超声波 || 超声波切气压计*/
-	if (((aircraftStatus->CUR_VERTICAL_SENSOR == VERTICAL_SENSOR_USE_ULTR) && \
-		(aircraftStatus->LAST_VERTICAL_SENSOR == VERTICAL_SENSOR_USE_BERO)) || \
-		((aircraftStatus->CUR_VERTICAL_SENSOR == VERTICAL_SENSOR_USE_BERO) && \
-	    (aircraftStatus->LAST_VERTICAL_SENSOR == VERTICAL_SENSOR_USE_ULTR)))
+	if (((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR) && \
+		 (uavStatus->UavSenmodStatus.Vertical.LAST_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_BERO)) || \
+		((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_BERO) && \
+	     (uavStatus->UavSenmodStatus.Vertical.LAST_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR)))
 	{
 		/*设置当前位置*/
 		g_psSinsReal->curPosition[EARTH_FRAME_Z] = g_psSinsReal->estimatePos[EARTH_FRAME_Z];
@@ -226,7 +221,7 @@ void sins_thirdorder_complement_vertical(void)
 	deltaT = g_psSystemPeriodExecuteTime->SINS_High.DeltaTime / 1000.0f;
 	
     /*超声波定高和气压计定高自动切换(选择高度观测数据来源)*/
-	sins_vertical_bero_ultr_auto_change(&g_sAircraftStatus);
+	sins_vertical_bero_ultr_auto_change(g_psUav_Status);
 	
 	g_TOCHighPosSolidTicks++; /*数据存储周期*/	
 	
@@ -300,7 +295,7 @@ void sins_kalman_estimate_vertical(void)
 	sinsHighDeltaT = g_psSystemPeriodExecuteTime->SINS_High.DeltaTime / 1000.0f;	
 	
 	/*超声波定高和气压计定高自动切换(选择高度观测数据来源)*/
-	sins_vertical_bero_ultr_auto_change(&g_sAircraftStatus);
+	sins_vertical_bero_ultr_auto_change(g_psUav_Status);
 	
 	filter_Kalman_Estimate_Vertical(g_psSinsReal->estimatePos[EARTH_FRAME_Z],  /*位置观测量*/
 									g_vu16HighDelayCnt,   				  /*观测传感器延时*/
@@ -347,7 +342,7 @@ void sins_thirdorder_complement_horizontal(void)
 	/*10ms滑动一次*/
 	if (g_TOCHorizontalPosSolidTicks >= 2) /*10ms*/
 	{
-		g_TOCHorizontalPosSolidTicks = 0;	
+		g_TOCHorizontalPosSolidTicks = 0;
 		
 		/*位置历史数据滑动*/
 		for(i = SINS_HISTORY_DATA_DEEP - 1; i > 0; i--) /*10ms滑动一次*/
@@ -485,7 +480,7 @@ void sins_kalman_estimate_horizontal(void)
 	g_psSinsReal->curAcc[EARTH_FRAME_Y]  = g_psSinsOrigion->curAcc[EARTH_FRAME_Y];
 	
 	/*GPS 原始数据是否可用*/
-	if (g_psAircraftStatus->GPS_ESTIMATE_HORIZONTAL == HORIZONTAL_DATA_STATUS_OK)
+	if (g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_OK)
 	{
 		/*水平E向 卡尔曼估计*/
 		filter_Kalman_Estimate_GPS_Horizontal(g_psSinsReal->estimatePos[EARTH_FRAME_X],   /*位置观测量*/
@@ -523,8 +518,8 @@ void sins_kalman_estimate_horizontal(void)
 	/*检测融合估计值和真实观测值误差*/
 	if ((math_Abs(g_psSinsReal->curPosition[EARTH_FRAME_X] - g_psSinsReal->estimatePos[EARTH_FRAME_X]) > 10000) || \
 		(math_Abs(g_psSinsReal->curPosition[EARTH_FRAME_Y] - g_psSinsReal->estimatePos[EARTH_FRAME_Y]) > 10000) || \
-		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_Y] - g_psAttitudeAll->GpsData.CurSpeed.east) > 10000) || \
-		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_X] - g_psAttitudeAll->GpsData.CurSpeed.north) > 10000))
+		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_X] - g_psAttitudeAll->GpsData.CurSpeed.east) > 10000) || \
+		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_Y] - g_psAttitudeAll->GpsData.CurSpeed.north) > 10000))
 	{
 		/*标记水平融合失败*/
 		g_psSinsReal->FUSION_STATUS[SINS_FUSION_HORIZONTAL] = SINS_FUSION_FAIL;

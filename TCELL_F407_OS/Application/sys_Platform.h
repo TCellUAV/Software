@@ -600,6 +600,19 @@ typedef struct
 	s16 kD;
 }Vector3s_PID;
 
+/****** 模拟看门狗 ******/
+typedef enum
+{
+	SIM_WATCH_DOG_ALIVE = 0, /*活着*/
+	SIM_WATCH_DOG_DIED  = 1, /*死去*/
+}SIM_WATCH_DOG_STATUS;
+
+typedef struct
+{	
+	vu32 curTicks; 			/*当前ticks*/
+	vu32 nextProcessTicks;   /*下次判断ticks*/
+}SimulateWatchDog;
+
 #ifdef PLATFORM_RTOS__RT_THREAD
 #include "rtos_cpuusage.h"
 #endif

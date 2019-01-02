@@ -358,19 +358,19 @@ vu16 g_sLockContinueTicks     = 0;	/*锁定动作持续时长*/
 vu16 g_sAutoLockContinueTicks = 0;	/*自动上锁持续时长*/
 
 /*飞控:解锁/上锁/自动上锁*/
-AIRCRAFT_LOCK_STATUS remot_aircraft_lock_and_unlock(void)
+UAV_LOCK_STATUS remot_aircraft_lock_and_unlock(void)
 {		
-	/*1.摇杆内八解锁*/
+	/*1.左摇杆内下角解锁*/
 	/*
 		*******       *******
 		*     *       *     *
 		*  *  *       *  *  * 
-		*   * *       * *   *
+		*   * *       *     *
 		*******       *******
-			  *       *   
+			  *          
 	*/
-	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
-		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MIN)    == REMOT_DATA_MIN) && \
+	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
+		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
 		(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MAX)      == REMOT_DATA_MAX))
 	{
@@ -388,21 +388,21 @@ AIRCRAFT_LOCK_STATUS remot_aircraft_lock_and_unlock(void)
 			g_sUnlockContinueTicks = 0;			
 			
 			/*返回飞机状态: 未锁定*/
-			g_psAircraftStatus->LOCK_STATUS = AIRCRAFT_UNLOCK;
+			g_psUav_Status->LOCK_STATUS = UAV_LOCK_NOT;
 		}
 	}
 	
-	/*2.摇杆外八锁定*/
+	/*2.左摇杆外下角锁定*/
 	/*
 		*******       *******
 		*     *       *     *
 		*  *  *       *  *  * 
-		* *   *       *   * *
+		* *   *       *     *
 		*******       *******
-		*                   *   
+		*
 	*/	
-	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MAX)     == REMOT_DATA_MAX) && \
-		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MIN)    == REMOT_DATA_MIN) && \
+	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
+		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
 		(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MIN)      == REMOT_DATA_MIN))
 	{
@@ -418,14 +418,14 @@ AIRCRAFT_LOCK_STATUS remot_aircraft_lock_and_unlock(void)
 		{
 			/*完成一次检测,目标Ticks清0*/
 			g_sLockContinueTicks = 0;
-			
-			g_psAircraftStatus->LOCK_STATUS = AIRCRAFT_LOCKING;
+
+			g_psUav_Status->LOCK_STATUS = UAV_LOCK_YES;			
 		}
 	}	
 	
 	/*解锁状态&&着陆状态,一定时间不操作遥控(除油门外,其余3个摇杆都在中位),就自动锁定*/
-	if ((g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_UNLOCK) && \
-	    (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING) && \
+	if ((g_psUav_Status->LOCK_STATUS == UAV_LOCK_NOT) && \
+	    (g_psUav_Status->UavLandStatus.ThisTime == UAV_LAND_YES) && \
 		(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN)  == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)  == REMOT_DATA_MID) && \
 		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID) == REMOT_DATA_MID) && \
@@ -445,20 +445,20 @@ AIRCRAFT_LOCK_STATUS remot_aircraft_lock_and_unlock(void)
 			g_sAutoLockContinueTicks = 0;
 			
 			/*标记为上锁*/
-			g_psAircraftStatus->LOCK_STATUS = AIRCRAFT_LOCKING;
+			g_psUav_Status->LOCK_STATUS = UAV_LOCK_YES;
 		}
 	}
 	
 	/*解锁状态&&着陆状态&&遥控和飞行器断开通信*/
-	if ((g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_UNLOCK) && \
-	    (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING) && \
-	    (g_psAircraftStatus->CMC_STATUS == AIRCRAFT_CMC_FAIL))
+	if ((g_psUav_Status->LOCK_STATUS == UAV_LOCK_NOT) && \
+	    (g_psUav_Status->UavLandStatus.ThisTime == UAV_LAND_YES) && \
+	    (g_psUav_Status->WIRELESS_CMC_STATUS == UAV_WIRELESS_CMC_FAIL))
 	{
 		/*标记为上锁*/
-		g_psAircraftStatus->LOCK_STATUS = AIRCRAFT_LOCKING;		
+		g_psUav_Status->LOCK_STATUS = UAV_LOCK_YES;	
 	}
 	
-	return (g_psAircraftStatus->LOCK_STATUS);
+	return (g_psUav_Status->LOCK_STATUS);
 }
 
 /*=== 原始数据极大/极小/中值判断 ===*/

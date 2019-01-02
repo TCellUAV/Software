@@ -78,7 +78,7 @@ typedef struct
 void sins_get_body_relative_earth_acc(Acc3f *sinsAcc);
 
 /*竖直方向,气压计和超声波切换*/
-void sins_vertical_bero_ultr_auto_change(AircraftStatus *aircraftStatus);
+void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus);
 
 /*三阶互补求竖直方向上的加速度、速度、位置(Z竖直)*/
 void sins_thirdorder_complement_vertical(void);

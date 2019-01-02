@@ -88,7 +88,7 @@ typedef struct
 	GimbalAngle              		  	  GimbalExpectAngle;		/*万向节云台期望角度*/
 	volatile CTRL_AIRCRAFT_MOVE_TREND 	  AIRCRAFT_VER_MOVE_TREND;	/*飞行器竖直方向运动趋势*/
 	volatile CTRL_AIRCRAFT_MOVE_TREND     AIRCRAFT_HOR_MOVE_TREND;	/*飞行器水平方向运动趋势*/
-	volatile CTRL_AIRCRAFT_GO_HOME_STATUS GO_HOME_STATUS;			/*自动返航使能状态*/
+	volatile CTRL_AIRCRAFT_GO_HOME_STATUS GO_HOME_STATUS;			/*失联自动返航使能状态*/
 	volatile CTRL_AIRCRAFT_GO_HOME_SWITCH GO_HOME_SET;				/*自动返航设置状态*/
 	
 	/*电机PWM输出*/
@@ -103,8 +103,8 @@ SYS_RETERR ctrl_autocontrol_para_init(CTRL_SysStatus *sysStatus);
 /*飞行器自动控制系统*/
 void ctrl_auto_control_system_dp(void);
 
-/*高度,水平控制模式选择*/
-void ctrl_Control_Mode_Select(AircraftStatus *aircraftStatus);
+/*飞行模式及飞行任务选择*/
+void ctrl_Control_Mode_Select(Uav_Status *uavStatus);
 
 /*姿态控制器: 角度外环+角速度内环*/
 void ctrl_Attitude_Control_Dp(void);

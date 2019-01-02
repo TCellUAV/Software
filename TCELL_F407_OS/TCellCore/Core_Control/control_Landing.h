@@ -86,6 +86,8 @@ typedef enum
 
 typedef struct
 {
+	vu16								  	    land_throttle_min_check;	    /*着陆油门检测值*/
+	
 	volatile CTRL_GO_HOME_DISTANCE 			    HOME_DISTANCE;					/*离HOME点距离标定*/	
 	volatile CTRL_GO_HOME_PROCESS  			    LAST_GO_HOME_PROCESS;			/*上次返航流程*/
 	volatile CTRL_GO_HOME_PROCESS  			    CUR_GO_HOME_PROCESS;			/*本次返航流程*/	
@@ -107,16 +109,18 @@ typedef struct
 	u8											horizontalSpeedExpect;			/*水平速度期望*/
 	vu16									  	climb2CloseTransitionTicks;		/*从先爬升到水平靠拢过渡时间*/
 	Vector2f_Nav								RelativeHomeDistance;			/*当前点距离HOME点水平距离*/
-	
 }ControlLand;
 
-/*自检触地进入怠速模式*/
-AIRCRAFT_FLY_STATUS ctrl_Landing_Check_And_Idling(void);
+/*获取着陆油门输出检测最大值*/
+u16 ctrl_Landing_ThrottleOutput_Min_Get(Uav_Status *uavStatus, ControlLand *controlLand);
 
-/*返航时手动干预高度*/
+/*触地状态检测*/
+UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus);
+
+/*检测返航时手动干预高度*/
 CTRL_GO_HOME_HAND_MEDDLE_STATUS ctrl_Go_Home_Vertical_Hand_Meddle(void);
 
-/*返航时手动干预水平*/
+/*检测返航时手动干预水平*/
 CTRL_GO_HOME_HAND_MEDDLE_STATUS ctrl_Go_Home_Horizontal_Hand_Meddle(void);
 
 /*返航点状态更新*/
@@ -135,7 +139,7 @@ void ctrl_Go_Home_Horizontal_Control(Vector2s_Nav targPos, Vector2s_Nav curPos, 
 void ctrl_Go_Home_GPS_Control(fp32 controlDeltaT);
 
 /*普通原地着陆控制(NO GPS)*/
-void ctrl_Land_Ground_Control(fp32 controlDeltaT);
+void ctrl_Land_Ground_Control(fp32 controlDeltaT, Uav_Status *uavStatus);
 
 /*得到相对目标点机体Pit、Rol方向偏移*/
 Vector2f_Nav land_Gps_Offset_Relative_To_Home(Vector2s_Nav targPos, Vector2s_Nav curPos);

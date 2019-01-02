@@ -8,124 +8,10 @@ AttitudeAll g_sAttitudeAll = {0};
 AttitudeAll *g_psAttitudeAll = &g_sAttitudeAll;
 
 /*====== GPS数据和惯导关系 ======*/
-/*GPS信号质量动态估计*/
-GPS_DATA_QUALITY_STATUS gps_data_quality_status(GPS_Data *gpsData)
-{
-	fp32 sateNbr, pDOP, fixType;
-	static vu16 gpsSampleContinueTicks = 0;
-	
-	GPS_DATA_QUALITY_STATUS GPS_QUALITY_STATUS = GPS_DATA_QUALITY_BAD; /*默认为BAD,防止出现意料之外的情况*/
-	GPS_DATA_QUALITY_STATUS SATENBR_STATUS, PDOP_STATUS, FIXTYPE_STATUS;  /*单项质量: 卫星数量质量, 位置精度质量, 定位类型质量*/
-	
-	/*10hz,PVT数据,1秒钟窗口(10个数据)*/
-	/*对卫星个数数据进行滑动平均滤波*/
-	sateNbr = filter_Slider_Dp(&(g_sFilterTarg.GpsSateNbrSliderAverage), gpsData->satelliteNbr);
-	
-	/*对卫星位置精度因子数据进行滑动平均滤波*/
-	pDOP = filter_Slider_Dp(&(g_sFilterTarg.GpspDOPSliderAverage), gpsData->quality);
-	
-	/*对卫星定位模式数据进行滑动平均滤波*/
-	fixType = filter_Slider_Dp(&(g_sFilterTarg.GpsFixTypeSliderAverage), gpsData->POS_FIX_TYPE);
-	
-	/*1.卫星数量单项信号质量*/
-	/*信号很差时的卫星最少个数 sateNbr <= 7*/
-	if (sateNbr <= SYS_GPS_M8N_DATA_QUALITY_BAD_SATENBR_MIN)
-	{
-		SATENBR_STATUS = GPS_DATA_SATENBR_BAD;	/*标记卫星个数单项质量为差*/
-	}
-	/*信号中等时的卫星最少个数 7 < sateNbr < 9*/
-	else if ((sateNbr > SYS_GPS_M8N_DATA_QUALITY_BAD_SATENBR_MIN) && \
-			 (sateNbr < SYS_GPS_M8N_DATA_QUALITY_GOOD_SATENBR_MAX))
-	{
-		SATENBR_STATUS = GPS_DATA_SATENBR_MEDIUM;	/*标记卫星个数单项质量为中等*/
-	}	
-	/*信号很好时的卫星最少个数 sateNbr >= 9*/
-	else if (sateNbr >= SYS_GPS_M8N_DATA_QUALITY_GOOD_SATENBR_MAX)
-	{
-		SATENBR_STATUS = GPS_DATA_SATENBR_GOOD;	/*标记卫星个数单项质量为优*/
-	}	
-		
-	/*2.位置精度单项信号质量*/	
-	/*信号很差时的水平位置精度因子 posQA >= 3.5f*/
-	if (pDOP >= SYS_GPS_M8N_DATA_QUALITY_BAD_PDOP_QUALITY_MIN)
-	{
-		PDOP_STATUS = GPS_DATA_PDOP_BAD;	/*标记位置精度单项质量为差*/
-	}	
-	/*信号中等时的水平位置精度因子 3.0f < posQA < 3.5f*/	
-	else if ((SYS_GPS_M8N_DATA_QUALITY_GOOD_PDOP_QUALITY_MAX < pDOP) && \
-			 (pDOP < SYS_GPS_M8N_DATA_QUALITY_BAD_PDOP_QUALITY_MIN))
-	{
-		PDOP_STATUS = GPS_DATA_PDOP_MEDIUM;	/*标记位置精度单项质量为中等*/
-	}	
-	/*信号很好时的水平位置精度因子 posQA <= 3.0f*/
-	else if (pDOP <= SYS_GPS_M8N_DATA_QUALITY_GOOD_PDOP_QUALITY_MAX)
-	{
-		PDOP_STATUS = GPS_DATA_PDOP_GOOD;	/*标记位置精度单项质量为优*/
-	}
-			
-	/*3.定位类型单项信号质量*/	
-	/*信号很差时的定位方式:最近10次中出现7次3D(0x03)模式,3次2D(0x02)模式:(7*3 + 3*2)/10 = 2.7*/
-	if (fixType <= SYS_GPS_M8N_DATA_QUALITY_BAD_FIX_MODE_MAX)
-	{
-		FIXTYPE_STATUS = GPS_DATA_FIXTYPE_BAD;	/*标记定位类型单项质量为差*/
-	}	
-	/*信号中等时的定位方式:最近10次中出现8次3D(0x03)模式,2次2D(0x02)模式:(8*3 + 2*2)/10 = 2.8*/	
-	else if ((SYS_GPS_M8N_DATA_QUALITY_BAD_FIX_MODE_MAX < fixType) && \
-			 (fixType < SYS_GPS_M8N_DATA_QUALITY_GOOD_FIX_MODE_MIN))
-	{
-		FIXTYPE_STATUS = GPS_DATA_FIXTYPE_MEDIUM;	/*标记定位类型单项质量为中等*/
-	}		
-	/*信号很好时的定位方式:最近10次中出现9次3D(0x03)模式,1次2D(0x02)模式:(9*3 + 1*2)/10 = 2.9*/
-	else if (fixType >= SYS_GPS_M8N_DATA_QUALITY_GOOD_FIX_MODE_MIN)
-	{
-		FIXTYPE_STATUS = GPS_DATA_FIXTYPE_GOOD;	/*标记定位类型单项质量为优*/
-	}	
-	
-	/*根据单项表现进行GPS信号质量评定*/
-	/*差*/
-	if ((SATENBR_STATUS == GPS_DATA_SATENBR_BAD) || \
-		(PDOP_STATUS == GPS_DATA_PDOP_BAD) || \
-		(FIXTYPE_STATUS == GPS_DATA_FIXTYPE_BAD))
-	{
-		GPS_QUALITY_STATUS = GPS_DATA_QUALITY_BAD;	/*信号评定很差*/
-	}	
-	
-	/*中等*/
-	if ((SATENBR_STATUS == GPS_DATA_SATENBR_MEDIUM) && \
-		(PDOP_STATUS == GPS_DATA_PDOP_MEDIUM) && \
-		(FIXTYPE_STATUS == GPS_DATA_FIXTYPE_MEDIUM))
-	{
-		GPS_QUALITY_STATUS = GPS_DATA_QUALITY_MEDIUM;	/*信号评定中等*/	
-	}		
-
-	/*优*/
-	if ((SATENBR_STATUS == GPS_DATA_SATENBR_GOOD) && \
-		(PDOP_STATUS == GPS_DATA_PDOP_GOOD) && \
-		(FIXTYPE_STATUS == GPS_DATA_FIXTYPE_GOOD))
-	{
-		GPS_QUALITY_STATUS = GPS_DATA_QUALITY_GOOD;	/*信号评定很好*/
-	}		
-	
-	/*第一次使用GPS数据要等数据稳定后:GPS信号质量连续100次评估为优*/
-	if ((g_psAircraftStatus->GPS_DATA_FIRST_AVA_STATUS == GPS_DATA_FIRST_DISAVA) && \
-		(GPS_QUALITY_STATUS == GPS_DATA_QUALITY_GOOD))
-	{
-		if (gpsSampleContinueTicks > 100)
-		{
-			g_psAircraftStatus->GPS_DATA_FIRST_AVA_STATUS = GPS_DATA_FIRST_AVA;
-		}
-		else
-		{
-			gpsSampleContinueTicks++;
-		}
-	}
-	
-	return GPS_QUALITY_STATUS;
-}
-
 /*gps控制数据获取*/
 void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 {
+	static vu16 sampleContinueTicks = 0;
 	fp32 deltaT;
 	
 	/*获取精确的间隔时间*/
@@ -138,11 +24,8 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 	if (g_sGpsM8N.UPDATE_STATUS != GPS_DATA_UPDATE_SUCC)
 	{
 		/*标记本次GPS观测水平为无效值*/
-		g_psAircraftStatus->GPS_ESTIMATE_HORIZONTAL = HORIZONTAL_DATA_STATUS_NO;
+		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_NO;
 		
-		/*水平传感器状态标记GPS观测数据无效*/
-		g_psAircraftStatus->ESTIMATE_HORIZONTAL &= HORIZONTAL_GPS_SENSOR_DISAVA;
-
 		return;
 	}
 	
@@ -194,28 +77,6 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 	/*位置估计精度*/
 	gpsData->quality = pvtData.pDOP * 0.01f;
 	
-	/*获取当前卫星数据质量状态评估*/
-	g_psAircraftStatus->GPS_QUALITY_STATUS = gps_data_quality_status(gpsData);
-	
-	/*根据卫星信号质量(优时可用)*/
-	if (g_psAircraftStatus->GPS_QUALITY_STATUS == GPS_DATA_QUALITY_GOOD)
-	{
-		/*标记本次GPS观测水平为有效值*/
-		g_psAircraftStatus->GPS_ESTIMATE_HORIZONTAL = HORIZONTAL_DATA_STATUS_OK;
-		
-		/*水平传感器状态标记GPS观测数据有效*/
-		g_psAircraftStatus->ESTIMATE_HORIZONTAL |= HORIZONTAL_GPS_SENSOR_AVA;
-	}
-	else
-	{
-		/*标记本次GPS观测水平为无效值*/
-		g_psAircraftStatus->GPS_ESTIMATE_HORIZONTAL = HORIZONTAL_DATA_STATUS_NO;
-		
-		/*水平传感器状态标记GPS观测数据无效*/
-		g_psAircraftStatus->ESTIMATE_HORIZONTAL &= HORIZONTAL_GPS_SENSOR_DISAVA;	
-		
-		return;
-	}
 	
 	/*记录上次速度*/
 	gpsData->LastSpeed.east  = gpsData->CurSpeed.east;
@@ -230,7 +91,45 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 	/*速度增量*/
 	gpsData->DeltaSpeed.east  = (gpsData->CurSpeed.east - gpsData->LastSpeed.east) / deltaT;	 /*单位cm/s^2*/
 	gpsData->DeltaSpeed.north = (gpsData->CurSpeed.north - gpsData->LastSpeed.north) / deltaT;   /*单位cm/s^2*/
-	gpsData->DeltaSpeed.up    = (gpsData->CurSpeed.up - gpsData->LastSpeed.up) / deltaT;		 /*单位cm/s^2*/
+	gpsData->DeltaSpeed.up    = (gpsData->CurSpeed.up - gpsData->LastSpeed.up) / deltaT;		 /*单位cm/s^2*/	
+	
+	/*根据卫星信号质量(优时可用)*/
+	if ((gpsData->satelliteNbr >= 9) && \
+		(gpsData->quality <= 3.0f) && \
+		(gpsData->POS_FIX_TYPE == M8N_POS_FIX_3D))
+	{
+		/*标记GPS数据可用*/
+		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_OK;		
+	}
+	else
+	{
+		/*标记GPS数据不可用*/		
+		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_NO;	
+
+		/*GPS测得运动加速度清0*/
+		gpsData->DeltaSpeed.east  = 0;	 /*单位cm/s^2*/
+		gpsData->DeltaSpeed.north = 0;   /*单位cm/s^2*/
+		gpsData->DeltaSpeed.up    = 0;	 /*单位cm/s^2*/		
+	}
+	
+	/*数据有效,且第一次使用状态无效*/
+	if ((g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
+		(g_psUav_Status->UavSenmodStatus.Horizontal.Gps.FIRST_USE_AVA_STATUS != UAV_SENMOD_FIRST_USE_AVA_OK))
+	{
+		/*多次有效*/
+		if (sampleContinueTicks > 100)
+		{
+			g_psUav_Status->UavSenmodStatus.Horizontal.Gps.FIRST_USE_AVA_STATUS = UAV_SENMOD_FIRST_USE_AVA_OK;
+		}
+		else
+		{
+			sampleContinueTicks++;
+		}
+	}
+	else /*快速削减*/
+	{
+		sampleContinueTicks /= 2;
+	}
 	
 	/*本次数据已用,重新标记为未更新*/
 	g_sGpsM8N.UPDATE_STATUS = GPS_DATA_UPDATE_FAIL;
@@ -240,10 +139,10 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 #if defined(HW_CUT__USE_GPS)
 
 void gps_home_location_set(void)
-{
+{	
 	/*home点只设置一次,且卫星信号持续100次检测为优时才允许使用卫星数据设定HOME点*/
-	if ((g_psAircraftStatus->HOME_STATUS != AIRCRAFT_HOME_SET) && \
-		(g_psAircraftStatus->GPS_DATA_FIRST_AVA_STATUS == GPS_DATA_FIRST_AVA))
+	if ((g_sUav_Status.HOME_SET_STATUS != UAV_HOME_SET_YES) && \
+		(g_sUav_Status.UavSenmodStatus.Horizontal.Gps.FIRST_USE_AVA_STATUS == UAV_SENMOD_FIRST_USE_AVA_OK))
 	{
 		g_psAttitudeAll->HomePos.Coordinate_s4.lat = g_psAttitudeAll->GpsData.Coordinate_s4.lat;	/*纬度*/
 		g_psAttitudeAll->HomePos.Coordinate_s4.lon = g_psAttitudeAll->GpsData.Coordinate_s4.lon;   	/*经度*/
@@ -252,7 +151,7 @@ void gps_home_location_set(void)
 		g_psAttitudeAll->HomePos.Coordinate_f8.lon = g_psAttitudeAll->GpsData.Coordinate_f8.lon;   	/*经度*/		
 		
 		/*标记已设定HOME点*/
-		g_psAircraftStatus->HOME_STATUS = AIRCRAFT_HOME_SET;
+		g_sUav_Status.HOME_SET_STATUS = UAV_HOME_SET_YES;
 		
 		/*复位惯导融合:导航系X轴(正东)*/
 		strapdown_ins_reset(&g_sSinsReal, &g_sTOCSystem, EARTH_FRAME_X, g_psAttitudeAll->EarthFrameRelativeHome.east, 0);
@@ -264,6 +163,12 @@ void gps_home_location_set(void)
 		g_psAttitudeAll->declination = get_earth_declination(g_psAttitudeAll->HomePos.Coordinate_f8.lat, \
 															 g_psAttitudeAll->HomePos.Coordinate_f8.lon);
 	}	
+}
+
+/*获取GPS HOME点设置状态*/
+UAV_HOME_SET_STATUS get_gps_home_set_status(Uav_Status *uavStatus)
+{
+	return (uavStatus->HOME_SET_STATUS);
 }
 #endif
 
@@ -280,7 +185,7 @@ Vector2s_Nav gps_Two_Pos_XY_Offset(GPS_Coordinate_s4 loc1, GPS_Coordinate_s4 loc
 /*经度比例*/
 fp32 gps_Longitude_Scale(GPS_Coordinate_s4 loc)
 {
-	static s32 lastLat;
+	static s32 lastLat = 0;
 	static fp32 scale = 1.0f;
 	
 	/*比较两次纬度相差值，避免重复运算余弦函数*/
@@ -350,19 +255,14 @@ void opflow_Offset_Relative_To_Home(OpFlowUpixelsLC306DataFrame OpFlowData, fp32
 		(OpFlowData.DATA_STATUS != OPFLOW_UPIXELSLC306_DATA_AVA))
 	{
 		/*标记本次GPS观测水平为无效值*/
-		g_psAircraftStatus->OPFLOW_ESTIMATE_HORIZONTAL = HORIZONTAL_DATA_STATUS_NO;
-		
-		/*水平传感器状态标记GPS观测数据无效*/
-		g_psAircraftStatus->ESTIMATE_HORIZONTAL &= HORIZONTAL_OPFLOW_SENSOR_DISAVA;
+		g_psUav_Status->UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS = UAV_SENMOD_DATA_NO;
 		
 		return;
 	}
 	
 	/*光流未开发,标记不可用*/
 	/*标记本次光流观测水平为无效值*/
-	g_psAircraftStatus->OPFLOW_ESTIMATE_HORIZONTAL = HORIZONTAL_DATA_STATUS_NO;
-	/*水平传感器状态标记光流观测数据无效*/
-	g_psAircraftStatus->ESTIMATE_HORIZONTAL &= HORIZONTAL_OPFLOW_SENSOR_DISAVA;
+	g_psUav_Status->UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS = UAV_SENMOD_DATA_NO;
 	
 //	/*光流累计像素点低通滤波*/
 //	attitudeAll->OpticFlowData.IntPixLPF.x = filter_OpFlowIntPixLpButterworth_Dp(OpFlowData.xIntegral, \
@@ -462,7 +362,7 @@ void opflow_Offset_Relative_To_Home(OpFlowUpixelsLC306DataFrame OpFlowData, fp32
 vu16 g_BeroUpdateContinueTicks     = 0;
 vu16 g_BeroZeroSampleContinueTicks = 0;
 
-void bero_altitude_data_get_and_dp(void)
+void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 {
 	fp32 beroDeltaT;
 	s32 rawAltitude;
@@ -487,7 +387,7 @@ void bero_altitude_data_get_and_dp(void)
 		if (g_sSpl06.Pressure <= SEA_LEVEL_PRESSURE)
 		{
 			/*判断是否已设定气压计零参考点气压和参考点高度*/
-			if (g_psAircraftStatus->BERO_ZERO_PRESSURE != HEIGHT_DATA_STATUS_OK)
+			if (uavStatus->UavSenmodStatus.Vertical.Bero.ZERO_REFERENCE_SET_STATUS != UAV_SENMOD_ZERO_REFERENCE_SET_OK)				
 			{	
 				/*采集10次后,待气压数据稳定后(必要步骤),设定初始位置气压值*/
 				if (g_BeroZeroSampleContinueTicks > 10)
@@ -496,16 +396,13 @@ void bero_altitude_data_get_and_dp(void)
 					g_psAttitudeAll->zeroPressure = g_sSpl06.Pressure;
 				
 					/*标记气压计零参考点已设置且正确*/
-					g_psAircraftStatus->BERO_ZERO_PRESSURE = HEIGHT_DATA_STATUS_OK;
+					uavStatus->UavSenmodStatus.Vertical.Bero.ZERO_REFERENCE_SET_STATUS = UAV_SENMOD_ZERO_REFERENCE_SET_OK;
 					
 					/*根据气压海拔关系,计算得到相对高度*/
 					rawAltitude = bsp_SPL06_Get_Altitude(&g_sSpl06, g_psAttitudeAll->zeroPressure);					
 					
 					/*记录零参考点气压计高度值*/
-					g_psAttitudeAll->zeroBeroHeight = rawAltitude;
-
-					/*高度传感器零参考点设置标记气压计零参考点设置成功*/
-					g_psAircraftStatus->ZERO_ALTITUDE |= HEIGHT_BERO_ZERO_AVA;					
+					g_psAttitudeAll->zeroBeroHeight = rawAltitude;					
 					
 					/*复位惯导融合:Z轴(天)*/					
 					strapdown_ins_reset(&g_sSinsReal, &g_sTOCSystem, EARTH_FRAME_Z, rawAltitude, 0);
@@ -517,20 +414,14 @@ void bero_altitude_data_get_and_dp(void)
 			}
 		
 			/*初始位置气压值有效,才标记竖直方向惯导数据有效*/
-			if (g_psAircraftStatus->BERO_ZERO_PRESSURE == HEIGHT_DATA_STATUS_OK)
+			if (uavStatus->UavSenmodStatus.Vertical.Bero.ZERO_REFERENCE_SET_STATUS == UAV_SENMOD_ZERO_REFERENCE_SET_OK)
 			{
 				/*当前气压值*/
 				g_psAttitudeAll->curPressure = g_sSpl06.Pressure;
 				
 				/*标记本次气压值为有效值*/
-				g_psAircraftStatus->BERO_PRESSURE = HEIGHT_DATA_STATUS_OK;
+				uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS = UAV_SENMOD_DATA_OK;
 				
-				/*标记本次气压计观测高度为有效值*/
-				g_psAircraftStatus->BERO_ESTIMATE_ALTITUDE = HEIGHT_DATA_STATUS_OK;
-				
-				/*高度传感器状态标记气压计观测数据有效*/
-				g_psAircraftStatus->ESTIMATE_ALTITUDE |= HEIGHT_BERO_SENSOR_AVA;
-			
 				/*获取精确的间隔时间*/
 				get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->BeroAboveAltitude));
 	
@@ -554,13 +445,7 @@ void bero_altitude_data_get_and_dp(void)
 		else /*数据不合法,本次采样无效*/
 		{
 			/*标记本次气压值为无效值*/
-			g_psAircraftStatus->BERO_PRESSURE = HEIGHT_DATA_STATUS_NO;
-
-			/*标记本次气压计观测高度为无效值*/
-			g_psAircraftStatus->BERO_ESTIMATE_ALTITUDE = HEIGHT_DATA_STATUS_NO;		
-			
-			/*高度传感器状态标记气压计观测数据有效*/
-			g_psAircraftStatus->ESTIMATE_ALTITUDE &= HEIGHT_BERO_SENSOR_DISAVA;			
+			uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS = UAV_SENMOD_DATA_NO;			
 			
 			/*海拔高度设定为无效值*/
 			g_psAttitudeAll->nowBeroAltitude = SYS_NO_AVA_MARK;
@@ -569,13 +454,19 @@ void bero_altitude_data_get_and_dp(void)
 }
 #endif
 
+/*获取气压计观测数据状态*/
+UAV_SENMOD_DATA_STATUS get_bero_estimate_data_status(Uav_Status *uavStatus)
+{
+	return (uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS);
+}
+
 /*ultr Altitude数据获取和处理 */
 #if defined(HW_CUT__USE_ULTR)
 
 vu16 g_UltrUpdateContinueTicks     = 0;
 vu16 g_UltrZeroSampleContinueTicks = 0;
 
-void ultr_altitude_data_get_and_dp(void)
+void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 {
 	fp32 ultrDeltaT;
 	s16 rawAltitude;
@@ -594,7 +485,7 @@ void ultr_altitude_data_get_and_dp(void)
 		if (rawAltitude != SYS_NO_AVA_MARK)
 		{
 			/*判断是否已设定超声波零参考点高度*/
-			if (g_psAircraftStatus->ULTR_ZERO_ALTITUDE != HEIGHT_DATA_STATUS_OK)
+			if (uavStatus->UavSenmodStatus.Vertical.Ultr.ZERO_REFERENCE_SET_STATUS != UAV_SENMOD_ZERO_REFERENCE_SET_OK)				
 			{
 				/*采集10次后,待超声波数据稳定后(必要步骤),设定初始位置超声波高度值*/
 				if (g_UltrZeroSampleContinueTicks > 10)
@@ -603,10 +494,7 @@ void ultr_altitude_data_get_and_dp(void)
 					g_psAttitudeAll->zeroUltrHeight = rawAltitude;
 					
 					/*标记超声波零参考点已设置且正确*/
-					g_psAircraftStatus->ULTR_ZERO_ALTITUDE = HEIGHT_DATA_STATUS_OK;
-
-					/*高度传感器零参考点设置标记超声波零参考点设置成功*/
-					g_psAircraftStatus->ZERO_ALTITUDE |= HEIGHT_ULTR_ZERO_AVA;
+					uavStatus->UavSenmodStatus.Vertical.Ultr.ZERO_REFERENCE_SET_STATUS = UAV_SENMOD_ZERO_REFERENCE_SET_OK;
 				}
 				else
 				{
@@ -615,16 +503,13 @@ void ultr_altitude_data_get_and_dp(void)
 			}
 			
 			/*初始位置超声波值有效,才标记竖直方向惯导数据有效*/
-			if (g_psAircraftStatus->ULTR_ZERO_ALTITUDE == HEIGHT_DATA_STATUS_OK)
+			if (uavStatus->UavSenmodStatus.Vertical.Ultr.ZERO_REFERENCE_SET_STATUS == UAV_SENMOD_ZERO_REFERENCE_SET_OK)
 			{
 				/*距离在有效高度范围内*/
 				if ((0 < rawAltitude) && (rawAltitude <= SYS_ULTR_MAX_MEAS_DISTANCE))
 				{
 					/*标记本次超声波观测高度为有效值*/
-					g_psAircraftStatus->ULTR_ESTIMATE_ALTITUDE = HEIGHT_DATA_STATUS_OK;
-			
-					/*高度传感器状态标记超声波观测数据有效*/
-					g_psAircraftStatus->ESTIMATE_ALTITUDE |= HEIGHT_ULTR_SENSOR_AVA;
+					uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS = UAV_SENMOD_DATA_OK;
 
 					/*获取精确的间隔时间*/
 					get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->UltrAltitude));
@@ -644,21 +529,21 @@ void ultr_altitude_data_get_and_dp(void)
 				else /*不在有效高度范围内*/
 				{
 					/*标记本次超声波观测高度为无效值*/
-					g_psAircraftStatus->ULTR_ESTIMATE_ALTITUDE = HEIGHT_DATA_STATUS_NO;	
-			
-					/*高度传感器状态标记超声波观测数据无效*/
-					g_psAircraftStatus->ESTIMATE_ALTITUDE &= HEIGHT_ULTR_SENSOR_DISAVA;						
+					uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS = UAV_SENMOD_DATA_NO;						
 				}
 			}				
 		}
 		else
 		{
 			/*标记本次超声波观测高度为无效值*/
-			g_psAircraftStatus->ULTR_ESTIMATE_ALTITUDE = HEIGHT_DATA_STATUS_NO;
-			
-			/*高度传感器状态标记超声波观测数据无效*/
-			g_psAircraftStatus->ESTIMATE_ALTITUDE &= HEIGHT_ULTR_SENSOR_DISAVA;
+			uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS = UAV_SENMOD_DATA_NO;
 		}
 	}
 }
 #endif
+
+/*获取超声波观测数据状态*/
+UAV_SENMOD_DATA_STATUS get_ultr_estimate_data_status(Uav_Status *uavStatus)
+{
+	return (uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS);
+}

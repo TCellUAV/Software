@@ -12,12 +12,12 @@
 	#define SINS_DATA_FUSION__VER_KALMAN
 #endif
 
-#if 1	
+#if 0	
 	/*水平方向:三阶互补数据融合*/
 	#define SINS_DATA_FUSION__HOR_THIRDORDER
 #endif
 
-#if 0
+#if 1
 	/*水平方向:卡尔曼惯导数据融合*/
 	#define SINS_DATA_FUSION__HOR_KALMAN
 #endif
@@ -67,5 +67,8 @@
 /*电机驱动场景选择*/
 /*debugging*/
 #define CTRL_MOTOR_DRIVER_ON_FIXED_DEBUGGING  (0)  /*固定机架调参时使能,正式飞行时静止使能*/
+
+
+#define REMOT_THROTTLE_IS_AUTO_RETURN_TO_MID	(1)	/*1:遥控油门自动回中 / 0:遥控油门不是自动回中*/
 
 #endif

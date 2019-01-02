@@ -166,24 +166,23 @@ void rt_entry_thread_vertical_fusion(void* parameter)
 		/*气压计数据更新及处理*/
 		#ifdef HW_CUT__USE_MD_BERO
 		#ifdef HW_CUT__USE_DB_BERO
-		bero_altitude_data_get_and_dp();	
+		bero_altitude_data_get_and_dp(g_psUav_Status);	
 		#else
-		bero_altitude_data_get_and_dp();
+		bero_altitude_data_get_and_dp(g_psUav_Status);
 		#endif
 		#endif
 		
 		/*超声波数据更新及处理*/		
 		#if defined(HW_CUT__USE_ULTR)		
-		ultr_altitude_data_get_and_dp();
+		ultr_altitude_data_get_and_dp(g_psUav_Status);
 		#endif
 		
 		/*机体系->导航系 加速度*/
 		sins_get_body_relative_earth_acc(g_psAccSINS);
 		
 		/*竖直零参考点已经设定,且竖直传感器可用,即可进行数据融合*/
-		if (((g_psAircraftStatus->BERO_ZERO_PRESSURE == HEIGHT_DATA_STATUS_OK) || \
-			(g_psAircraftStatus->ULTR_ZERO_ALTITUDE == HEIGHT_DATA_STATUS_OK)) && \
-			(g_psAircraftStatus->ESTIMATE_ALTITUDE != HEIGHT_BERO_ULTR_DISAVA))
+		if ((g_sUav_Status.UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_OK) || \
+			(g_sUav_Status.UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_OK))
 		{
 			#ifdef SINS_DATA_FUSION__VER_THIRDORDER
 			/*三阶互补求竖直方向上的加速度、速度、位置(Z竖直)*/
@@ -270,7 +269,7 @@ void rt_entry_gps_data_horizontal_fusion(void* parameter)
 		sins_get_body_relative_earth_acc(g_psAccSINS);
 		
 		/*HOME已经设定,即可进行数据融合*/
-		if (g_psAircraftStatus->HOME_STATUS == AIRCRAFT_HOME_SET)
+		if (g_sUav_Status.HOME_SET_STATUS == UAV_HOME_SET_YES)
 		{
 			#ifdef SINS_DATA_FUSION__HOR_THIRDORDER
 			/*水平X、Y方向:捷联惯导(三阶互补)融合数据*/
@@ -303,7 +302,7 @@ void rt_entry_opticflow_data_horizontal_fusion(void* parameter)
 		get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->OpflowHorFusion));		
 		
 		/*对光流数据进行处理,计算出需要的速度,位移信息*/
-		if ((g_psAircraftStatus->OPFLOW_ESTIMATE_HORIZONTAL == HORIZONTAL_DATA_STATUS_OK) && \
+		if ((g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
 			(g_sOpFlowUpixelsLC306.UPDATE_STATUS == OPFLOW_UPIXELSLC306_UPDATE_SUCC))
 		{
 
@@ -328,11 +327,11 @@ void rt_entry_uav_ctrl_system(void* parameter)
 		/*线程执行周期计算*/
 		get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->UavCtrl));
 		
-		/*更新遥控数据(必须在 "检测遥控和飞行器通信是否正常"前面执行)*/
+		/*更新遥控数据(必须在"检测遥控和飞行器通信是否正常"前面执行)*/
 		remot_get_all_channel_data(g_psRemotData, g_psReceiverAnaly);
 	
 		/*检测遥控和飞行器通信是否正常(必须在 "更新遥控数据"后面执行)*/
-		status_check_aircraft_remot_communication(&g_sUavRemotCMCDog, g_psAircraftStatus);
+		status_check_aircraft_remot_communication(&g_sUavRemotCMCDog, g_psUav_Status);
 	
 		/*检测遥控锁定状态*/
 		remot_aircraft_lock_and_unlock();
@@ -363,8 +362,8 @@ void rt_entry_tuav_calib_system(void* parameter)
 		get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->UavCalib));		
 		
 		/*加速度计校准*/
-		if ((g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_LOCKING) && \
-			(g_sHciShowPage.SHOW_DATA_STATUS != AIRCRAFT_HCI_SHOW_ENABLE))
+		if ((g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES) && \
+			(g_sHciShowPage.SHOW_DATA_STATUS != UAV_HCI_SHOW_ENABLE))
 		{
 			/*获取遥控指定校准面序号*/
 			g_psAccCalibSystem->CUR_SIDE_INDEX = calib_acc_sensor_check();
@@ -379,8 +378,8 @@ void rt_entry_tuav_calib_system(void* parameter)
 		}
 		
 		/*磁力计校准*/
-		if ((g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_LOCKING) && \
-			(g_sHciShowPage.SHOW_DATA_STATUS != AIRCRAFT_HCI_SHOW_ENABLE))
+		if ((g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES) && \
+			(g_sHciShowPage.SHOW_DATA_STATUS != UAV_HCI_SHOW_ENABLE))
 		{
 			/*获取遥控指定校准面序号*/
 			g_psMagCalibSystem->CUR_SIDE_INDEX = calib_mag_sensor_check();
@@ -420,8 +419,8 @@ void rt_entry_thread_tfsd_fly_log(void* parameter)
 		get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->FlyLog));		
 		
 		/*更新CPU使用率*/
-		g_psAircraftStatus->cpuUsageMajor = cpu_usage_major; /*CPU 使用率 整数*/
-		g_psAircraftStatus->cpuUsageMajor = cpu_usage_minor; /*CPU 使用率 小数*/	
+		g_sUav_Status.UavProgrameStatus.CpuUse.major = cpu_usage_major; /*CPU 使用率 整数*/
+		g_sUav_Status.UavProgrameStatus.CpuUse.minor = cpu_usage_minor; /*CPU 使用率 小数*/	
 	}
 }
 
@@ -735,7 +734,7 @@ void work_after_system_init(void)
 	msp_uart_recv_data(&g_sDebugUart);
 	
 	/*标记系统初始化完毕*/
-	g_psAircraftStatus->PLATFORM_INIT_STATUS = PROGRAME_INIT_FINISH;
+	g_sUav_Status.UavProgrameStatus.INIT_STATUS = UAV_PROGRAME_INIT_FINISH;
 }
 
 /*RTOS 组件初始化*/

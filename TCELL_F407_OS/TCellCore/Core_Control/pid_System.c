@@ -1143,7 +1143,7 @@ SYS_RETSTATUS pid_Parameter_Read_And_Init(PidSystem *pidSystem)
 		
 		/*显示PID控制参数*/
 		#if (HCI_OLED_SHOW_PID_CONTROL_PARA_WHEN_BOOT != SYS_ENABLE)
-		if (g_psAircraftStatus->PLATFORM_INIT_STATUS == PROGRAME_INIT_FINISH) /*运行过程中才能显示*/
+		if (g_sUav_Status.UavProgrameStatus.INIT_STATUS == UAV_PROGRAME_INIT_FINISH) /*运行过程中才能显示*/
 		{
 			/*OLED上显示PID读取结果*/
 			hci_Show_Control_System_Parameter(readStatus[j - 1], (fp32)pidSystem->PidSettingSystem.RWBuff[i].value * 0.001f, \

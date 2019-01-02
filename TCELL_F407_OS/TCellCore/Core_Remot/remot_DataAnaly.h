@@ -27,6 +27,13 @@ typedef enum
 	WAVE_STATUS_OLD = 0,	/*PWM输入数据状态是老数据*/
 }WAVE_UPDATE_STATUS;
 
+/*拨键边沿有效状态*/
+typedef enum
+{
+	REMOT_SWITCH_EDGE_AVA_NO = 0, /*边沿无效*/
+	REMOT_SWITCH_EDGE_AVA_OK = 1, /*边沿有效*/
+}REMOT_SWITCH_EDGE_AVA_STATUS;
+
 /*====== PWM IN ======*/
 #if defined(REMOTE_DATA_RECV__PWM) 
 /*捕获边沿状态*/
@@ -220,7 +227,7 @@ void remot_get_all_channel_data(RemotData *remotData, ReceiverAnaly *receiverAna
 
 /*=== 遥控特定操作判断 ===*/
 /*飞控:解锁/上锁/自动上锁*/
-AIRCRAFT_LOCK_STATUS remot_aircraft_lock_and_unlock(void);
+UAV_LOCK_STATUS remot_aircraft_lock_and_unlock(void);
 
 /*=== 原始数据 极大/极小/中值判断 ===*/
 REMOT_DATA_STATUS remot_Data_Range(u16 ChannelData, REMOT_DATA_STATUS testStatus);
