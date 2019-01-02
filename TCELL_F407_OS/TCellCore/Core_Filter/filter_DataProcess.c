@@ -580,13 +580,4 @@ void filter_origin_data_filter_init(FilterTarg *filterTarg)
 
 	/*超声波 滑动平均滤波器初始化*/
 	filter_Slider_Init(&(filterTarg->UltrSliderAverage), 10);	/*超声波*/
-	
-	/*卫星个数数据 滑动平均滤波初始化*/
-	filter_Slider_Init(&(filterTarg->GpsSateNbrSliderAverage), 10);
-	
-	/*卫星位置精度因子数据 滑动平均滤波初始化*/
-	filter_Slider_Init(&(filterTarg->GpspDOPSliderAverage), 10);
-	
-	/*卫星定位模式数据 滑动平均滤波初始化*/
-	filter_Slider_Init(&(filterTarg->GpsFixTypeSliderAverage), 10);
 }

@@ -87,7 +87,7 @@ void ANO_DT_Data_Exchange(void)
 	{
 		f.send_status = 0;
 		ANO_DT_Send_Status(g_psAttitudeAll->Ahrs.roll, g_psAttitudeAll->Ahrs.pitch, g_psAttitudeAll->Ahrs.yaw, \
-					       g_psAttitudeAll->nowBeroAltitude, g_psAircraftStatus->CUR_FLY_TYPE, g_psAircraftStatus->LOCK_STATUS);
+					       g_psAttitudeAll->nowBeroAltitude, g_sUav_Status.UavFlyType.CURRENT, g_sUav_Status.LOCK_STATUS);
 	}	
 /////////////////////////////////////////////////////////////////////////////////////
 	if(f.send_senser) /*主动定时上传 发送惯导传感器数据*/

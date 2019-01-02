@@ -103,14 +103,14 @@ typedef struct
 }AttitudeAll;
 
 /*====== GPS数据和惯导关系 ======*/
-/*GPS信号质量动态估计*/
-GPS_DATA_QUALITY_STATUS gps_data_quality_status(GPS_Data *gpsData);
-
 /*gps控制数据获取*/
 void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData);
 
 /*GPS Home点设置*/
 void gps_home_location_set(void);
+
+/*获取GPS HOME点设置状态*/
+UAV_HOME_SET_STATUS get_gps_home_set_status(Uav_Status *uavStatus);
 
 /*两点间的xy距离*/
 Vector2s_Nav gps_Two_Pos_XY_Offset(GPS_Coordinate_s4 loc1, GPS_Coordinate_s4 loc2);
@@ -130,11 +130,16 @@ void opflow_Offset_Relative_To_Home(OpFlowUpixelsLC306DataFrame OpFlowData, fp32
 
 /*====== Bero和Ultr高度数据获取及处理(校准、滤波) ======*/
 /*Bero Altitude数据获取和处理 */
-void bero_altitude_data_get_and_dp(void);
+void bero_altitude_data_get_and_dp(Uav_Status *uavStatus);
+
+/*获取气压计观测数据状态*/
+UAV_SENMOD_DATA_STATUS get_bero_estimate_data_status(Uav_Status *uavStatus);
 
 /*Ultr Altitude数据获取和处理*/
-void ultr_altitude_data_get_and_dp(void);
+void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus);
 
+/*获取超声波观测数据状态*/
+UAV_SENMOD_DATA_STATUS get_ultr_estimate_data_status(Uav_Status *uavStatus);
 
 extern AttitudeAll g_sAttitudeAll;
 extern AttitudeAll *g_psAttitudeAll;

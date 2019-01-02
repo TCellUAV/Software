@@ -195,11 +195,6 @@ typedef struct
 	FilterLpButterworthPara PidControlDivGyroPara[1];
 	FilterLpButterworthBuff PidControlBuff[21]; 	   /*PID 控制器低通输入输出缓冲*/
 
-	/*GPS数据信号状态(优,良,差)依据数据 窗口滑动平均滤波器*/
-	FilterSlider            GpsSateNbrSliderAverage;  /*卫星个数滑动平均滤波*/
-	FilterSlider			GpspDOPSliderAverage;	  /*位置精度因子滑动平均滤波*/
-	FilterSlider		    GpsFixTypeSliderAverage;  /*定位模式滑动平均滤波*/
-
     FilterYijieHubu         YijieHubuPitch;  		    /*Pitch角一阶互补滤波器*/
     FilterYijieHubu         YijieHubuRoll;    			/*Roll角一阶互补滤波器*/
 

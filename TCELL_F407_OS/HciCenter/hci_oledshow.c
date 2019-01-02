@@ -337,11 +337,11 @@ OX:±0.9999 OY:±0.9999
 OZ:±0.9999 
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -556,7 +556,7 @@ kD: ±123.50
 	if (showOnceFlag == 0)
 	{
 		/*禁止显示提示界面*/
-		g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_DISABLE;
+		g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_DISABLE;
 		
 		/*标记显示任务忙碌*/
 		g_sHciShowPage.SHOW_TASK_STATUS = HCI_SHOW_TASK_BUSY;
@@ -786,7 +786,7 @@ kD: ±123.50
 		sys_DelayMs(holdMs);
 		
 		/*判断接下来显示内容*/
-		if (g_sHciShowPage.SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
+		if (g_sHciShowPage.SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
 		{				
 			/*恢复默认显示页序号*/
 			g_sHciShowPage.curPageIndex  = HCI_SHOW_PAGE_0;
@@ -795,7 +795,7 @@ kD: ±123.50
 		else		
 		{
 			/*允许显示提示界面*/
-			g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_ENABLE;
+			g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_ENABLE;
 			
 			/*重新显示进入菜单显示提示页面*/
 			g_sHciShowPage.EXIT_SHOW_STATUS = HCI_EXIT_SHOW_OP_FIRST;
@@ -824,7 +824,7 @@ void hci_show_on_run_progress(void)
 	hci_remot_switch_show_status(&g_sHciShowPage);
 	
 	/*首先判断是否允许显示,显示任务空闲(即无其他显示任务占用)*/
-	if ((g_sHciShowPage.SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE) && \
+	if ((g_sHciShowPage.SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE) && \
 		(g_sHciShowPage.SHOW_TASK_STATUS != HCI_SHOW_TASK_BUSY))
 	{
 		/*开启显示后,退出显示操作复位*/
@@ -914,7 +914,7 @@ void hci_show_on_run_progress(void)
 			default:break;
 		}
 	}
-	else if (g_sHciShowPage.SHOW_HINT_STATUS == AIRCRAFT_HCI_SHOW_ENABLE)
+	else if (g_sHciShowPage.SHOW_HINT_STATUS == UAV_HCI_SHOW_ENABLE)
 	{
 		if (g_sHciShowPage.EXIT_SHOW_STATUS == HCI_EXIT_SHOW_OP_FIRST)
 		{
@@ -936,7 +936,7 @@ void hci_show_on_run_progress(void)
 		
 		/*在待机页面,显示CPU利用率*/
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 38, 3, (u8*)&"CPU:", OLED096_ACSII_6X8);
-		math_Integer_Number_Analy(g_psAircraftStatus->cpuUsageMajor, 2, &g_sMathIntegerAnaly);				
+		math_Integer_Number_Analy(g_psUav_Status->UavProgrameStatus.CpuUse.major, 2, &g_sMathIntegerAnaly);				
 		bsp_OLED0_96_Show_Calendar(&g_sOled0_96, 66, 3, OLED096_ACSII_6X8, g_sMathIntegerAnaly);
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 78, 3, '%', OLED096_ACSII_6X8);
 	}
@@ -979,11 +979,11 @@ mz:±0.9999 Er:±1.0011
 Ep:±11.411 Ey:±111.11
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -1117,11 +1117,11 @@ UltrHeight(cm):
 UzH:±6666  UcH:±6666
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -1230,11 +1230,11 @@ E:±0.99999 N:±9999.99
 U:±0.99999 PDOP±999.0
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -1396,11 +1396,11 @@ GpsDate	|-_3_dimensional |-longitude
 NO3: OPFLOW_DATA    *
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}					
@@ -1449,11 +1449,11 @@ TOC_CS: ±0.99999
 TOC_CP: ±0.99999
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -1567,11 +1567,11 @@ TOC_CS: ±0.99999
 TOC_CP: ±0.99999
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -1685,11 +1685,11 @@ TOC_CS: ±0.99999
 TOC_CP: ±0.99999
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -1817,11 +1817,11 @@ CAp999 CAr999 CAy999   //CAp(Angle_pitch) CAr(Angle_roll)  CAy(Angle_yaw)
 CGp999 CGr999 CGy999   //CGp(Angle_pitch) CGr(Angle_roll)  CGy(Angle_yaw)
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -1987,17 +1987,17 @@ NO8: UAV_STATUS     *
 
 locS: UNL  flyS: LAD
 gpsH: SET  cmcS: SUC
-lA: SC cA: AC aC:ATS //lA(lastHeightControlMode) cA(curHeightControlMode) aC(heightControlMode)
-lH: SC cH: AC hC:ATS //lH(lastHorizontalControlMode) cH(curHorizontalControlMode) hC(HorizontalControlMode)
+LV: SA CV: FX RV: FX //LV(lastHeightControlMode) CV(curHeightControlMode) RV(heightControlMode)
+LH: SA CH: FX RH: FX //LH(lastHorizontalControlMode) CH(curHorizontalControlMode) RH(HorizontalControlMode)
 bE: OK uE: OK gE: OK //bE(beroEstimateAltitude) uE(ultrEstimateAltitude) gE(gpsEstimateHorizontal)
-oE: OK eA:B+U eH:G+O //oE(opflowEstimateHorizontal) eA(estimateAltitude) eH(estimateHorizontal)
+oE: OK eV:B+U eH:G+O //oE(opflowEstimateHorizontal) eV(estimateAltitude) eH(estimateHorizontal)
 */	
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -2019,14 +2019,14 @@ oE: OK eA:B+U eH:G+O //oE(opflowEstimateHorizontal) eA(estimateAltitude) eH(esti
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 3, (u8*)&"cmcS: ", OLED096_ACSII_6X8);	
 		
 		/*第4行*/
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 4, (u8*)&"lA: ", OLED096_ACSII_6X8);	
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 42, 4, (u8*)&"cA: ", OLED096_ACSII_6X8);		
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 84, 4, (u8*)&"aC:", OLED096_ACSII_6X8);
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 4, (u8*)&"LV: ", OLED096_ACSII_6X8);	
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 42, 4, (u8*)&"CV: ", OLED096_ACSII_6X8);		
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 84, 4, (u8*)&"RV:", OLED096_ACSII_6X8);
 
 		/*第5行*/
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 5, (u8*)&"lH: ", OLED096_ACSII_6X8);	
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 42, 5, (u8*)&"cH: ", OLED096_ACSII_6X8);		
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 84, 5, (u8*)&"hC:", OLED096_ACSII_6X8);
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 5, (u8*)&"LH: ", OLED096_ACSII_6X8);	
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 42, 5, (u8*)&"CH: ", OLED096_ACSII_6X8);		
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 84, 5, (u8*)&"RH:", OLED096_ACSII_6X8);
 
 		/*第6行*/
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 6, (u8*)&"bE: ", OLED096_ACSII_6X8);	
@@ -2035,7 +2035,7 @@ oE: OK eA:B+U eH:G+O //oE(opflowEstimateHorizontal) eA(estimateAltitude) eH(esti
 		
 		/*第7行*/
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 7, (u8*)&"oE: ", OLED096_ACSII_6X8);	
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 42, 7, (u8*)&"eA:", OLED096_ACSII_6X8);		
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 42, 7, (u8*)&"eV:", OLED096_ACSII_6X8);		
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 84, 7, (u8*)&"eH:", OLED096_ACSII_6X8);	
 
 		/*标记模板框显示过了*/
@@ -2044,162 +2044,166 @@ oE: OK eA:B+U eH:G+O //oE(opflowEstimateHorizontal) eA(estimateAltitude) eH(esti
 	
 	/*=== 1.飞行器自身状态显示 ===*/
 	/*1.1显示AircraftStatus -> Self -> lock*/
-	if (g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_UNLOCK)
+	if (g_sUav_Status.LOCK_STATUS == UAV_LOCK_NOT)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 36, 2, (u8*)&"UNL", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_LOCKING)
+	else if (g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 36, 2, (u8*)&"LOC", OLED096_ACSII_6X8);			
 	}
 	
 	/*1.2显示AircraftStatus -> Self -> flyStatus*/
-	if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_FLYING)
+	if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_NOT)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 2, (u8*)&"FLY", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+	else if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 2, (u8*)&"LAD", OLED096_ACSII_6X8);			
 	}	
 	
 	/*1.3显示AircraftStatus -> Self -> gpshomeSet*/
-	if (g_psAircraftStatus->HOME_STATUS == AIRCRAFT_HOME_SET)
+	if (g_sUav_Status.HOME_SET_STATUS == UAV_HOME_SET_YES)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 36, 3, (u8*)&"SET", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->HOME_STATUS == AIRCRAFT_HOME_NOTSET)
+	else if (g_sUav_Status.HOME_SET_STATUS == UAV_HOME_SET_NOT)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 36, 3, (u8*)&"NST", OLED096_ACSII_6X8);			
 	}	
 
 	/*1.4显示AircraftStatus -> Self -> cmcStatus*/
-	if (g_psAircraftStatus->CMC_STATUS == AIRCRAFT_CMC_SUCC)
+	if (g_sUav_Status.WIRELESS_CMC_STATUS == UAV_WIRELESS_CMC_SUCC)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 3, (u8*)&"SUC", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->CMC_STATUS == AIRCRAFT_CMC_FAIL)
+	else if (g_sUav_Status.WIRELESS_CMC_STATUS == UAV_WIRELESS_CMC_FAIL)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 3, (u8*)&"FAL", OLED096_ACSII_6X8);			
 	}
 
 	/*=== 2.控制模式 ===*/
 	/*2.1显示AircraftStatus -> ControlType -> Height -> lastHeightControlMode*/
-	if (g_psAircraftStatus->LAST_HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR)
+	if (g_sUav_Status.UavControlMode.Vertical.Mode_Switch.LastTime == UAV_VERTICAL_CONTROL_SELFAUTO)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 4, (u8*)&"SC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 4, (u8*)&"SA", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->LAST_HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO)
+	else if (g_sUav_Status.UavControlMode.Vertical.Mode_Switch.LastTime == UAV_VERTICAL_CONTROL_FIX_HEIGHT)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 4, (u8*)&"AC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 4, (u8*)&"FX", OLED096_ACSII_6X8);			
 	}	
 	
 	/*2.2显示AircraftStatus -> ControlType -> Height -> curHeightControlMode*/
-	if (g_psAircraftStatus->CUR_HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR)
+	if (g_sUav_Status.UavControlMode.Vertical.Mode_Switch.ThisTime == UAV_VERTICAL_CONTROL_SELFAUTO)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 4, (u8*)&"SC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 4, (u8*)&"SA", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->CUR_HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO)
+	else if (g_sUav_Status.UavControlMode.Vertical.Mode_Switch.ThisTime == UAV_VERTICAL_CONTROL_FIX_HEIGHT)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 4, (u8*)&"AC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 4, (u8*)&"FX", OLED096_ACSII_6X8);			
 	}	
 	
 	/*2.3显示AircraftStatus -> ControlType -> Height -> heightControlMode*/
-	if (g_psAircraftStatus->HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO_TO_SENSOR)
+	if (g_sUav_Status.UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_SELFAUTO)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 4, (u8*)&"ATS", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 4, (u8*)&"F2S", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR_TO_AUTO)
+	else if (g_sUav_Status.UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 4, (u8*)&"STA", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 4, (u8*)&"S2F", OLED096_ACSII_6X8);			
 	}	
 
 	/*2.4显示AircraftStatus -> ControlType -> Horizontal -> lastHorizontalControlMode*/
-	if (g_psAircraftStatus->LAST_HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR)
+	if (g_sUav_Status.UavControlMode.Horizontal.Mode_Switch.LastTime == UAV_HORIZONTAL_CONTROL_SELFAUTO)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 5, (u8*)&"SC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 5, (u8*)&"SA", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->LAST_HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO)
+	else if (g_sUav_Status.UavControlMode.Horizontal.Mode_Switch.LastTime == UAV_HORIZONTAL_CONTROL_FIX_POS)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 5, (u8*)&"AC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 5, (u8*)&"FX", OLED096_ACSII_6X8);			
 	}	
 	
 	/*2.5显示AircraftStatus -> ControlType -> Horizontal -> curHorizontalControlMode*/
-	if (g_psAircraftStatus->CUR_HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR)
+	if (g_sUav_Status.UavControlMode.Horizontal.Mode_Switch.ThisTime == UAV_HORIZONTAL_CONTROL_SELFAUTO)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 5, (u8*)&"SC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 5, (u8*)&"SA", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->CUR_HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO)
+	else if (g_sUav_Status.UavControlMode.Horizontal.Mode_Switch.ThisTime == UAV_HORIZONTAL_CONTROL_FIX_POS)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 5, (u8*)&"AC", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 5, (u8*)&"FX", OLED096_ACSII_6X8);			
 	}	
 	
 	/*2.6显示AircraftStatus -> ControlType -> Horizontal -> HorizontalControlMode*/
-	if (g_psAircraftStatus->HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO_TO_SENSOR)
+	if (g_sUav_Status.UavControlMode.Horizontal.CONTROL_MODE == UAV_HORIZONTAL_CONTROL_SELFAUTO)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 5, (u8*)&"ATS", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 5, (u8*)&"F2S", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR_TO_AUTO)
+	else if (g_sUav_Status.UavControlMode.Horizontal.CONTROL_MODE == UAV_HORIZONTAL_CONTROL_FIX_POS)
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 5, (u8*)&"STA", OLED096_ACSII_6X8);			
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 5, (u8*)&"S2F", OLED096_ACSII_6X8);			
 	}
 	
 	/*=== 3.观测有效状态 ===*/
 	/*3.1显示AircraftStatus -> Estimate -> Altitude -> beroEstimateAltitude*/
-	if (g_psAircraftStatus->BERO_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_OK)
+	if (g_sUav_Status.UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_OK)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 6, (u8*)&"OK", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->BERO_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_NO)
+	else if (g_sUav_Status.UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_NO)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 6, (u8*)&"NO", OLED096_ACSII_6X8);			
 	}
 	
 	/*3.2显示AircraftStatus -> Estimate -> Altitude -> ultrEstimateAltitude*/
-	if (g_psAircraftStatus->ULTR_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_OK)
+	if (g_sUav_Status.UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_OK)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 6, (u8*)&"OK", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->ULTR_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_NO)
+	else if (g_sUav_Status.UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_NO)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 66, 6, (u8*)&"NO", OLED096_ACSII_6X8);			
 	}
 	
 	/*3.3显示AircraftStatus -> Estimate -> Horizontal -> gpsEstimateHorizontal*/
-	if (g_psAircraftStatus->GPS_ESTIMATE_HORIZONTAL == HORIZONTAL_DATA_STATUS_OK)
+	if (g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_OK)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 108, 6, (u8*)&"OK", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->GPS_ESTIMATE_HORIZONTAL == HORIZONTAL_DATA_STATUS_NO)
+	else if (g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_NO)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 108, 6, (u8*)&"NO", OLED096_ACSII_6X8);			
 	}	
 	
 	/*3.4显示AircraftStatus -> Estimate -> Horizontal -> opflowEstimateHorizontal*/
-	if (g_psAircraftStatus->OPFLOW_ESTIMATE_HORIZONTAL == HORIZONTAL_DATA_STATUS_OK)
+	if (g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 7, (u8*)&"OK", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->OPFLOW_ESTIMATE_HORIZONTAL == HORIZONTAL_DATA_STATUS_NO)
+	else if (g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_NO)
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 24, 7, (u8*)&"NO", OLED096_ACSII_6X8);			
 	}
 	
 	/*=== 4.竖直和水平传感器观测状态 ===*/
 	/*4.1显示AircraftStatus -> Sensor -> estimateAltitude*/
-	if (g_psAircraftStatus->ESTIMATE_ALTITUDE == HEIGHT_BERO_ULTR_DISAVA)
+	if ((g_sUav_Status.UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+		(g_sUav_Status.UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_NO))
 	{
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 60, 7, (u8*)&"X+X", OLED096_ACSII_6X8);			
-	}	
-	else if (g_psAircraftStatus->ESTIMATE_ALTITUDE == HEIGHT_BERO_ONLY_AVA)
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 60, 7, (u8*)&"X+X", OLED096_ACSII_6X8);		
+	}
+	else if ((g_sUav_Status.UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
+			 (g_sUav_Status.UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_NO))
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 60, 7, (u8*)&"B+X", OLED096_ACSII_6X8);			
-	}	
-	else if (g_psAircraftStatus->ESTIMATE_ALTITUDE == HEIGHT_ULTR_ONLY_AVA)
+	}
+	else if ((g_sUav_Status.UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+			 (g_sUav_Status.UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_OK))
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 60, 7, (u8*)&"X+U", OLED096_ACSII_6X8);			
 	}
-	else if (g_psAircraftStatus->ESTIMATE_ALTITUDE == HEIGHT_BERO_ULTR_AVA)
+	else if ((g_sUav_Status.UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
+			 (g_sUav_Status.UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_OK))
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 60, 7, (u8*)&"B+U", OLED096_ACSII_6X8);			
 	}
@@ -2209,19 +2213,23 @@ oE: OK eA:B+U eH:G+O //oE(opflowEstimateHorizontal) eA(estimateAltitude) eH(esti
 	}	
 
 	/*4.2显示AircraftStatus -> Sensor -> estimateHorizontal*/
-	if (g_psAircraftStatus->ESTIMATE_HORIZONTAL == HORIZONTAL_GPS_OPFLOW_DISAVA)
+	if ((g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+		(g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_NO))
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 7, (u8*)&"X+X", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->ESTIMATE_HORIZONTAL == HORIZONTAL_GPS_ONLY_AVA)
+	if ((g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
+		(g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_NO))
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 7, (u8*)&"G+X", OLED096_ACSII_6X8);			
 	}	
-	else if (g_psAircraftStatus->ESTIMATE_HORIZONTAL == HORIZONTAL_OPFLOW_ONLY_AVA)
+	if ((g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+		(g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK))
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 7, (u8*)&"X+O", OLED096_ACSII_6X8);			
 	}
-	else if (g_psAircraftStatus->ESTIMATE_HORIZONTAL == HORIZONTAL_GPS_OPFLOW_AVA)
+	if ((g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
+		(g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK))
 	{
 		bsp_OLED0_96_ShowString(&g_sOled0_96, 102, 7, (u8*)&"G+O", OLED096_ACSII_6X8);			
 	}
@@ -2273,11 +2281,11 @@ EGpit:±123 EGyaw:±123
 EAArol:±90 EAApit:±90
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -2425,11 +2433,11 @@ OX:±0.9999 OY:±0.9999
 OZ:±0.9999 
 */
 	/*判断是否锁定当前页*/
-	if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
 	}
-	else if (g_sHciShowPage.PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 	{
 		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
 	}
@@ -2553,7 +2561,7 @@ void hci_Show_Acc_Calib_Status(ENTRY_CALIB_STATUS ENTRY_STATUS, CALIB_SIDE_INDEX
 	if (ENTRY_STATUS == ENTRY_CALIB_INTO)
 	{
 		/*禁止显示提示界面*/
-		g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_DISABLE;
+		g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_DISABLE;
 		
 		/*标记显示任务忙碌*/
 		g_sHciShowPage.SHOW_TASK_STATUS = HCI_SHOW_TASK_BUSY;
@@ -2694,7 +2702,7 @@ void hci_Show_Acc_Calib_Status(ENTRY_CALIB_STATUS ENTRY_STATUS, CALIB_SIDE_INDEX
 		accShowBitFlag.bit5 = BIT_FLAG_RESET;
 		
 		/*判断接下来显示内容*/
-		if (g_sHciShowPage.SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
+		if (g_sHciShowPage.SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
 		{				
 			/*恢复默认显示页序号*/
 			g_sHciShowPage.curPageIndex  = HCI_SHOW_PAGE_0;
@@ -2703,7 +2711,7 @@ void hci_Show_Acc_Calib_Status(ENTRY_CALIB_STATUS ENTRY_STATUS, CALIB_SIDE_INDEX
 		else		
 		{
 			/*允许显示提示界面*/
-			g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_ENABLE;
+			g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_ENABLE;
 			
 			/*重新显示进入菜单显示提示页面*/
 			g_sHciShowPage.EXIT_SHOW_STATUS = HCI_EXIT_SHOW_OP_FIRST;
@@ -2733,7 +2741,7 @@ void hci_Show_Mag_Calib_Status(ENTRY_CALIB_STATUS ENTRY_STATUS, CALIB_SIDE_INDEX
 	if (ENTRY_STATUS == ENTRY_CALIB_INTO)
 	{
 		/*禁止显示提示界面*/
-		g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_DISABLE;
+		g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_DISABLE;
 		
 		/*标记显示任务忙碌*/
 		g_sHciShowPage.SHOW_TASK_STATUS = HCI_SHOW_TASK_BUSY;
@@ -2814,7 +2822,7 @@ void hci_Show_Mag_Calib_Status(ENTRY_CALIB_STATUS ENTRY_STATUS, CALIB_SIDE_INDEX
 		magShowBitFlag.bit2 = BIT_FLAG_RESET;		
 		
 		/*判断接下来显示内容*/
-		if (g_sHciShowPage.SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
+		if (g_sHciShowPage.SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
 		{				
 			/*恢复默认显示页序号*/			
 			g_sHciShowPage.curPageIndex  = HCI_SHOW_PAGE_0;
@@ -2823,7 +2831,7 @@ void hci_Show_Mag_Calib_Status(ENTRY_CALIB_STATUS ENTRY_STATUS, CALIB_SIDE_INDEX
 		else		
 		{
 			/*允许显示提示界面*/
-			g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_ENABLE;
+			g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_ENABLE;
 			
 			/*重新显示进入菜单显示提示页面*/
 			g_sHciShowPage.EXIT_SHOW_STATUS = HCI_EXIT_SHOW_OP_FIRST;
@@ -2862,7 +2870,7 @@ Log: -0-0-0-0-0-0
 		LAST_SIDE_INDEX = CUR_SIDE_INDEX;		
 		
 		/*禁止显示提示界面*/
-		g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_DISABLE;
+		g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_DISABLE;
 		
 		/*标记显示任务忙碌*/
 		g_sHciShowPage.SHOW_TASK_STATUS = HCI_SHOW_TASK_BUSY;
@@ -3076,7 +3084,7 @@ Log: -0-0-0-0-0-0
 		bsp_OLED0_96_Clear(&g_sOled0_96);
 		
 		/*判断接下来显示内容*/
-		if (g_sHciShowPage.SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
+		if (g_sHciShowPage.SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
 		{
 			/*恢复默认显示页序号*/			
 			g_sHciShowPage.curPageIndex  = HCI_SHOW_PAGE_0;
@@ -3085,7 +3093,7 @@ Log: -0-0-0-0-0-0
 		else		
 		{		
 			/*允许显示提示界面*/
-			g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_ENABLE;
+			g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_ENABLE;
 			
 			/*重新显示进入菜单显示提示页面*/
 			g_sHciShowPage.EXIT_SHOW_STATUS = HCI_EXIT_SHOW_OP_FIRST;		
@@ -3127,7 +3135,7 @@ LOG:SUCC-0-0-0-0-0-0
 		LAST_SIDE_INDEX = CUR_SIDE_INDEX;
 		
 		/*禁止显示提示界面*/
-		g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_DISABLE;
+		g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_DISABLE;
 		
 		/*标记显示任务忙碌*/
 		g_sHciShowPage.SHOW_TASK_STATUS = HCI_SHOW_TASK_BUSY;
@@ -3533,7 +3541,7 @@ LOG:SUCC-0-0-0-0-0-0
 		bsp_OLED0_96_Clear(&g_sOled0_96);
 		
 		/*判断接下来显示内容*/
-		if (g_sHciShowPage.SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
+		if (g_sHciShowPage.SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE) /*已经允许显示,则切换到默认首页*/
 		{							
 			/*恢复默认显示页序号*/			
 			g_sHciShowPage.curPageIndex  = HCI_SHOW_PAGE_0;
@@ -3542,7 +3550,7 @@ LOG:SUCC-0-0-0-0-0-0
 		else
 		{
 			/*允许显示提示界面*/
-			g_sHciShowPage.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_ENABLE;	
+			g_sHciShowPage.SHOW_HINT_STATUS = UAV_HCI_SHOW_ENABLE;	
 			
 			/*重新显示进入菜单显示提示页面*/
 			g_sHciShowPage.EXIT_SHOW_STATUS = HCI_EXIT_SHOW_OP_FIRST;
@@ -3559,9 +3567,9 @@ HciShowPage g_sHciShowPage =
 	.curPageIndex     = HCI_SHOW_PAGE_0,	         /*从第0页开始显示*/
 	.lastPageIndex    = HCI_SHOW_PAGE_0,             /*上次显示页面*/
 	.MOULD_STATUS     = HCI_SHOW_MOULD_FIRST,        /*第一次显示*/
-	.SHOW_DATA_STATUS = AIRCRAFT_HCI_SHOW_DISABLE,   /*默认不显示*/
-	.PAGE_STATUS      = AIRCRAFT_HCI_SHOW_FREE_PAGE, /*默认不锁定数据显示页*/
-	.SHOW_HINT_STATUS = AIRCRAFT_HCI_SHOW_ENABLE,    /*默认显示提示页*/
+	.SHOW_DATA_STATUS = UAV_HCI_SHOW_DISABLE,   /*默认不显示*/
+	.PAGE_STATUS      = UAV_HCI_SHOW_FREE_PAGE, /*默认不锁定数据显示页*/
+	.SHOW_HINT_STATUS = UAV_HCI_SHOW_ENABLE,    /*默认显示提示页*/
 	.EXIT_SHOW_STATUS = HCI_EXIT_SHOW_OP_FIRST,      /*退出操作状态*/
 	.SHOW_TASK_STATUS = HCI_SHOW_TASK_IDLE,          /*默认空闲*/
 };
@@ -3576,18 +3584,19 @@ vu16 g_vu16ShowHoldContinueTicks       = 0;
 void hci_remot_switch_show_status(HciShowPage *hciShowPage)
 {
 	/*1.开启/关闭OLED显示*/
-	/*		  	      *	
+	/*
+	       *  	      *	
 		*******       *******
-		*     *       * *   *
+		*  *  *       * *   *
 		*  *  *       *  *  * 
 		*  *  *       *     *
 		*******       *******		                        
 	       *
 	*/
-	
-	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
+	/*锁定状态 + 摇杆位置(不再关心油门摇杆位置)*/
+	if ((g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES) && \
+		(remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MAX)    == REMOT_DATA_MAX) && \
-		(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 	{
 		g_vu16ShowEnableContinueTicks++;
@@ -3603,32 +3612,35 @@ void hci_remot_switch_show_status(HciShowPage *hciShowPage)
 			g_vu16ShowEnableContinueTicks = 0;
 			
 			/*显示使能与不使能 状态切换*/
-			if (hciShowPage->SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_DISABLE)
+			if (hciShowPage->SHOW_DATA_STATUS == UAV_HCI_SHOW_DISABLE)
 			{
-				hciShowPage->SHOW_DATA_STATUS = AIRCRAFT_HCI_SHOW_ENABLE;
+				hciShowPage->SHOW_DATA_STATUS = UAV_HCI_SHOW_ENABLE;
 			}
-			else if (hciShowPage->SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE)
+			else if (hciShowPage->SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE)
 			{
-				hciShowPage->SHOW_DATA_STATUS = AIRCRAFT_HCI_SHOW_DISABLE;
+				hciShowPage->SHOW_DATA_STATUS = UAV_HCI_SHOW_DISABLE;
 			}
 		}
 	}
 
-	/*2.允许显示后,才能显示页面*/
-	if (hciShowPage->SHOW_DATA_STATUS == AIRCRAFT_HCI_SHOW_ENABLE)
+	/*2.允许显示后,才能显示页面*/	
+	/*锁定状态 + 摇杆位置(不再关心油门摇杆位置)*/
+	/*1.判断切换到下一页动作*/
+	/*	   
+		   *
+		*******       *******
+		*  *  *       *     *
+		*  *  *       *  ****** 
+		*  *  *       *     *
+		*******       *******
+	       *
+	*/		
+	if (hciShowPage->SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE)
 	{
-		/*1.判断切换到下一页动作*/
-		/*	    						
-			*******       *******
-			*     *       *     *
-			*  *  *       *  ****** 
-			*  *  *       *     *
-			*******       *******
-		       *
-		*/		
-		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MAX)     == REMOT_DATA_MAX) && \
+	
+		if ((g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES) && \
+			(remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MAX)     == REMOT_DATA_MAX) && \
 			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			g_vu16ShowSwitchNextContinueTicks++;
@@ -3644,7 +3656,7 @@ void hci_remot_switch_show_status(HciShowPage *hciShowPage)
 				g_vu16ShowSwitchNextContinueTicks = 0;	
 				
 				/*判断当前页是否锁定*/
-				if (hciShowPage->PAGE_STATUS != AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+				if (hciShowPage->PAGE_STATUS != UAV_HCI_SHOW_HOLD_PAGE)
 				{
 					/*显示号越界调整*/
 					if (hciShowPage->curPageIndex != (HCI_SHOW_PAGE_INDEX)(HCI_TOTAL_SHOW_PAGE_NUMBER - 1))
@@ -3665,17 +3677,19 @@ void hci_remot_switch_show_status(HciShowPage *hciShowPage)
 		}	
 
 		/*2.判断切换到上一页动作*/
-		/*	   						
+		/*锁定状态 + 摇杆位置(不再关心油门摇杆位置)*/		
+		/*	   	
+               *		
 			*******       *******
-			*     *       *     *
+			*  *  *       *     *
 			*  *  *     ******  *
 			*  *  *       *     *
 			*******       *******
 		       *
 		*/		
-		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
+		if ((g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES) && \
+			(remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
 			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			g_vu16ShowSwitchLastContinueTicks++;				
@@ -3691,7 +3705,7 @@ void hci_remot_switch_show_status(HciShowPage *hciShowPage)
 				g_vu16ShowSwitchLastContinueTicks = 0;			
 				
 				/*判断当前页是否锁定*/
-				if (hciShowPage->PAGE_STATUS != AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+				if (hciShowPage->PAGE_STATUS != UAV_HCI_SHOW_HOLD_PAGE)
 				{				
 					/*显示号越界调整*/
 					if (hciShowPage->curPageIndex != HCI_SHOW_PAGE_0)
@@ -3712,17 +3726,18 @@ void hci_remot_switch_show_status(HciShowPage *hciShowPage)
 		}		
 		
 		/*3.当前页面锁定和解锁*/
-		/*	     	 					
+		/*锁定状态 + 摇杆位置(不再关心油门摇杆位置)*/			
+		/*	   *  	 					
 			*******       *******
-			*     *       *     *
+			*  *  *       *     *
 			*  *  *       *  *  *
 			*  *  *       * *   *
 			*******       *******
 		       *          *
 		*/		
-		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
+		if ((g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES) && \
+			(remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
 			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MIN)    == REMOT_DATA_MIN) && \
-			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			g_vu16ShowHoldContinueTicks++;
@@ -3738,13 +3753,13 @@ void hci_remot_switch_show_status(HciShowPage *hciShowPage)
 				g_vu16ShowHoldContinueTicks = 0;			
 
 				/*显示使能与不使能 状态切换*/
-				if (hciShowPage->PAGE_STATUS == AIRCRAFT_HCI_SHOW_FREE_PAGE)
+				if (hciShowPage->PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
 				{
-					hciShowPage->PAGE_STATUS = AIRCRAFT_HCI_SHOW_HOLD_PAGE;
+					hciShowPage->PAGE_STATUS = UAV_HCI_SHOW_HOLD_PAGE;
 				}
-				else if (hciShowPage->PAGE_STATUS == AIRCRAFT_HCI_SHOW_HOLD_PAGE)
+				else if (hciShowPage->PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
 				{
-					hciShowPage->PAGE_STATUS = AIRCRAFT_HCI_SHOW_FREE_PAGE;
+					hciShowPage->PAGE_STATUS = UAV_HCI_SHOW_FREE_PAGE;
 				}				
 			}
 		}	

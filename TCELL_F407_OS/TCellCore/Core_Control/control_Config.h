@@ -28,7 +28,7 @@
 /*======= 1.Altitude Hold(竖直定高) =======*/
 #define CTRL_HEIGHT_YAW_SPEED_FEEDFORWARD			   (SYS_ENABLE) /*竖直速度前馈控制器*/
 #define CTRL_HEIGHT_POS_CONTROL_ACC_STATUS             (SYS_ENABLE) /*开启三环定高模式:即竖直高度位置+竖直速度+竖直加速度:SYS_ENABLE(1)开启,SYS_DISABLE(0)关闭*/
-#define CTRL_HEIGHT_ONEKEY_TAKEOFF_HEIGHT			   (150)			/*一键起飞离地高度(cm),此值应在超声波范围(150cm)内*/
+#define CTRL_HEIGHT_ONEKEY_TAKEOFF_HEIGHT			   (120)		/*一键起飞离地高度(cm),此值应在超声波范围(150cm)内*/
 
 
 /*======= 2.Position Hold(水平定点) =======*/
@@ -51,7 +51,11 @@
 
 
 /*着陆*/
-#define CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN		   (1150) /*着陆检测油门最小值*/
+//1.未解锁: <= 1500
+//2.先切定高/定点 再解锁: 起飞前<=1500, 起飞后<=1150
+//3.先解锁: 起飞前<=1500, 起飞后 <=1150
+#define CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN		   (1150) /*着陆检测油门最小值_1*/
+#define CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MAX		   (1600) /*着陆检测油门最小值_2*/
 
 /*======= 4.控制系统各环控制周期(ms) taskPeriod * cnt =======*/
 /*控制周期时基: PLATFORM_TASK_SCHEDULER_MIN_FOC_MS*/
@@ -77,6 +81,7 @@
 #include "control_AltHold.h"	/*定高*/
 #include "control_PosHold.h"    /*定点*/
 #include "control_Landing.h"    /*降落/返航*/
+#include "control_Mission.h" 	/*飞行任务*/
 #include "sins_Strapdown.h"		/*捷联惯导数据融合*/
 
 #include "sys_ControlMap.h"

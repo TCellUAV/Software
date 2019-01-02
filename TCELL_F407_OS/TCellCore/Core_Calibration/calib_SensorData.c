@@ -1273,7 +1273,7 @@ SYS_RETSTATUS calib_all_sensor_parameter_read(void)
 	
 	/*开机显示传感器(加速度计&磁力计)校准参数*/
 	#if (HCI_OLED_SHOW_SENSOR_CALIB_PARA_WHEN_BOOT == SYS_ENABLE)
-	if (g_psAircraftStatus->PLATFORM_INIT_STATUS == PROGRAME_INIT_START)	/*开机过程才显示*/
+	if (g_sUav_Status.UavProgrameStatus.INIT_STATUS == UAV_PROGRAME_INIT_START)	/*开机过程才显示*/
 	{
 		/*传感器校准结果及参数读取并显示在OLED上,并保持2000ms*/
 		hci_Show_Sensor_Calib_Parameter(g_psAccCalibSystem->RESULT_STATUS, g_psMagCalibSystem->RESULT_STATUS, 2000);
@@ -1282,7 +1282,7 @@ SYS_RETSTATUS calib_all_sensor_parameter_read(void)
 	
 	/*运行过程中显示传感器(加速度计&磁力计)校准参数*/
 	#if (HCI_OLED_SHOW_SENSOR_CALIB_PARA_WHEN_BOOT != SYS_ENABLE)
-//	if (g_psAircraftStatus->PLATFORM_INIT_STATUS == PROGRAME_INIT_FINISH) /*运行过程中才能显示*/
+//	if (g_sUav_Status.UavProgrameStatus.INIT_STATUS == UAV_PROGRAME_INIT_FINISH) /*运行过程中才能显示*/
 //	{
 //		/*传感器校准结果及参数读取并显示在OLED上,并保持2000ms*/
 //		hci_Show_Sensor_Calib_Parameter(g_psAccCalibSystem->RESULT_STATUS, g_psMagCalibSystem->RESULT_STATUS, 2000);

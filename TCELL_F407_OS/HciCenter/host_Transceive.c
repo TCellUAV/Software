@@ -182,7 +182,7 @@ void user_Host_Data_Receive_Anl(u8 *data_buf,u8 num)
 	if(*(data_buf+2)==0X10)	 /*=== PID1 角速度环 ===*/
     {
 		/*着陆状态才允许调试控制参数*/
-		if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+		if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 		{		
 			g_psPidSystem->RollGyro.PID.kP = (vs16)(*(data_buf+4)<<8)|*(data_buf+5);
 			g_psPidSystem->RollGyro.PID.kI = (vs16)(*(data_buf+6)<<8)|*(data_buf+7);
@@ -202,7 +202,7 @@ void user_Host_Data_Receive_Anl(u8 *data_buf,u8 num)
     if(*(data_buf+2)==0X11)	/*=== PID2 角度环 ===*/
     {
 		/*着陆状态才允许调试控制参数*/
-		if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+		if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 		{		
 			g_psPidSystem->RollAngle.PID.kP = (vs16)(*(data_buf+4)<<8)|*(data_buf+5);
 			g_psPidSystem->RollAngle.PID.kI = (vs16)(*(data_buf+6)<<8)|*(data_buf+7);
@@ -223,7 +223,7 @@ void user_Host_Data_Receive_Anl(u8 *data_buf,u8 num)
     if(*(data_buf+2)==0X12)	/*=== PID3 竖直速度环 & 位置环 + 水平速度环 ===*/
     {	
 		/*着陆状态才允许调试控制参数*/
-		if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+		if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 		{
 			g_psPidSystem->HighSpeed.PID.kP      = (vs16)(*(data_buf+4)<<8)|*(data_buf+5);
 			g_psPidSystem->HighSpeed.PID.kI      = (vs16)(*(data_buf+6)<<8)|*(data_buf+7);
@@ -249,7 +249,7 @@ void user_Host_Data_Receive_Anl(u8 *data_buf,u8 num)
 	if(*(data_buf+2)==0X13)	/*=== PID4 水平位置环 & 竖直加速度环 ===*/
 	{
 		/*着陆状态才允许调试控制参数*/
-		if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+		if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 		{
 			g_psPidSystem->LatitudePosition.PID.kP  = (vs16)(*(data_buf+4)<<8)|*(data_buf+5);
 			g_psPidSystem->LatitudePosition.PID.kI  = (vs16)(*(data_buf+6)<<8)|*(data_buf+7);
@@ -279,7 +279,7 @@ void user_Host_Data_Receive_Anl(u8 *data_buf,u8 num)
 	if(*(data_buf+2)==0X14)								//PID5
 	{
 		/*着陆状态才允许调试控制参数*/
-		if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+		if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 		{	
 			g_psPidSystem->OpticFlowXSpeed.PID.kP  = (vs16)(*(data_buf+4)<<8)|*(data_buf+5);
 			g_psPidSystem->OpticFlowXSpeed.PID.kI  = (vs16)(*(data_buf+6)<<8)|*(data_buf+7);
@@ -313,7 +313,7 @@ void user_Host_Data_Receive_Anl(u8 *data_buf,u8 num)
 	if(*(data_buf+2)==0X15)								//PID6
 	{	
 		/*着陆状态才允许调试控制参数*/
-		if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+		if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 		{		
 			ANO_DT_Send_Check(*(data_buf+2), sum);
 			

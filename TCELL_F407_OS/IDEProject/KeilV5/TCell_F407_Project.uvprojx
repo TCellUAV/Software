@@ -1064,14 +1064,14 @@
               <FilePath>..\..\TCellCore\Core_Control\control_PosHold.c</FilePath>
             </File>
             <File>
-              <FileName>control_TakeOff.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\TCellCore\Core_Control\control_TakeOff.c</FilePath>
-            </File>
-            <File>
               <FileName>control_Landing.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\TCellCore\Core_Control\control_Landing.c</FilePath>
+            </File>
+            <File>
+              <FileName>control_Mission.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\TCellCore\Core_Control\control_Mission.c</FilePath>
             </File>
             <File>
               <FileName>control_Config.h</FileName>

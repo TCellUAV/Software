@@ -171,9 +171,9 @@ typedef struct
 	volatile HCI_SHOW_PAGE_INDEX 	  curPageIndex;         /*当前显示页面*/
 	volatile HCI_SHOW_PAGE_INDEX 	  lastPageIndex;        /*上次显示页面*/
 	volatile HCI_SHOW_MOULD_STATUS    MOULD_STATUS;         /*每个页面的模板框显示状态*/
-	volatile AIRCRAFT_HCI_SHOW_STATUS PAGE_STATUS;          /*该页面显示状态*/
-	volatile AIRCRAFT_HCI_SHOW_STATUS SHOW_DATA_STATUS;	    /*显示数据状态*/
-	volatile AIRCRAFT_HCI_SHOW_STATUS SHOW_HINT_STATUS;	    /*显示提示状态*/
+	volatile UAV_HCI_SHOW_STATUS      PAGE_STATUS;          /*该页面显示状态*/
+	volatile UAV_HCI_SHOW_STATUS      SHOW_DATA_STATUS;	    /*显示数据状态*/
+	volatile UAV_HCI_SHOW_STATUS 	  SHOW_HINT_STATUS;	    /*显示提示状态*/
 	volatile HCI_EXIT_SHOW_OP_STATUS  EXIT_SHOW_STATUS;     /*退出显示状态*/
 	volatile HCI_SHOW_TASK_STATUS     SHOW_TASK_STATUS;		/*显示任务状态*/
 }HciShowPage;

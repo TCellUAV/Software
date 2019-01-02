@@ -18,7 +18,7 @@ ControlAircraft g_sControlAircraft =
 	.RemotExpectAngle   = {0},      /*遥控值转化为期望角度*/
 	.CurMotorPwmOutput  = {0},		/*PWM输出给电机*/
 	.LastMotorPwmOutput = {0},
-	.GO_HOME_STATUS     = CTRL_AIRCRAFT_GO_HOME_DISABLE,	/*上电后不允许自动返航*/
+	.GO_HOME_STATUS     = CTRL_AIRCRAFT_GO_HOME_DISABLE,	/*上电后(着陆状态)不允许失联自动返航*/
 	.GO_HOME_SET        = CTRL_AIRCRAFT_GO_HOME_NOTSET,     /*自动返航设置状态*/
 };
 
@@ -64,7 +64,7 @@ SYS_RETERR ctrl_autocontrol_para_init(CTRL_SysStatus *sysStatus)
 	}	
 	else if ((sysStatus->pid == CTRL_SYSTEM_PARA_INIT_FAIL) && (sysStatus->adrc == CTRL_SYSTEM_PARA_INIT_FAIL))
 	{
-		errRet = SYS_RETERR_3RD;		
+		errRet = SYS_RETERR_3RD;
 	}	
 	
 	return errRet;
@@ -83,7 +83,8 @@ void ctrl_auto_control_system_dp(void)
 	{
 		g_CtrlCheckControlModeTicks = 0;		
 		
-		ctrl_Control_Mode_Select(&g_sAircraftStatus);
+		/*飞行模式及飞行任务选择*/
+		ctrl_Control_Mode_Select(g_psUav_Status);
 	}
 	
 	/************* 1.主导控制器: 定高+输出水平期望角 *************/
@@ -93,88 +94,157 @@ void ctrl_auto_control_system_dp(void)
 	ctrl_Attitude_Control_Dp();
 }
 
-/*高度,水平控制模式选择*/
-void ctrl_Control_Mode_Select(AircraftStatus *aircraftStatus)
-{
+/*飞行模式及飞行任务选择*/
+void ctrl_Control_Mode_Select(Uav_Status *uavStatus)
+{	
 	/*上次遥控期望高度控制模式*/
-	aircraftStatus->LAST_HEIGHT_CONTROL_MODE = aircraftStatus->CUR_HEIGHT_CONTROL_MODE;
-
+	uavStatus->UavControlMode.Vertical.Mode_Switch.LastTime = uavStatus->UavControlMode.Vertical.Mode_Switch.ThisTime;
+	
 	/*上次遥控期望水平位置控制模式*/
-	aircraftStatus->LAST_HORIZONTAL_CONTROL_MODE = aircraftStatus->CUR_HORIZONTAL_CONTROL_MODE;
+	uavStatus->UavControlMode.Horizontal.Mode_Switch.LastTime = uavStatus->UavControlMode.Horizontal.Mode_Switch.ThisTime;
+	
+	/*上次飞行任务更迭*/
+	uavStatus->UavCurrentFlyMission.LAST_FLY_MISSION = uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION;
 	
 	/*============ 判断遥控器模式选择对应拨键的值,来进行模式切换 ============*/
 	/*SWITCH A 默认上拨为纯姿态自稳,下拨为定高*/
 	if (remot_Data_Range(g_sRemotData.SWA, REMOT_DATA_MIN) == REMOT_DATA_MIN)
 	{
-		aircraftStatus->CUR_HEIGHT_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;	/*竖直姿态自稳模式模式*/		
+		uavStatus->UavControlMode.Vertical.Mode_Switch.ThisTime = UAV_VERTICAL_CONTROL_SELFAUTO; /*竖直姿态自稳模式模式*/
 	}
 	else if (remot_Data_Range(g_sRemotData.SWA, REMOT_DATA_MAX) == REMOT_DATA_MAX)
 	{
-		aircraftStatus->CUR_HEIGHT_CONTROL_MODE = AIRCRAFT_CONTROL_SENSOR;	/*传感器定高模式*/
+		uavStatus->UavControlMode.Vertical.Mode_Switch.ThisTime = UAV_VERTICAL_CONTROL_FIX_HEIGHT; /*传感器定高模式*/		
 	}
 
 	/*SWITCH B 默认上拨为纯姿态自稳,下拨为水平定点*/
 	if (remot_Data_Range(g_sRemotData.SWB, REMOT_DATA_MIN) == REMOT_DATA_MIN)
 	{
-		aircraftStatus->CUR_HORIZONTAL_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;	/*水平姿态自稳模式模式*/	
+		uavStatus->UavControlMode.Horizontal.Mode_Switch.ThisTime = UAV_HORIZONTAL_CONTROL_SELFAUTO;	/*水平姿态自稳模式模式*/	
 	}
 	else if (remot_Data_Range(g_sRemotData.SWB, REMOT_DATA_MAX) == REMOT_DATA_MAX)
 	{
-		aircraftStatus->CUR_HORIZONTAL_CONTROL_MODE = AIRCRAFT_CONTROL_SENSOR;  /*传感器水平定点模式*/
+		uavStatus->UavControlMode.Horizontal.Mode_Switch.ThisTime = UAV_HORIZONTAL_CONTROL_FIX_POS;  /*传感器水平定点模式*/
+	}
+	
+	/*SWITCH C 上拨为清除当前任务进入姿态控制模式,中拨为一键起飞,下拨为一键返航*/
+	if (remot_Data_Range(g_sRemotData.SWC, REMOT_DATA_MIN) == REMOT_DATA_MIN)
+	{
+		/*有任务时,清空任务,自动切换到执行任务前的模式*/
+		if (uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION != UAV_FLY_MISSION_NULL)
+		{
+			/*设置任务为NULL*/
+			control_fly_mission_set(uavStatus, UAV_FLY_MISSION_NULL, UAV_MISSION_ATTITUDE_CTRL_ENABLE);
+		}
+	}
+	else if (remot_Data_Range(g_sRemotData.SWC, REMOT_DATA_MID) == REMOT_DATA_MID)
+	{
+		/*检测是否满足一键起飞条件:使能 & 还未执行 & 定高状态*/
+		if ((uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.ENABLE_STATUS == UAV_MISSION_ENABLE) && \
+			(uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.EXECUTE_STATUS == UAV_MISSION_EXECUTE_NOT) && \
+			(uavStatus->UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT))
+		{
+			/*任务切换成一键起飞,使能姿态控制*/
+			control_fly_mission_set(uavStatus, UAV_FLY_MISSION_ONEKEY_FLY, UAV_MISSION_ATTITUDE_CTRL_ENABLE);
+			
+			/*标记任务已执行,防止重复设置任务状态*/
+			uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.EXECUTE_STATUS = UAV_MISSION_EXECUTE_YES;
+		}
+	}
+	else if (remot_Data_Range(g_sRemotData.SWC, REMOT_DATA_MAX) == REMOT_DATA_MAX)
+	{
+		/*检测是否满足一键降落条件:使能 & 还未执行 & 定高状态*/		
+		if ((uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.ENABLE_STATUS == UAV_MISSION_ENABLE) && \
+			(uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.EXECUTE_STATUS == UAV_MISSION_EXECUTE_NOT) && \
+			(uavStatus->UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT))
+		{
+			/*任务切换成一键返航,禁止姿态控制*/
+			control_fly_mission_set(uavStatus, UAV_FLY_MISSION_ONEKEY_LAND_HOME, UAV_MISSION_ATTITUDE_CTRL_DISABLE);
+
+			/*标记任务已执行,防止重复设置任务状态*/
+			uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.EXECUTE_STATUS = UAV_MISSION_EXECUTE_YES;
+		}
 	}
 	
 	/*============ 定高&定点遥控切换期望 ============*/
 	/*判断高度和水平控制模式是否切换*/
 	/*高度:本次控制模式和上次控制模式不同*/
-	if (aircraftStatus->CUR_HEIGHT_CONTROL_MODE != aircraftStatus->LAST_HEIGHT_CONTROL_MODE)
+	if (uavStatus->UavControlMode.Vertical.Mode_Switch.ThisTime != uavStatus->UavControlMode.Vertical.Mode_Switch.LastTime)
 	{
 		/*自稳切定高*/
-		if (aircraftStatus->CUR_HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR)
+		if (uavStatus->UavControlMode.Vertical.Mode_Switch.ThisTime == UAV_VERTICAL_CONTROL_FIX_HEIGHT)
 		{
-			/*标记本次遥控期望为自稳切定高*/
-			aircraftStatus->HEIGHT_REMOT_EXPECT_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO_TO_SENSOR;
+			/*判断SWITCH D拨键状态来选定竖直方向传感器*/
+			if (remot_Data_Range(g_sRemotData.SWD, REMOT_DATA_MIN) == REMOT_DATA_MIN)
+			{
+				uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_USE_BERO;	/*气压计数据参与定高*/
+			}
+			else if (remot_Data_Range(g_sRemotData.SWD, REMOT_DATA_MAX) == REMOT_DATA_MAX)
+			{
+				uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR;	/*超声波数据参与定高*/
+			}
+			
+			/*标记本次遥控期望为定高模式*/
+			uavStatus->UavControlMode.Vertical.EXPECT_CONTROL_MODE = UAV_VERTICAL_CONTROL_FIX_HEIGHT;
 			
 			/*标记零参考点未设置(切换后需要重新记录当前高度)*/
-			aircraftStatus->HEIGHT_REFERENCE_SET_STATUS = AIRCRAFT_REFERENCE_SET_NO;
+			uavStatus->UavControlMode.Vertical.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_NO;
 		}
 		/*定高切自稳*/
-		else if (aircraftStatus->CUR_HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO)
+		else if (uavStatus->UavControlMode.Vertical.Mode_Switch.ThisTime == UAV_VERTICAL_CONTROL_SELFAUTO)
 		{
-			/*标记本次遥控期望为定高切自稳*/
-			aircraftStatus->HEIGHT_REMOT_EXPECT_CONTROL_MODE = AIRCRAFT_CONTROL_SENSOR_TO_AUTO;
+			/*清除定高传感器对象*/
+			uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_USE_NULL;
+			
+			/*标记本次遥控期望为自稳*/
+			uavStatus->UavControlMode.Vertical.EXPECT_CONTROL_MODE = UAV_VERTICAL_CONTROL_SELFAUTO;
 		}
 	}
 
 	/*水平:本次控制模式和上次控制模式不同*/
-	if (aircraftStatus->CUR_HORIZONTAL_CONTROL_MODE != aircraftStatus->LAST_HORIZONTAL_CONTROL_MODE) 
+	if (uavStatus->UavControlMode.Horizontal.Mode_Switch.ThisTime != uavStatus->UavControlMode.Horizontal.Mode_Switch.LastTime) 
 	{
 		/*自稳切水平定点*/
-		if (aircraftStatus->CUR_HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR)
+		if (uavStatus->UavControlMode.Horizontal.Mode_Switch.ThisTime == UAV_HORIZONTAL_CONTROL_FIX_POS)
 		{
+			/*判断SWITCH D拨键状态来选定竖直方向传感器*/
+			if (remot_Data_Range(g_sRemotData.SWD, REMOT_DATA_MIN) == REMOT_DATA_MIN)
+			{
+				uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_USE_GPS;			/*GPS数据参与定点*/
+			}
+			else if (remot_Data_Range(g_sRemotData.SWD, REMOT_DATA_MAX) == REMOT_DATA_MAX)
+			{
+				uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_USE_OPTICFLOW;	/*光流数据参与定点*/
+			}
+			
 			/*标记本次为自稳切水平定点*/
-			aircraftStatus->HORIZONTAL_REMOT_EXPECT_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO_TO_SENSOR;
+			uavStatus->UavControlMode.Horizontal.EXPECT_CONTROL_MODE = UAV_HORIZONTAL_CONTROL_FIX_POS;
 			
 			/*标记零参考点未设置(切换后需要重新记录当前水平位置)*/
-			aircraftStatus->HORIZONTAL_REFERENCE_SET_STATUS = AIRCRAFT_REFERENCE_SET_NO;
+			uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_NO;			
 		}
 		/*水平定点切自稳*/
-		else if (aircraftStatus->CUR_HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO)
+		else if (uavStatus->UavControlMode.Horizontal.Mode_Switch.ThisTime == UAV_HORIZONTAL_CONTROL_SELFAUTO)
 		{
-			/*标记本次为定高切自稳*/
-			aircraftStatus->HORIZONTAL_REMOT_EXPECT_CONTROL_MODE = AIRCRAFT_CONTROL_SENSOR_TO_AUTO;						
+			/*清除定高传感器对象*/
+			uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_USE_NULL;
+			
+			/*标记本次遥控期望为自稳*/
+			uavStatus->UavControlMode.Horizontal.EXPECT_CONTROL_MODE = UAV_HORIZONTAL_CONTROL_SELFAUTO;			
 		}
 	}
 
 	/*飞行器未失联,才接受遥控改变当前飞行状态*/
-	if (aircraftStatus->CMC_STATUS == AIRCRAFT_CMC_SUCC)
+	if (uavStatus->WIRELESS_CMC_STATUS == UAV_WIRELESS_CMC_SUCC)
 	{
 		/*============ 定高条件判断及控制模式切换 ============*/
 		/*竖直自稳切定高*/
-		if (aircraftStatus->HEIGHT_REMOT_EXPECT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO_TO_SENSOR)
+		if (uavStatus->UavControlMode.Vertical.EXPECT_CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT)
 		{
-			/*只要气压计有效就可定高(超声波有效时,低高度数据来源超声波,否则数据来源气压计)*/
-			if ((aircraftStatus->BERO_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_OK) && \
-				(aircraftStatus->HEIGHT_REFERENCE_SET_STATUS == AIRCRAFT_REFERENCE_SET_NO))
+			/*气压计和超声波至少有一个有效,且高度参考点未设置*/
+			if (((uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_OK) || \
+				 (uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_OK)) && \
+			    (uavStatus->UavControlMode.Vertical.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_NO))
 			{
 				/*每次切换只保留一次当前油门值*/
 				g_psControlAircraft->heightHoldThrottle = g_psControlAircraft->RemotExpectAngle.throttle;
@@ -183,134 +253,222 @@ void ctrl_Control_Mode_Select(AircraftStatus *aircraftStatus)
 				g_psPidSystem->HighPosition.expect = g_psSinsReal->curPosition[EARTH_FRAME_Z];
 		
 				/*设置成功后 标记零参考点已设置(防止定高后,重新更新期望高度)*/
-				aircraftStatus->HEIGHT_REFERENCE_SET_STATUS = AIRCRAFT_REFERENCE_SET_OK;
+				uavStatus->UavControlMode.Vertical.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_OK;
 
 				/*飞行模式标记为定高*/
-				aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_FIX_HEIGHT;	/*= 2->定高*/
+				uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_HEIGHT; /*= 2->定高*/
 		
 				/*竖直控制模式为:定高控制模式*/
-				aircraftStatus->HEIGHT_CONTROL_MODE = AIRCRAFT_CONTROL_SENSOR;
+				uavStatus->UavControlMode.Vertical.CONTROL_MODE = UAV_VERTICAL_CONTROL_FIX_HEIGHT;
 			}
-			/*切定高时:气压计无效,且未设置点位*/
-			else if ((aircraftStatus->BERO_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_NO) && \
-					 (aircraftStatus->HEIGHT_REFERENCE_SET_STATUS == AIRCRAFT_REFERENCE_SET_NO))
+			/*切定高时:气压计和超声波都无效,且未设置高度参考点*/
+			else if (((uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+					  (uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_NO)) && \
+					 (uavStatus->UavControlMode.Vertical.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_NO))
 			{
 				/*飞行模式标记为姿态模式*/
-				aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
+				uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
 			
 				/*竖直控制模式为:自稳控制模式*/
-				aircraftStatus->HEIGHT_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;		
+				uavStatus->UavControlMode.Vertical.CONTROL_MODE = UAV_VERTICAL_CONTROL_SELFAUTO;		
 			}
-			/*定高状态下:气压计无效,且已设置点位(传感器故障)*/
-			else if ((aircraftStatus->BERO_ESTIMATE_ALTITUDE == HEIGHT_DATA_STATUS_NO) && \
-					 (aircraftStatus->HEIGHT_REFERENCE_SET_STATUS == AIRCRAFT_REFERENCE_SET_OK))
+			/*定高状态下:气压计和超声波都无效,且已设置高度参考点(传感器故障)*/
+			else if (((uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+					  (uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_NO)) && \
+					 (uavStatus->UavControlMode.Vertical.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_OK))
 			{
 				/*飞行模式标记为姿态模式*/
-				aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/
+				uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/				
 
 				/*退出定高后,标记参考点未设置,这样会一直check*/
-				aircraftStatus->HEIGHT_REFERENCE_SET_STATUS = AIRCRAFT_REFERENCE_SET_NO;				
+				uavStatus->UavControlMode.Vertical.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_NO;
 			
 				/*竖直控制模式为:自稳控制模式*/
-				aircraftStatus->HEIGHT_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;				
+				uavStatus->UavControlMode.Vertical.CONTROL_MODE = UAV_VERTICAL_CONTROL_SELFAUTO;				
 			}
 		}
-		else if (aircraftStatus->HEIGHT_REMOT_EXPECT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR_TO_AUTO)	/*定高切自稳*/
+		else if (uavStatus->UavControlMode.Vertical.EXPECT_CONTROL_MODE == UAV_VERTICAL_CONTROL_SELFAUTO)	/*定高切自稳*/
 		{
 			/*飞行模式标记为姿态*/
-			aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/	
+			uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/	
 		
 			/*竖直控制模式为:自稳控制模式*/
-			aircraftStatus->HEIGHT_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;			
+			uavStatus->UavControlMode.Vertical.CONTROL_MODE = UAV_VERTICAL_CONTROL_SELFAUTO;			
 		}
 		
 		/*============ 定点条件判断及控制模式切换 ============*/
 		/*水平自稳切定点,水平数据来源: 光流 / GPS*/
-		if (aircraftStatus->HORIZONTAL_REMOT_EXPECT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO_TO_SENSOR)
+		if (uavStatus->UavControlMode.Horizontal.EXPECT_CONTROL_MODE == UAV_HORIZONTAL_CONTROL_FIX_POS)
 		{
-			/*(GPS数据OK && HOME已设置 && 融合成功) && 参考点未设置*/
-			if((status_GPS_Fix_Ava_Check(&g_sAircraftStatus) == GPS_POS_FIX_AVA_TRUE) && \
-			   (aircraftStatus->HORIZONTAL_REFERENCE_SET_STATUS == AIRCRAFT_REFERENCE_SET_NO))
+			/*水平定点传感器是GPS*/
+			if (uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE == UAV_HORIZONTAL_SENMOD_CURRENT_USE_GPS)
 			{
-				/*将当前惯导水平位置估计作为目标悬停点*/
-				g_psPidSystem->LatitudePosition.expect  = g_psSinsReal->curPosition[EARTH_FRAME_Y]; /*N*/
-				g_psPidSystem->LongitudePosition.expect = g_psSinsReal->curPosition[EARTH_FRAME_X];	/*E*/
+				/*(GPS数据OK && HOME已设置 && 融合成功) && 参考点未设置*/
+				if((status_GPS_Fix_Ava_Check(g_psUav_Status) == UAV_SENMOD_USE_CONTROL_ALLOW) && \
+				   (uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_NO))
+				{
+					/*将当前惯导水平位置估计作为目标悬停点*/
+					g_psPidSystem->LatitudePosition.expect  = g_psSinsReal->curPosition[EARTH_FRAME_Y]; /*N*/
+					g_psPidSystem->LongitudePosition.expect = g_psSinsReal->curPosition[EARTH_FRAME_X];	/*E*/
 						
-				/*PID水平控制积分复位*/
-				pid_Horizontal_GPS_Ctrl_Integrate_Reset();
+					/*PID水平控制积分复位*/
+					pid_Horizontal_GPS_Ctrl_Integrate_Reset();
 			
-				/*设置成功后 标记零参考点已设置(防止定点后,重新更新期望位置)*/
-				aircraftStatus->HORIZONTAL_REFERENCE_SET_STATUS = AIRCRAFT_REFERENCE_SET_OK;	
+					/*设置成功后 标记零参考点已设置(防止定点后,重新更新期望位置)*/
+					uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_OK;	
 			
-				/*飞行模式标记为定点*/
-				aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_FIX_POS;	/*= 3->定点*/		
+					/*飞行模式标记为定点*/
+					uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_POS;	/*= 3->定点*/		
 			
-				/*水平控制模式为:定点控制模式*/
-				aircraftStatus->HORIZONTAL_CONTROL_MODE = AIRCRAFT_CONTROL_GPS_SENSOR;
-			}
-			/*切定点时刻,不满足条件,自动切回水平自稳模式,并不断check,直到切换回自稳模式或者满足定点条件*/
-			else if ((status_GPS_Fix_Ava_Check(&g_sAircraftStatus) == GPS_POS_FIX_AVA_FALSE) && \
-					(aircraftStatus->HORIZONTAL_REFERENCE_SET_STATUS == AIRCRAFT_REFERENCE_SET_NO))
-			{
-				/*飞行模式标记为非定点模式*/
-				if (aircraftStatus->CUR_FLY_TYPE == AIRCRAFT_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
-				{
-					aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_FIX_HEIGHT;
+					/*水平控制模式为:定点控制模式*/
+					uavStatus->UavControlMode.Horizontal.CONTROL_MODE = UAV_HORIZONTAL_CONTROL_FIX_POS;
 				}
-				else /*如果没处在定高,也没处在定点,则为纯姿态模式*/
+				/*切定点时刻,不满足条件,自动切回水平自稳模式,并不断check,直到切换回自稳模式或者满足定点条件*/
+				else if ((status_GPS_Fix_Ava_Check(g_psUav_Status) == UAV_SENMOD_USE_CONTROL_DISALLOW) && \
+						 (uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_NO))
 				{
-					aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
-				}	
+					/*飞行模式标记为非定点模式*/
+					if (uavStatus->UavFlyType.CURRENT == UAV_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_HEIGHT;
+					}
+					else /*如果没处在定高,也没处在定点,则为纯姿态模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
+					}	
 				
-				/*PID水平控制积分复位*/
-				pid_Horizontal_GPS_Ctrl_Integrate_Reset();				
+					/*PID水平控制积分复位*/
+					pid_Horizontal_GPS_Ctrl_Integrate_Reset();				
 			
-				/*水平控制模式为:自稳控制模式*/
-				aircraftStatus->HORIZONTAL_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;
-			}
-			/*进入定点模式一段后,卫星信号不满足定点条件,切换回自稳模式(并不断check,直到切换回自稳模式或者满足定点条件),返航功能OK后,应切换成自动返航模式*/
-			else if ((status_GPS_Fix_Ava_Check(&g_sAircraftStatus) == GPS_POS_FIX_AVA_FALSE) && \
-					(aircraftStatus->HORIZONTAL_REFERENCE_SET_STATUS == AIRCRAFT_REFERENCE_SET_OK))
-			{	
-				/*飞行模式标记为非定点模式*/
-				if (aircraftStatus->CUR_FLY_TYPE == AIRCRAFT_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
-				{
-					aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_FIX_HEIGHT;
+					/*水平控制模式为:自稳控制模式*/
+					uavStatus->UavControlMode.Horizontal.CONTROL_MODE = UAV_HORIZONTAL_CONTROL_SELFAUTO;
 				}
-				else /*如果没处在定高,也没处在定点,则为纯姿态模式*/
-				{
-					aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/
-				}
+				/*进入定点模式一段后,卫星信号不满足定点条件,切换回自稳模式(并不断check,直到切换回自稳模式或者满足定点条件),返航功能OK后,应切换成自动返航模式*/
+				else if ((status_GPS_Fix_Ava_Check(g_psUav_Status) == UAV_SENMOD_USE_CONTROL_DISALLOW) && \
+						 (uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_OK))
+				{	
+					/*飞行模式标记为非定点模式*/
+					if (uavStatus->UavFlyType.CURRENT == UAV_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_HEIGHT;
+					}
+					else /*如果没处在定高,也没处在定点,则为纯姿态模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
+					}
 	
-				/*PID水平控制积分复位*/
-				pid_Horizontal_GPS_Ctrl_Integrate_Reset();
+					/*PID水平控制积分复位*/
+					pid_Horizontal_GPS_Ctrl_Integrate_Reset();
 				
-				/*自动退出定点模式 标记零参考点未设置(一直CHECK,直到满足定点模式/手动切自稳模式)*/
-				aircraftStatus->HORIZONTAL_REFERENCE_SET_STATUS = AIRCRAFT_REFERENCE_SET_NO;
+					/*自动退出定点模式 标记零参考点未设置(一直CHECK,直到满足定点模式/手动切自稳模式)*/
+					uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_NO;
 			
-				/*水平控制模式为:自稳控制模式*/
-				aircraftStatus->HORIZONTAL_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;
-			}			
+					/*水平控制模式为:自稳控制模式*/
+					uavStatus->UavControlMode.Horizontal.CONTROL_MODE = UAV_HORIZONTAL_CONTROL_SELFAUTO;
+				}				
+			}
+			/*水平定点传感器是OPTICFLOW*/
+			else if (uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE == UAV_HORIZONTAL_SENMOD_CURRENT_USE_OPTICFLOW)
+			{
+				/*光流数据可用 && 参考点未设置*/
+				if((uavStatus->UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
+				   (uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_NO))
+				{
+					/*将当前惯导水平位置估计作为目标悬停点*/
+						
+					/*PID水平控制积分复位*/
+			
+					/*设置成功后 标记零参考点已设置(防止定点后,重新更新期望位置)*/
+					uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_OK;	
+			
+					/*飞行模式标记为定点*/
+					uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_POS;	/*= 3->定点*/		
+			
+					/*水平控制模式为:定点控制模式*/
+					uavStatus->UavControlMode.Horizontal.CONTROL_MODE = UAV_HORIZONTAL_CONTROL_FIX_POS;
+				}
+				/*切定点时刻,不满足条件,自动切回水平自稳模式,并不断check,直到切换回自稳模式或者满足定点条件*/
+				else if ((uavStatus->UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+						 (uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_NO))
+				{
+					/*飞行模式标记为非定点模式*/
+					if (uavStatus->UavFlyType.CURRENT == UAV_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_HEIGHT;
+					}
+					else /*如果没处在定高,也没处在定点,则为纯姿态模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
+					}	
+				
+					/*PID水平控制积分复位*/			
+			
+					/*水平控制模式为:自稳控制模式*/
+					uavStatus->UavControlMode.Horizontal.CONTROL_MODE = UAV_HORIZONTAL_CONTROL_SELFAUTO;
+				}
+				/*进入定点模式一段后,光流数据不满足定点条件,切换回自稳模式(并不断check,直到切换回自稳模式或者满足定点条件)*/
+				else if ((uavStatus->UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
+						 (uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS == UAV_SWITCH_REFERENCE_SET_OK))
+				{	
+					/*飞行模式标记为非定点模式*/
+					if (uavStatus->UavFlyType.CURRENT == UAV_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_HEIGHT;
+					}
+					else /*如果没处在定高,也没处在定点,则为纯姿态模式*/
+					{
+						uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
+					}
+	
+					/*PID水平控制积分复位*/
+				
+					/*自动退出定点模式 标记零参考点未设置(一直CHECK,直到满足定点模式/手动切自稳模式)*/
+					uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_NO;
+			
+					/*水平控制模式为:自稳控制模式*/
+					uavStatus->UavControlMode.Horizontal.CONTROL_MODE = UAV_HORIZONTAL_CONTROL_SELFAUTO;
+				}				
+			}
 		}
-		else if(aircraftStatus->HORIZONTAL_REMOT_EXPECT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR_TO_AUTO) /*水平定点切自稳*/
+		else if(uavStatus->UavControlMode.Horizontal.EXPECT_CONTROL_MODE == UAV_HORIZONTAL_CONTROL_SELFAUTO) /*水平定点切自稳*/
 		{
 			/*飞行模式标记为非定点模式*/
-			if (aircraftStatus->CUR_FLY_TYPE == AIRCRAFT_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
+			if (uavStatus->UavFlyType.CURRENT == UAV_FLY_TYPE_FIX_HEIGHT) /*如果仍处在定高模式,则为定高模式*/
 			{
-				aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_FIX_HEIGHT;
+				uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_FIX_HEIGHT;
 			}
 			else /*如果没处在定高,也没处在定点,则为纯姿态模式*/
 			{
-				aircraftStatus->CUR_FLY_TYPE = AIRCRAFT_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
+				uavStatus->UavFlyType.CURRENT = UAV_FLY_TYPE_ATTITUDE;	/*= 1->姿态*/			
 			}		
 			
 			/*PID水平控制积分复位*/
-			pid_Horizontal_GPS_Ctrl_Integrate_Reset();
 			
 			/*水平控制模式为:自稳控制模式*/
-			aircraftStatus->HORIZONTAL_CONTROL_MODE = AIRCRAFT_CONTROL_AUTO;			
+			uavStatus->UavControlMode.Horizontal.CONTROL_MODE = UAV_HORIZONTAL_CONTROL_SELFAUTO;			
 		}
-	}			
+		
+		/*============ SWD拨键根据飞行器当前状态设置飞行任务 ============*/		
+		/*判断当前是否在竖直定高+水平定点模式*/
+		if ((uavStatus->UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT) && \
+			(uavStatus->UavControlMode.Horizontal.CONTROL_MODE == UAV_HORIZONTAL_CONTROL_FIX_POS))
+		{
+			/*在光流+超声波参与定点的控制下,获取当前飞行任务*/
+			if ((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR) && \
+				(uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE == UAV_HORIZONTAL_SENMOD_CURRENT_USE_OPTICFLOW))
+			{
+				/*5000ms内:1次光流追点/2次光流循黑线任务*/		
+				uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION = control_fly_mission_check_ultr_opflow_pos(uavStatus, 5000);
+			}
+			/*在GPS+气压计参与定点的控制下,获取当前飞行任务*/
+			else if ((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_BERO) && \
+					 (uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE == UAV_HORIZONTAL_SENMOD_CURRENT_USE_GPS))
+			{
+				/*5000ms内:1次记点/2次按记点开始巡天*/		
+				uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION = control_fly_mission_check_bero_gps_pos(uavStatus, 5000);
+			}
+		}
+	}
 }
 
 /*姿态控制器:角度外环+角速度内环*/
@@ -351,7 +509,7 @@ void ctrl_Attitude_Angle_Control_Dp(void)
 		/*YAW摇杆置于中间位值期望角为0、满足落地条件,偏航角期望重置为当前偏航角*/
 		if ((g_psPidSystem->YawAngle.expect == 0) || \
 			(g_WaitMagGyroFuseTicks <= 500) || \
-			(g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING))
+			(g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES))
 		{
 			/*偏航角期望重置为当前偏航角*/
 			g_psPidSystem->YawAngle.expect = g_psAttitudeAll->Ahrs.yaw;
@@ -459,13 +617,14 @@ void ctrl_MainLeading_Control_Dp(void)
 	/*间隔时间换算成秒*/
 	mainControlDeltaT = g_psSystemPeriodExecuteTime->CTRL_MainLeading.DeltaTime / 1000.0f;
 	
-	/*判断是否为失联或遥控一键 返航*/
-	if (g_psAircraftStatus->CUR_FLY_TYPE != AIRCRAFT_FLY_TYPE_GO_HOME)
+	/*飞行任务：无 || 执行任务同时执行姿态控制*/
+	if ((g_sUav_Status.UavCurrentFlyMission.CURRENT_FLY_MISSION == UAV_FLY_MISSION_NULL) || \
+		(g_sUav_Status.UavCurrentFlyMission.ATTITUDE_CTRL_STATUS == UAV_MISSION_ATTITUDE_CTRL_ENABLE))
 	{
 		/*根据遥控器切换档位,飞控进入不同模式*/
 		/*================== 1.高度自稳,水平自稳 模式 ==================*/
-		if ((g_psAircraftStatus->HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO) && \
-			(g_psAircraftStatus->HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO))
+		if ((g_sUav_Status.UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_SELFAUTO) && \
+			(g_sUav_Status.UavControlMode.Horizontal.CONTROL_MODE == UAV_HORIZONTAL_CONTROL_SELFAUTO))
 		{
 			/*更新自稳控制下的ROLL(横滚)和PITCH(俯仰)期望角 (遥控期望角已限制在最大值范围)*/
 			g_psPidSystem->PitchAngle.expect = g_psControlAircraft->RemotExpectAutoAngle.pitch; /*遥控期待自稳角pitch*/
@@ -485,8 +644,8 @@ void ctrl_MainLeading_Control_Dp(void)
 			g_psControlAircraft->lastCtrlThrottle = g_psControlAircraft->ctrlThrottle;
 		}
 		/*================== 2.高度定高,水平自稳 模式 ==================*/
-		else if ((g_psAircraftStatus->HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR) && \
-			     (g_psAircraftStatus->HORIZONTAL_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO))
+		else if ((g_sUav_Status.UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT) && \
+			     (g_sUav_Status.UavControlMode.Horizontal.CONTROL_MODE == UAV_HORIZONTAL_CONTROL_SELFAUTO))
 		{
 			/*更新水平自稳控制下的ROLL(横滚)和PITCH(俯仰)期望角 (遥控期望角已限制在最大值范围)*/
 			g_psPidSystem->PitchAngle.expect = g_psControlAircraft->RemotExpectAutoAngle.pitch; /*遥控期待自稳角pitch*/
@@ -496,8 +655,8 @@ void ctrl_MainLeading_Control_Dp(void)
 			vertical_Control_AltHold(mainControlDeltaT);	
 		}
 		/*================== 3.高度定高,水平定点(GPS/光流) 模式 ==================*/		
-		else if ((g_psAircraftStatus->HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR) && \
-				(g_psAircraftStatus->HORIZONTAL_CONTROL_MODE != AIRCRAFT_CONTROL_AUTO))
+		else if ((g_sUav_Status.UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT) && \
+				 (g_sUav_Status.UavControlMode.Horizontal.CONTROL_MODE != UAV_HORIZONTAL_CONTROL_FIX_POS))
 		{
 			/*竖直高度控制器*/
 			vertical_Control_AltHold(mainControlDeltaT);
@@ -528,11 +687,40 @@ void ctrl_MainLeading_Control_Dp(void)
 			g_psControlAircraft->lastCtrlThrottle = g_psControlAircraft->ctrlThrottle;
 		}
 	}
-	/*失联或遥控人为遥控一键返航*/
-	else if (g_psAircraftStatus->CUR_FLY_TYPE == AIRCRAFT_FLY_TYPE_GO_HOME) 
+	
+	/*飞行任务：一键起飞*/
+	if (g_sUav_Status.UavCurrentFlyMission.CURRENT_FLY_MISSION == UAV_FLY_MISSION_ONEKEY_FLY)
+	{
+		control_fly_mission_onekey_fly(g_psUav_Status);
+	}
+	/*飞行任务：失联或遥控人为遥控一键返航*/
+	else if (g_sUav_Status.UavCurrentFlyMission.CURRENT_FLY_MISSION == UAV_FLY_MISSION_ONEKEY_LAND_HOME) 
 	{
 		/*飞行器自动返航控制*/
 		ctrl_Go_Home_Control(mainControlDeltaT);
+	}
+	/*飞行任务：光流追点*/
+	else if (g_sUav_Status.UavCurrentFlyMission.CURRENT_FLY_MISSION == UAV_FLY_MISSION_OPFLOW_FOLLOW_POINT) 
+	{
+		/*未做默认无任务*/		
+		control_fly_mission_set(g_psUav_Status, UAV_FLY_MISSION_NULL, UAV_MISSION_ATTITUDE_CTRL_ENABLE);
+	}
+	/*飞行任务：光流巡线*/
+	else if (g_sUav_Status.UavCurrentFlyMission.CURRENT_FLY_MISSION == UAV_FLY_MISSION_OPFLOW_FOLLOW_LINE) 
+	{
+		/*未做默认无任务*/		
+		control_fly_mission_set(g_psUav_Status, UAV_FLY_MISSION_NULL, UAV_MISSION_ATTITUDE_CTRL_ENABLE);
+	}
+	/*飞行任务：GPS记录座标*/
+	else if (g_sUav_Status.UavCurrentFlyMission.CURRENT_FLY_MISSION == UAV_FLY_MISSION_GPS_WRITE_POS)
+	{
+		control_fly_mission_bero_gps_write_pos(g_psUav_Status);
+	}
+	/*飞行任务：GPS巡天*/
+	else if (g_sUav_Status.UavCurrentFlyMission.CURRENT_FLY_MISSION == UAV_FLY_MISSION_GPS_PATROL_SKY) 
+	{
+		/*未做默认无任务*/
+		control_fly_mission_set(g_psUav_Status, UAV_FLY_MISSION_NULL, UAV_MISSION_ATTITUDE_CTRL_ENABLE);
 	}
 }
 
@@ -584,14 +772,14 @@ void ctrl_auto_control_system_output(void)
 	/*油门倾角补偿*/
 	ctrl_Throttle_DipAngle_Compensate();
 	
-	/*着陆条件检测*/
-	g_psAircraftStatus->CUR_FLY_STATUS = ctrl_Landing_Check_And_Idling();
+	/*着陆检测*/
+	g_sUav_Status.UavLandStatus.ThisTime = ctrl_Landing_Status_Check(g_psUav_Status);
 	
 	/*=== 检测飞行器处于解锁状态 ===*/
-	if (g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_UNLOCK)
+	if (g_sUav_Status.LOCK_STATUS == UAV_LOCK_NOT)
 	{
 		/*检测到飞行状态为着陆状态,输出怠速*/
-		if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_LANDING)
+		if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_YES)
 		{
 			/*如果上次油门输出值为最低位,进入怠速时,安排过渡过程*/
 			if ((g_psControlAircraft->LastMotorPwmOutput.channle1 <= REMOT_THROTTLE_BASE_VALUE) && \
@@ -602,9 +790,9 @@ void ctrl_auto_control_system_output(void)
 				g_vu16ThrottleIdleTransitionsTicks = CTRL_IDEL_TRANSITION_CONTINUE_MAX_TICKS;
 			}
 			/*上次为起飞状态,本次为着陆状态,即完成一次升降,落地后,飞行器自动上锁*/
-			else if (g_psAircraftStatus->LAST_FLY_STATUS == AIRCRAFT_FLYING)
+			else if (g_sUav_Status.UavLandStatus.LastTime == UAV_LAND_NOT)
 			{
-				g_psAircraftStatus->LOCK_STATUS = AIRCRAFT_LOCKING;
+				g_sUav_Status.LOCK_STATUS = UAV_LOCK_YES;
 			}
 			
 			g_vu16ThrottleIdleContinueTicks++;
@@ -644,10 +832,10 @@ void ctrl_auto_control_system_output(void)
 			pid_Horizontal_Takeoff_Integrate_Reset();
 		}
 		/*解锁后不满足着陆条件,即检测到飞行状态为飞行状态*/
-		else if (g_psAircraftStatus->CUR_FLY_STATUS == AIRCRAFT_FLYING)
+		else if (g_sUav_Status.UavLandStatus.ThisTime == UAV_LAND_NOT)
 		{
 			/*=== 1.竖直方向,姿态自稳模式 ===*/
-			if (g_psAircraftStatus->HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_AUTO)
+			if (g_sUav_Status.UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_SELFAUTO)				
 			{
 				/*大于起飞油门量*/
 				if (g_psControlAircraft->ctrlThrottle >= CTRL_THROTTLE_START_FLY_VALUE)
@@ -699,7 +887,7 @@ void ctrl_auto_control_system_output(void)
 				
 			}
 			/*=== 2.竖直方向,传感器定高模式,油门托管 ===*/
-			else if (g_psAircraftStatus->HEIGHT_CONTROL_MODE == AIRCRAFT_CONTROL_SENSOR)	
+			else if (g_sUav_Status.UavControlMode.Vertical.CONTROL_MODE == UAV_VERTICAL_CONTROL_FIX_HEIGHT)	
 			{
 				/*默认水平姿态环角速度读控制器来源于PID*/
 				g_psControlAircraft->CurMotorPwmOutput.channle1 = (u16)(g_psControlAircraft->throttleOutput    - \
@@ -738,7 +926,7 @@ void ctrl_auto_control_system_output(void)
 		}
 	}
 	/*=== 检测飞行器处于锁定状态 ===*/
-	else if (g_psAircraftStatus->LOCK_STATUS == AIRCRAFT_LOCKING)
+	else if (g_sUav_Status.LOCK_STATUS == UAV_LOCK_YES)
 	{ 
 		/*四个电机PWM值为停转值*/
 		g_psControlAircraft->CurMotorPwmOutput.channle1 = REMOT_THROTTLE_BASE_VALUE;
@@ -821,7 +1009,7 @@ void ctrl_auto_control_system_output(void)
 							   ESC_MIN_PULSE_ZERO_SPEED_VALUE);
 		
 		/*锁定状态*/
-		g_sAircraftStatus.LOCK_STATUS = AIRCRAFT_LOCKING;
+		g_sUav_Status.LOCK_STATUS = UAV_LOCK_YES;
 	}
 			
 	#if (CTRL_MOTOR_DRIVER_ON_FIXED_DEBUGGING == SYS_DISABLE)			

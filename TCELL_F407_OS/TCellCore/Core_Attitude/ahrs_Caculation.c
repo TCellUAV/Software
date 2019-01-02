@@ -231,10 +231,10 @@ AhrsAttitude *ahrs_euler_by_acc(Acc3f *acc3f)
 Vector3f g_sGpsBodyMotionAcc  = {0}; /*GPS_观测机体系运动加速度*/
 Vector3f g_sGpsEarthMotionAcc = {0}; /*GPS_观测导航系运动加速度*/
 
-SYS_RETSTATUS get_effective_gravity_acc(AircraftStatus *aircraftStatus, GPS_Data gpsData)
+SYS_RETSTATUS get_effective_gravity_acc(Uav_Status *uavStatus, GPS_Data gpsData)
 {
 	/*判断GPS定位数据可用性*/
-	if (g_psAircraftStatus->GPS_ESTIMATE_HORIZONTAL != HORIZONTAL_DATA_STATUS_OK)
+	if (uavStatus->UavSenmodStatus.Horizontal.Gps.DATA_STATUS != UAV_SENMOD_DATA_OK)
 	{
 		return SYS_RET_FAIL;
 	}
@@ -395,7 +395,7 @@ AhrsAttitude* ahrs_grades_calculat_attitude(AhrsQuater *ahrsQuater, Acc3f *attAc
 	if (!((attAcc->x == 0.0f) && (attAcc->y == 0.0f) && (attAcc->z == 0.0f)))
 	{
 		/*提取GPS运动加速度*/
-		if (get_effective_gravity_acc(g_psAircraftStatus, g_psAttitudeAll->GpsData) == SYS_RET_SUCC)
+		if (get_effective_gravity_acc(g_psUav_Status, g_psAttitudeAll->GpsData) == SYS_RET_SUCC)
 		{
 			attAcc->x = g_sAccHistory[9].x - g_sGpsBodyMotionAcc.x;	/*剔除运动加速度*/
 			attAcc->y = g_sAccHistory[9].y - g_sGpsBodyMotionAcc.y;	/*剔除运动加速度*/
@@ -554,7 +554,7 @@ AhrsAttitude* ahrs_grades_calculat_attitude(AhrsQuater *ahrsQuater, Acc3f *attAc
 	}
 	
 	/*如果GPS home点已设置,获取当地磁偏角,得到地理真北*/
-	if (g_psAircraftStatus->HOME_STATUS == AIRCRAFT_HOME_SET)
+	if (get_gps_home_set_status(g_psUav_Status) == UAV_HOME_SET_YES)
 	{
 		ahrsAtt->yaw -= g_psAttitudeAll->declination;
 	}
