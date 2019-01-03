@@ -1,5 +1,8 @@
 #include "sys_OsTask.h"
 
+/*安全操作*/
+#include "safe_Operation.h"
+
 /*线程唤醒计数器*/
 rtos_thread_wake_up gs_rtos_thread_wake_up = 
 {
@@ -19,16 +22,19 @@ rtos_thread_wake_up gs_rtos_thread_wake_up =
 	/*人机交互*/	
 	.hci_oled_show 	   = 1,
 	.hci_slave_host    = 1,	
+	/*任务调度状态*/	
+	.task_status_check = 1,
 };
 
-#define RTOS_UPDATE_TOTAL_THREAD_NUMBER		(01 + 01 + 04 + 01 + 01 + 01 + 02 = 11)
+#define RTOS_UPDATE_TOTAL_THREAD_NUMBER		(01 + 01 + 06 + 01 + 01 + 01 + 02 + 01 = 14)
 /*0********** 基础模块控制线程堆栈分配(01/01) ***********/
 /*1*************** 参数读写系统(01/01) ******************/
-/*2****** 传感器数据获取及处理线程堆栈分配(04/04) *******/
+/*2****** 传感器数据获取及处理线程堆栈分配(06/06) *******/
 /*3************ 飞控控制线程堆栈分配(01/01) *************/
 /*4************ 系统校准线程堆栈分配(01/01) *************/
 /*5************ 飞行日志线程堆栈分配(01/01) *************/
 /*6************ 人机交互线程堆栈分配(02/02) *************/
+/*7************ 调度检测线程堆栈分配(01/01) *************/
 
 /*==================== 线程堆栈分配及调度函数初始化 ====================*/
 /*0********** 基础模块控制线程堆栈分配(01/01) ***********/
@@ -166,7 +172,7 @@ void rt_entry_thread_vertical_fusion(void* parameter)
 		/*气压计数据更新及处理*/
 		#ifdef HW_CUT__USE_MD_BERO
 		#ifdef HW_CUT__USE_DB_BERO
-		bero_altitude_data_get_and_dp(g_psUav_Status);	
+		bero_altitude_data_get_and_dp(g_psUav_Status);
 		#else
 		bero_altitude_data_get_and_dp(g_psUav_Status);
 		#endif
@@ -489,6 +495,29 @@ void rt_entry_thread_hci_slave_and_host(void* parameter)
 	}
 }
 
+/*7************ 调度检测线程堆栈分配(01/01) *************/
+/* 任务调度状态 */
+#define RTOS_THREAD_STACK_SIZE_TASK_STATUS_CHECK 	  (1024)
+ALIGN(RT_ALIGN_SIZE)
+
+static u8 thread_task_status_check_stack[RTOS_THREAD_STACK_SIZE_TASK_STATUS_CHECK];
+static struct rt_thread task_status_check_thread;
+
+void rt_entry_thread_task_status_check(void* parameter)
+{
+	while(1)
+	{
+		/*等待信号量被释放*/
+		rt_sem_take(&task_status_check_sem, RT_WAITING_FOREVER);		
+		
+		/*线程执行周期计算*/
+		get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->TaskStatusCheck));
+		
+		/*安全:判断任务调度是否正常,及故障处理*/
+		safe_task_status_check(&gs_SafeOperation);
+	}
+}
+
 /*======================= 线程任务创建及开始调度 =======================*/
 /*创建线程*/
 void rtos_thread_create(void)
@@ -525,7 +554,7 @@ void rtos_thread_create(void)
         rt_thread_startup(&stor_para_rdwr_thread);
     }	
 	
-/*2****** 传感器数据获取及处理线程堆栈分配(04/04) *******/
+/*2****** 传感器数据获取及处理线程堆栈分配(06/06) *******/
 /* 0.加速度计和陀螺仪(IMU)+磁力计(MAG)数据获取并计算欧拉角 */                                                
 	err = rt_thread_init(&euler_angle_calculate_thread,
                          "rt_euler_angle",
@@ -683,6 +712,20 @@ void rtos_thread_create(void)
     {
 		rt_thread_startup(&hci_slave_and_host_thread);
 	}	
+	
+/*7************ 调度检测线程堆栈分配(01/01) *************/	
+	err = rt_thread_init(&task_status_check_thread,
+						 "rt_task_check",
+						 rt_entry_thread_task_status_check,
+						 RT_NULL,
+						 thread_task_status_check_stack,
+						 sizeof(thread_task_status_check_stack),
+						 RTOS_PR_TASK_STATUS_CHECK,
+						 20);
+	if (err == RT_EOK)
+    {
+		rt_thread_startup(&task_status_check_thread);
+	}	
 }
 
 /*NVIC初始化*/
@@ -758,6 +801,8 @@ struct rt_semaphore tfsd_fly_log_sem;
 /*=== 人机交互 ===*/
 struct rt_semaphore hci_oled_show;
 struct rt_semaphore hci_host_slave_sem;
+/*=== 任务调度状态 ===*/
+struct rt_semaphore task_status_check_sem;
 
 /*********** 事件(被动执行) ***********/
 /*=== 参数读写 ===*/
@@ -796,6 +841,9 @@ void rtos_unit_init(void)
 	/*=== 人机交互 ===*/	
 	rt_sem_init(&hci_oled_show, "hci_oled_sem", 0, RT_IPC_FLAG_FIFO);
 	rt_sem_init(&hci_host_slave_sem, "hci_hs_sem", 0, RT_IPC_FLAG_FIFO);	
+	
+	/*=== 任务调度状态 ===*/
+	rt_sem_init(&task_status_check_sem, "task_status_sem", 0, RT_IPC_FLAG_FIFO);	
 	
 	/********************************事件******************************/
 	/*=== 参数读写 ===*/

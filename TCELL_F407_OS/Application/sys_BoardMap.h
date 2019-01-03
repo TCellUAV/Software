@@ -78,7 +78,7 @@
 #endif
 
 /*=== 4.³¬Éù²¨ ===*/
-#if 0
+#if 1
 	#define HW_CUT__USE_ULTR
 #endif
 

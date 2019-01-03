@@ -213,7 +213,7 @@ Yaw(欧拉角角,惯导方向,欧拉角绕z轴) - z(惯导元器件z方向) - xxxxxxxxxxxxxx      - 
 
 /************* 模块参数性能 *************/
 /*ULTR超声波*/
-#define SYS_ULTR_MAX_MEAS_DISTANCE		 	           (200)	/*超声波最大允许测量距离:200cm*/
+#define SYS_ULTR_MAX_MEAS_DISTANCE		 	           (220)	/*超声波最大允许测量距离:230cm*/
 #define SYS_ULTR_MIN_MEAS_PERIOD_TICK_MS 	           (75)  	/*超声波最小测量周期:75ms*/
 
 /*BERO气压计*/
@@ -304,6 +304,13 @@ typedef enum
 	SYS_RETERR_11TH = 11,
 	SYS_RETERR_12TH = 12,
 	SYS_RETERR_13TH = 13,	
+	SYS_RETERR_14TH = 14,
+	SYS_RETERR_15TH = 15,
+	SYS_RETERR_16TH = 16,
+	SYS_RETERR_17TH = 17,
+	SYS_RETERR_18TH = 18,	
+	SYS_RETERR_19TH = 19,
+	SYS_RETERR_20TH = 20,		
 	SYS_RETERR_FF   = 0xff,	/*默认的状态*/
 }SYS_RETERR;
 

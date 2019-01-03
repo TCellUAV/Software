@@ -165,7 +165,6 @@ void hci_Show_Acc_Calib_Process(CALIB_SIDE_INDEX CUR_SIDE_INDEX, SAMPLE_PROCESS_
 /*4.磁力计校准过程显示*/
 void hci_Show_Mag_Calib_Process(CALIB_SIDE_INDEX CUR_SIDE_INDEX, CALIB_POSITION_INDEX POSITION_INDEX, POSITION_SAMPLE_STATUS POS_SAMP_STATUS, SAMPLE_PROCESS_TYPE PROCESS_TYPE, u16 curYaw, u16 targetYaw, u8 errorMaxYaw, s16 targAccAxis, u32 holdMs);
 
-
 typedef struct
 {
 	volatile HCI_SHOW_PAGE_INDEX 	  curPageIndex;         /*当前显示页面*/

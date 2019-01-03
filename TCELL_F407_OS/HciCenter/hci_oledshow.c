@@ -7,6 +7,7 @@
 #include "attitude_Aircraft.h"
 #include "remot_DataAnaly.h"
 #include "control_Aircraft.h"
+#include "safe_Operation.h"
 
 #ifdef PLATFORM_RTOS__RT_THREAD
 #include "sys_OsTask.h"
@@ -935,10 +936,23 @@ void hci_show_on_run_progress(void)
 		}
 		
 		/*在待机页面,显示CPU利用率*/
-		bsp_OLED0_96_ShowString(&g_sOled0_96, 38, 3, (u8*)&"CPU:", OLED096_ACSII_6X8);
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 38, 2, (u8*)&"CPU:", OLED096_ACSII_6X8);
 		math_Integer_Number_Analy(g_psUav_Status->UavProgrameStatus.CpuUse.major, 2, &g_sMathIntegerAnaly);				
-		bsp_OLED0_96_Show_Calendar(&g_sOled0_96, 66, 3, OLED096_ACSII_6X8, g_sMathIntegerAnaly);
-		bsp_OLED0_96_ShowChar(&g_sOled0_96, 78, 3, '%', OLED096_ACSII_6X8);
+		bsp_OLED0_96_Show_Calendar(&g_sOled0_96, 66, 2, OLED096_ACSII_6X8, g_sMathIntegerAnaly);
+		bsp_OLED0_96_ShowChar(&g_sOled0_96, 78, 2, '%', OLED096_ACSII_6X8);
+		
+		/*在待机页面,显示RTOS调度状态*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 38, 3, (u8*)&"TASK:", OLED096_ACSII_6X8);
+		if (gps_SafeOperation->Task_Check_Status.TASK_CHECK_STATUS == SAFE_TASK_CHECK_NORMAL)
+		{
+			/*任务调度正常*/
+			bsp_OLED0_96_ShowString(&g_sOled0_96, 68, 3, (u8*)&"OK", OLED096_ACSII_6X8);
+		}
+		else
+		{
+			/*任务调度异常*/
+			bsp_OLED0_96_ShowString(&g_sOled0_96, 68, 3, (u8*)&"NO", OLED096_ACSII_6X8);
+		}
 	}
 }
 
@@ -1180,11 +1194,11 @@ UzH:±6666  UcH:±6666
 	
 	
 	/*=== 3.UltrHeight ===*/
-	/*2.1显示BeroHeight -> Height -> BERO -> zeroHeight*/
+	/*2.1显示BeroHeight -> Height -> ULTR -> zeroHeight*/
 	math_Integer_Number_Analy(g_psAttitudeAll->zeroUltrHeight, 4, &g_sMathIntegerAnaly);
 	bsp_OLED0_96_Show_Integer(&g_sOled0_96, xNbr1Pos2, 7, OLED096_ACSII_6X8, g_sMathIntegerAnaly);
 	
-	/*2.1显示BeroHeight -> Height -> BERO -> curHeight*/
+	/*2.1显示BeroHeight -> Height -> ULTR -> curHeight*/
 	math_Integer_Number_Analy(g_psAttitudeAll->nowUltrAltitude, 4, &g_sMathIntegerAnaly);	
 	bsp_OLED0_96_Show_Integer(&g_sOled0_96, xNbr2Pos2, 7, OLED096_ACSII_6X8, g_sMathIntegerAnaly);
 }
