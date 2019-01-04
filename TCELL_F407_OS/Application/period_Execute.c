@@ -91,15 +91,16 @@ void nop_delay_init(void)
 }
 
 #define THIS_CHIP_ONE_WHILE_NOP_NS (68)	/*由 nop_delay_init 测得,并需要手动更新数值*/
-vu32 nop_delay_nbr;
+vs32 nop_delay_nbr;
 
 void nop_delay_us(u32 us) 
 {	
 	nop_delay_nbr = (us * 1000) / THIS_CHIP_ONE_WHILE_NOP_NS;
 	
-	while(--nop_delay_nbr)
+	while(nop_delay_nbr > 0)
 	{
-		__NOP();
+		__NOP();		
+		nop_delay_nbr--;
 	}
 }
 

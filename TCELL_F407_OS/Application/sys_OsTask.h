@@ -42,7 +42,10 @@ enum
 	
 	/*人机交互*/
 	RTOS_PR_HCI_OLED_SHOW              = 21, /*hci: oled show*/
-	RTOS_PR_HCI_SLAVE_AND_HOST         = 22, /*hci: host salve exchange*/	
+	RTOS_PR_HCI_SLAVE_AND_HOST         = 22, /*hci: host salve exchange*/
+	
+	/*任务调度状态*/
+	RTOS_PR_TASK_STATUS_CHECK		   = 1, /*任务执行状态检测*/
 };
 
 /*数据更新事件*/
@@ -72,6 +75,8 @@ enum
 /*人机交互*/
 #define RTOS_WAKE_UP_HCI_OLED_SHOW_FOC_MS	  (30 * PLATFORM_TASK_SCHEDULER_MIN_FOC_MS)
 #define RTOS_WAKE_UP_HCI_SLAVE_HOST_FOC_MS	  (01 * PLATFORM_TASK_SCHEDULER_MIN_FOC_MS)
+/*任务调度状态*/
+#define RTOS_WAKE_UP_TASK_STATUS_CHECK_FOC_MS (01 * PLATFORM_TASK_SCHEDULER_MIN_FOC_MS)
 
 typedef vu16 rt_wakeup_t;
 typedef struct
@@ -97,6 +102,9 @@ typedef struct
 	/*人机交互*/
 	rt_wakeup_t hci_oled_show;
 	rt_wakeup_t hci_slave_host;	
+	
+	/*任务调度状态*/	
+	rt_wakeup_t task_status_check;
 }rtos_thread_wake_up;
 
 /*NVIC初始化*/
@@ -143,6 +151,8 @@ extern struct rt_semaphore tfsd_fly_log_sem;
 /*=== 人机交互 ===*/
 extern struct rt_semaphore hci_oled_show;
 extern struct rt_semaphore hci_host_slave_sem;
+/*=== 任务调度状态 ===*/
+extern struct rt_semaphore task_status_check_sem;
 
 /*********** 事件(被动执行) ***********/
 /*=== 参数读写 ===*/

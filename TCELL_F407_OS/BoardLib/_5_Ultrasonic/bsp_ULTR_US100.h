@@ -13,17 +13,16 @@
 /*US100数据更新标志*/
 typedef enum
 {
-	US100_DATA_OLD = 0,	
-	US100_DATA_NEW = 1,
-}US100_DATA_UPDATE_STATUS;
+	US100_UPDATE_FAIL = 0,	
+	US100_UPDATE_SUCC = 1,
+}US100_UPDATE_STATUS;
 
 typedef struct
 {
-	MSP_Uart			              *UartMaster;			/*超声波串口模式*/
-	s16				                  distance;				/*测量距离值(mm)(DisDataBuff[0] << 8 | DisDataBuff[1])*/
-	s16								  temperature;			/*测量温度值*/
-	volatile US100_DATA_UPDATE_STATUS DIST_DATA_STATUS;		/*测距数据就绪状态*/
-	volatile US100_DATA_UPDATE_STATUS TEMP_DATA_STATUS;		/*温度数据就绪状态*/	
+	MSP_Uart			         *UartMaster;	/*超声波串口模式*/
+	s16				             distance;		/*测量距离值(mm)(DisDataBuff[0] << 8 | DisDataBuff[1])*/
+	s16						     temperature;	/*测量温度值*/
+	volatile US100_UPDATE_STATUS UPDATE_STATUS;	/*数据更新状态*/
 }BSP_US100;
 
 /*超声波模块初始化*/

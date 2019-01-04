@@ -224,7 +224,18 @@ void TIM7_IRQHandler(void)
 		{
 			gs_rtos_thread_wake_up.uav_ctrl = 1;
 			rt_sem_release(&uav_ctrl_sem);
-		}		
+		}
+		
+		/*任务调度状态*/
+		if (gs_rtos_thread_wake_up.task_status_check < (RTOS_WAKE_UP_TASK_STATUS_CHECK_FOC_MS / PLATFORM_TASK_SCHEDULER_MIN_FOC_MS))
+		{
+			gs_rtos_thread_wake_up.task_status_check++;
+		}
+		else
+		{
+			gs_rtos_thread_wake_up.task_status_check = 1;
+			rt_sem_release(&task_status_check_sem);			
+		}	
 		
 		#endif		
 

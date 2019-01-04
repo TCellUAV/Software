@@ -2,7 +2,7 @@
 
 BSP_US100 g_sUs100 = 
 {
-	.DIST_DATA_STATUS = US100_DATA_OLD,	/*默认没有数据*/
+	.UPDATE_STATUS = US100_UPDATE_FAIL,	/*默认没有数据*/
 };
 
 /*串口发送Buff*/
@@ -71,14 +71,19 @@ SYS_RETSTATUS bsp_US100_Data_Parse(BSP_US100 *us100)
 			/*赋值距离值*/
 			us100->distance = (s16)distance;
 			
-			/*标记为新数据*/
-			us100->DIST_DATA_STATUS = US100_DATA_NEW;
+			/*标记数据更新成功*/
+			us100->UPDATE_STATUS = US100_UPDATE_SUCC;
 			
+			/*标记返回成功*/
 			retStaus = SYS_RET_SUCC;
 		}
 		else	/*数据无效,返回失败*/
 		{
-			retStaus = SYS_RET_FAIL;
+			/*标记数据更新失败*/
+			us100->UPDATE_STATUS = US100_UPDATE_FAIL;
+			
+			/*返回失败*/
+			retStaus = SYS_RET_FAIL;			
 		}
 	}
 	/*通过指令判断接收到的内容是温度*/	
@@ -92,14 +97,19 @@ SYS_RETSTATUS bsp_US100_Data_Parse(BSP_US100 *us100)
 			/*赋值温度值*/
 			us100->temperature = (s16)temperature;	
 
-			/*标记为新数据*/
-			us100->TEMP_DATA_STATUS = US100_DATA_NEW;			
+			/*标记数据更新成功*/
+			us100->UPDATE_STATUS = US100_UPDATE_SUCC;			
 		
+			/*标记返回成功*/			
 			retStaus = SYS_RET_SUCC;
 		}
 		else
 		{
-			retStaus = SYS_RET_FAIL;		
+			/*标记数据更新失败*/
+			us100->UPDATE_STATUS = US100_UPDATE_FAIL;
+			
+			/*返回失败*/
+			retStaus = SYS_RET_FAIL;			
 		}
 	}	
 	
@@ -120,13 +130,13 @@ void bsp_US100_Start_Meas_Distance(BSP_US100 *us100)
 s16 bsp_US100_Get_Distance(BSP_US100 *us100)
 {
 	/*判断数据是否更新*/
-	if (us100->DIST_DATA_STATUS != US100_DATA_NEW)
+	if (us100->UPDATE_STATUS != US100_UPDATE_SUCC)
 	{
 		return SYS_NO_AVA_MARK; /*无效标记*/
 	}
 	
-	/*是新数据,标记数据为老数据*/
-	us100->DIST_DATA_STATUS = US100_DATA_OLD;
+	/*本次数据已用,标记无效*/
+	us100->UPDATE_STATUS = US100_UPDATE_FAIL;
 	
 	/*开始新一次距离测量*/
 	bsp_US100_Start_Meas_Distance(us100);

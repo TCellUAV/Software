@@ -40,7 +40,8 @@ typedef struct
 	PeriodExecuteTime UavCalib;
 	PeriodExecuteTime FlyLog;	
 	PeriodExecuteTime HciOledShow;
-	PeriodExecuteTime HciHostSlave;	
+	PeriodExecuteTime HciHostSlave;
+	PeriodExecuteTime TaskStatusCheck;
 	
 	/*Test everywhere*/
 	PeriodExecuteTime EveryWhere;

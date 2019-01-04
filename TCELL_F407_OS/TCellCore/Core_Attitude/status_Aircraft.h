@@ -140,11 +140,11 @@ typedef struct
 	Uav_Mission_Status LandHome;
 }Uav_Onekey_Mission;
 
-/*是否允许同时执行姿态控制*/
+/*是否允许同时执行任务外的姿态控制*/
 typedef enum
 {
-	UAV_MISSION_ATTITUDE_CTRL_ENABLE  = 1, /*允许同时执行姿态控制*/
-	UAV_MISSION_ATTITUDE_CTRL_DISABLE = 0, /*禁止同时执行姿态控制*/
+	UAV_MISSION_ATTITUDE_CTRL_ENABLE  = 1, /*允许同时执行任务外的姿态控制*/
+	UAV_MISSION_ATTITUDE_CTRL_DISABLE = 0, /*禁止同时执行任务外的姿态控制*/
 }UAV_MISSION_ATTITUDE_CTRL_STATUS;
 
 typedef struct
