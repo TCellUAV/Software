@@ -382,19 +382,19 @@ void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTas
 			{
 				/*acc raw & filter*/
 				g_sSendSensorData.accX       = g_psAccRaw->x;
-				g_sSendSensorData.accXFilter = g_psAccAttData->x;
+				g_sSendSensorData.accXFilter = g_psAccAttitude->x;
 				g_sSendSensorData.accY       = g_psAccRaw->y;
-				g_sSendSensorData.accYFilter = g_psAccAttData->y;
+				g_sSendSensorData.accYFilter = g_psAccAttitude->y;
 				g_sSendSensorData.accZ  	 = g_psAccRaw->z;	
-				g_sSendSensorData.accZFilter = g_psAccAttData->z;
+				g_sSendSensorData.accZFilter = g_psAccAttitude->z;
 				
 				/*gyro raw & filter*/
 				g_sSendSensorData.gyroX 	  = g_psGyroRaw->x;
-				g_sSendSensorData.gyroXFilter = g_psGyroFilter->x;		
+				g_sSendSensorData.gyroXFilter = g_psGyroAttitude->x;		
 				g_sSendSensorData.gyroY 	  = g_psGyroRaw->y;
-				g_sSendSensorData.gyroYFilter = g_psGyroFilter->y;	
+				g_sSendSensorData.gyroYFilter = g_psGyroAttitude->y;	
 				g_sSendSensorData.gyroZ 	  = g_psGyroRaw->z;	
-				g_sSendSensorData.gyroZFilter = g_psGyroFilter->z;		
+				g_sSendSensorData.gyroZFilter = g_psGyroAttitude->z;		
 
 				/*mag raw & filter*/
 				g_sSendSensorData.magX 		 = g_psMagRaw->x;

@@ -131,20 +131,14 @@ void rt_entry_thread_euler_angle_calculate(void* parameter)
 		#endif
 		
 		/*MAG数据获取及处理*/
-		#ifdef HW_CUT__USE_MD_MAG	/*MD MAG*/
-		#ifdef HW_CUT__USE_GPS_MAG	/*GPS MAG*/
-		ahrs_mag_data_get_and_dp(); /*GPS MAG替换MD MAG*/
-		#else
-		ahrs_mag_data_get_and_dp(); /*MD MAG*/
-		#endif
-		#endif
+		ahrs_mag_data_get_and_dp();
 		
 		/*欧拉角计算: 96us*/
 		ahrs_grades_calculat_attitude(g_psAhrsQuater, \
-								  	  g_psAccAttData, \
-								      g_psGyroAttData, \
-								      g_psGyroFilter, \
-								      g_psMagAttData->magYaw, \
+								  	  g_psAccAttitude, \
+								      g_psGyroAttitude, \
+									  g_psGyroBwLP, \
+								      g_psMagAttitude->magYaw, \
 								      g_psAhrsAttitude);																		 
 			
 		/*更新方向余弦矩阵*/
@@ -179,7 +173,7 @@ void rt_entry_thread_vertical_fusion(void* parameter)
 		#endif
 		
 		/*超声波数据更新及处理*/		
-		#if defined(HW_CUT__USE_ULTR)		
+		#if defined(HW_CUT__USE_ULTR)
 		ultr_altitude_data_get_and_dp(g_psUav_Status);
 		#endif
 		
@@ -308,8 +302,7 @@ void rt_entry_opticflow_data_horizontal_fusion(void* parameter)
 		get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->OpflowHorFusion));		
 		
 		/*对光流数据进行处理,计算出需要的速度,位移信息*/
-		if ((g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
-			(g_sOpFlowUpixelsLC306.UPDATE_STATUS == OPFLOW_UPIXELSLC306_UPDATE_SUCC))
+		if (g_sUav_Status.UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK)
 		{
 
 		}	
@@ -374,7 +367,7 @@ void rt_entry_tuav_calib_system(void* parameter)
 			/*获取遥控指定校准面序号*/
 			g_psAccCalibSystem->CUR_SIDE_INDEX = calib_acc_sensor_check();
 			
-			/*有效面序才开始校准*/
+			/*有效面序才开始采样+校准*/
 			if ((g_psAccCalibSystem->CUR_SIDE_INDEX != SIDE_INDEX_NULL) || \
 				(g_psAccCalibSystem->ENTRY_STATUS == ENTRY_CALIB_INTO) || \
 				(g_psAccCalibSystem->ENTRY_STATUS == ENTRY_CALIB_EXIT))
@@ -390,7 +383,7 @@ void rt_entry_tuav_calib_system(void* parameter)
 			/*获取遥控指定校准面序号*/
 			g_psMagCalibSystem->CUR_SIDE_INDEX = calib_mag_sensor_check();
 			
-			/*有效面序才开始校准*/
+			/*有效面序才开始采样+校准*/
 			if ((g_psMagCalibSystem->CUR_SIDE_INDEX != SIDE_INDEX_NULL) || \
 				(g_psMagCalibSystem->ENTRY_STATUS == ENTRY_CALIB_INTO) || \
 				(g_psMagCalibSystem->ENTRY_STATUS == ENTRY_CALIB_EXIT))				

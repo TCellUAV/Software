@@ -223,14 +223,15 @@ void calib_Acc_Sensor_System_Reset(void);
 /*磁力计校准状态清除*/
 void calib_Mag_Sensor_System_Reset(void);
 
-
 /*=== 传感器进行采集&校准 ===*/
-/*加速度计执行校准*/
+/*加速度计执行采样+校准*/
 SYS_RETSTATUS calib_acc_sensor_dp(CALIB_SIDE_INDEX calibSideIndex);
 
-/*磁力计执行校准*/
+/*磁力计执行采样+校准*/
 SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex);
 
+/*检查采样状态*/
+SYS_RETSTATUS calib_sample_status_check(u8 *BUFF, u8 CHECK_TARG, u16 totalNbr);
 
 /*=== 校准参数读取&初始化 ===*/
 /*加速度传感器校准准参数初始化(读取)*/

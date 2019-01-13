@@ -62,13 +62,4 @@
 	#define REMOTE_DATA_RECV__SBUS
 #endif
 
-
-
-/*电机驱动场景选择*/
-/*debugging*/
-#define CTRL_MOTOR_DRIVER_ON_FIXED_DEBUGGING  (0)  /*固定机架调参时使能,正式飞行时静止使能*/
-
-
-#define REMOT_THROTTLE_IS_AUTO_RETURN_TO_MID	(1)	/*1:遥控油门自动回中 / 0:遥控油门不是自动回中*/
-
 #endif

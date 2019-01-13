@@ -106,10 +106,12 @@ void control_fly_mission_clear(Uav_Status *uavStatus, UAV_FLY_MISSION TARG_MISSI
 		/*一键起飞*/
 		case UAV_FLY_MISSION_ONEKEY_FLY:
 		{
-			g_psPidSystem->HighAcc.PidScale.kP   = 1.0f;
-			g_psPidSystem->HighAcc.PidScale.kI   = 1.0f;
-			g_psPidSystem->HighSpeed.PidScale.kP = 1.0f;
-			g_psPidSystem->HighSpeed.PidScale.kI = 1.0f;
+			g_psPidSystem->HighAcc.PidScale.kP      = 1.0f;
+			g_psPidSystem->HighAcc.PidScale.kI      = 1.0f;		
+			g_psPidSystem->HighSpeed.PidScale.kP    = 1.0f;
+			g_psPidSystem->HighSpeed.PidScale.kI    = 1.0f;
+			g_psPidSystem->HighPosition.PidScale.kP = 1.0f;
+			g_psPidSystem->HighPosition.PidScale.kI = 1.0f;
 		}break;
 		
 		/*一键返航/降落*/
@@ -149,7 +151,7 @@ void control_fly_mission_clear(Uav_Status *uavStatus, UAV_FLY_MISSION TARG_MISSI
 	uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION = UAV_FLY_MISSION_NULL;
 }
 
-/*设置当前任务*/
+/*清除上一个任务,设置当前任务*/
 void control_fly_mission_set(Uav_Status *uavStatus, UAV_FLY_MISSION SET_MISSION, UAV_MISSION_ATTITUDE_CTRL_STATUS ATTITUDE_CTRL_STATUS)
 {
 	/*清除上个任务的状态*/
@@ -175,9 +177,8 @@ UAV_FLY_MISSION control_fly_mission_get(void)
 /*一键起飞*/
 void control_fly_mission_onekey_fly(Uav_Status *uavStatus)
 {
-	/*气压计和超声波至少有一个有效,且高度目标点未设置*/
-	if (((uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_OK) || \
-		 (uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_OK)) && \
+	/*竖直定高传感器有效,且高度目标点未设置*/
+	if ((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE != UAV_VERTICAL_SENMOD_CURRENT_NULL) && \
 	    (uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.TARG_SET_STATUS == UAV_MISSION_TARG_SET_NO))
 	{
 		/*设置一键起飞期望悬停高度*/
@@ -192,9 +193,8 @@ void control_fly_mission_onekey_fly(Uav_Status *uavStatus)
 		/*竖直控制模式为:定高控制模式*/
 		uavStatus->UavControlMode.Vertical.CONTROL_MODE = UAV_VERTICAL_CONTROL_FIX_HEIGHT;
 	}
-	/*切定高起飞时:气压计和超声波都无效,且高度目标点未设置*/
-	else if (((uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
-			  (uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_NO)) && \
+	/*切定高起飞时:竖直定高传感器无效,且高度目标点未设置*/
+	else if ((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_NULL) && \
 			 (uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.TARG_SET_STATUS == UAV_MISSION_TARG_SET_NO))
 	{
 		/*飞行模式标记为姿态模式*/
@@ -204,11 +204,10 @@ void control_fly_mission_onekey_fly(Uav_Status *uavStatus)
 		uavStatus->UavControlMode.Vertical.CONTROL_MODE = UAV_VERTICAL_CONTROL_SELFAUTO;	
 
 		/*一键起飞任务失败,清除任务*/
-		control_fly_mission_clear(uavStatus, UAV_FLY_MISSION_ONEKEY_FLY);		
+		control_fly_mission_clear(uavStatus, UAV_FLY_MISSION_ONEKEY_FLY);
 	}
-	/*切定高起飞状态下:气压计和超声波都无效,且已设置高度目标点(传感器故障)*/
-	else if (((uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS == UAV_SENMOD_DATA_NO) && \
-			  (uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS == UAV_SENMOD_DATA_NO)) && \
+	/*切定高起飞状态下:竖直定高传感器无效,且已设置高度目标点(传感器故障)*/
+	else if ((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_NULL) && \
 			 (uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.TARG_SET_STATUS == UAV_MISSION_TARG_SET_OK))
 	{
 		/*飞行模式标记为姿态模式*/
@@ -221,16 +220,18 @@ void control_fly_mission_onekey_fly(Uav_Status *uavStatus)
 		control_fly_mission_clear(uavStatus, UAV_FLY_MISSION_ONEKEY_FLY);
 	}
 	
-	/*控制模式为定高控制 & 目标点已设置 & 且未到达目标点*/
+	/*控制模式为定高控制(处于定高起飞任务) & 目标点已设置 & 且未到达目标点*/
 	if ((uavStatus->UavFlyType.CURRENT == UAV_FLY_TYPE_FIX_HEIGHT) && \
 		(uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.TARG_SET_STATUS == UAV_MISSION_TARG_SET_OK) && \
 		(uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.TARG_REACH_STATUS == UAV_MISSION_TARG_REACH_NO))
 	{
 		/*临时设置竖直控制的PID参数,实现快速起飞*/
-		g_psPidSystem->HighAcc.PidScale.kP   = 1.0f;
-		g_psPidSystem->HighAcc.PidScale.kI   = 1.5f;		
-		g_psPidSystem->HighSpeed.PidScale.kP = 1.2f;
-		g_psPidSystem->HighSpeed.PidScale.kI = 1.5f;	
+		g_psPidSystem->HighAcc.PidScale.kP      = 1.0f;
+		g_psPidSystem->HighAcc.PidScale.kI      = 1.5f;		
+		g_psPidSystem->HighSpeed.PidScale.kP    = 1.2f;
+		g_psPidSystem->HighSpeed.PidScale.kI    = 1.2f;
+		g_psPidSystem->HighPosition.PidScale.kP = 1.5f;
+		g_psPidSystem->HighPosition.PidScale.kI = 1.0f;		
 		
 		/*当前高度大于期望高度,将参数恢复正常*/
 		if (g_psPidSystem->HighPosition.expect <= g_psSinsReal->curPosition[EARTH_FRAME_Z])
@@ -239,10 +240,12 @@ void control_fly_mission_onekey_fly(Uav_Status *uavStatus)
 			uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.TARG_REACH_STATUS = UAV_MISSION_TARG_REACH_OK;
 			
 			/*恢复正常控制比例参数*/
-			g_psPidSystem->HighAcc.PidScale.kP   = 1.0f;
-			g_psPidSystem->HighAcc.PidScale.kI   = 1.0f;		
-			g_psPidSystem->HighSpeed.PidScale.kP = 1.0f;
-			g_psPidSystem->HighSpeed.PidScale.kI = 1.0f;
+			g_psPidSystem->HighAcc.PidScale.kP      = 1.0f;
+			g_psPidSystem->HighAcc.PidScale.kI      = 1.0f;		
+			g_psPidSystem->HighSpeed.PidScale.kP    = 1.0f;
+			g_psPidSystem->HighSpeed.PidScale.kI    = 1.0f;
+			g_psPidSystem->HighPosition.PidScale.kP = 1.0f;
+			g_psPidSystem->HighPosition.PidScale.kI = 1.0f;				
 			
 			/*清除该任务*/
 			control_fly_mission_clear(uavStatus, UAV_FLY_MISSION_ONEKEY_FLY);
@@ -439,7 +442,7 @@ void control_fly_mission_bero_gps_write_pos(Uav_Status *uavStatus)
 {
 	/*判断是否完成写入*/
 	
-	/*若GPS点位写入完成,则清除任务*/
+	/*若GPS点位写入完成,则清除上一个任务,清除任务*/
 	control_fly_mission_set(uavStatus, UAV_FLY_MISSION_NULL, UAV_MISSION_ATTITUDE_CTRL_ENABLE);
 }
 

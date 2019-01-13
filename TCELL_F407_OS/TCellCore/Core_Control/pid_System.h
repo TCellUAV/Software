@@ -160,7 +160,7 @@ fp32 pid_Control_Div_LPF_Differential_Forward(PidLink *pidLink, PID_CONTROLER_LI
 
 void pid_Link_Integrate_Reset(PidLink *pidLink);	/*PID单环积分复位*/
 void pid_Horizontal_Takeoff_Integrate_Reset(void);	/*PID水平起飞前积分复位*/
-void pid_Horizontal_GPS_Ctrl_Integrate_Reset(void);		/*PID水平控制积分复位*/
+void pid_Horizontal_GPS_Ctrl_Integrate_Reset(void);	/*PID水平控制积分复位*/
 void pid_Vertical_Ctrl_Integrate_Reset(void);		/*PID竖直控制积分复位*/
 
 SYS_RETSTATUS pid_parameter_save_or_reset(PidSystem *pidSystem);/*PID参数保存或重置(在线调参)*/

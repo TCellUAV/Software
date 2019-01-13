@@ -369,9 +369,7 @@ UAV_LOCK_STATUS remot_aircraft_lock_and_unlock(void)
 		*******       *******
 			  *          
 	*/
-	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
-		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-		(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
+	if ((remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MAX)      == REMOT_DATA_MAX))
 	{
 		/*满足条件目标Ticks累加*/
@@ -401,9 +399,7 @@ UAV_LOCK_STATUS remot_aircraft_lock_and_unlock(void)
 		*******       *******
 		*
 	*/	
-	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
-		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-		(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
+	if ((remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MIN)      == REMOT_DATA_MIN))
 	{
 		/*满足条件目标Ticks累加*/

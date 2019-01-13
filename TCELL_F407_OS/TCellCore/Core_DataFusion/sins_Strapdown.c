@@ -15,10 +15,6 @@ SINS *g_psSinsReal = &g_sSinsReal;
 SINS g_sSinsOrigion   = {0};
 SINS *g_psSinsOrigion = &g_sSinsOrigion;
 
-/*滤波后的惯导状态*/
-SINS g_sSinsAfterFilter   = {0};
-SINS *g_psSinsAfterFilter = &g_sSinsAfterFilter;
-
 /*滤波后的惯导反馈量*/
 SINS g_sSinsFilterFeedback   = {0};
 SINS *g_psSinsFilterFeedback = &g_sSinsFilterFeedback;
@@ -132,18 +128,18 @@ void sins_get_body_relative_earth_acc(Acc3f *sinsAcc)
 	g_sSinsAccBody.y = -g_sSinsAccEarth.x * SIN_YAW + g_sSinsAccEarth.y * COS_YAW;	 /*机头正向运动加速度,Y轴正向*/
 }
 
-/*竖直方向,气压计和超声波切换*/
+/*竖直方向,气压计和超声波切换(非独立融合)*/
 void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 {
 	u16 i;
 	
 	/*|------------|
 		     |
-		 pos > 200cm (bero)
+		 pos > SYS_ULTR_MAX_MEAS_DISTANCE cm (bero)
 			 |
 	  |------------|
 	         |
-	    0 < pos < 200cm (ultr / bero)
+	    0 < pos < SYS_ULTR_MAX_MEAS_DISTANCE cm (ultr / bero)
 	         |
 	  |------------|
 	*/
@@ -151,26 +147,83 @@ void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 	/*状态更迭*/
 	uavStatus->UavSenmodStatus.Vertical.LAST_USE = uavStatus->UavSenmodStatus.Vertical.CURRENT_USE;
 	
-	/*是否使用超声波:当超声波有效时(高度范围内),且遥控切换为超声波作为高度传感器,则惯导数据来源为超声波观测高度*/
-	if ((get_ultr_estimate_data_status(uavStatus) == UAV_SENMOD_DATA_OK) && \
-		(g_psUav_Status->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR))
+	/*遥控指定: 竖直方向仅使用无限制传感器*/
+	if (uavStatus->UavSenmodStatus.Vertical.WORK_STATUS == UAV_SENMOD_WORK_LIMITLESS)
 	{
-		/*竖直高度观测值为气压计观测高度*/
-		g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowUltrAltitude;
+		/*气压计可用,就使用气压计作为当前竖直方向观测传感器*/
+		if (get_bero_estimate_data_status(uavStatus) == UAV_SENMOD_DATA_OK)
+		{	
+			/*竖直高度观测值为气压计观测高度*/		
+			g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowBeroAltitude;
+			
+			/*传感器数据同步cnt_5MS*/
+			g_psSinsReal->sensorDataSync5ms = 20;
+			
+			/*标记气压计能用于控制*/
+			uavStatus->UavSenmodStatus.Vertical.Bero.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;				
+			
+			/*标记本次使用气压计*/
+			uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_BERO;		
+		}
+		else
+		{	
+			/*标记气压计不能用于控制*/
+			uavStatus->UavSenmodStatus.Vertical.Bero.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_DISALLOW;			
+			
+			/*标记竖直传感器使用NULL*/
+			uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_NULL;			
+		}
 	}
-	/*是否使用气压计:当气压计有效时,且遥控切换为气压计作为高度传感器,则惯导数据来源为气压计观测高度*/		
-	else if ((get_bero_estimate_data_status(uavStatus) == UAV_SENMOD_DATA_OK) && \
-			 (g_psUav_Status->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_BERO))
+	/*遥控指定: 竖直方向使用限制传感器和无限制传感器自动切换*/
+	else if (uavStatus->UavSenmodStatus.Vertical.WORK_STATUS == UAV_SENMOD_WORK_AUTO_SWITCH)
 	{
-		/*竖直高度观测值为气压计观测高度*/		
-		g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowBeroAltitude;
+		/*超声波可用,就使用超声波作为当前竖直方向观测传感器*/
+		if (get_ultr_estimate_data_status(uavStatus) == UAV_SENMOD_DATA_OK)
+		{
+			/*竖直高度观测值为超声波观测高度*/
+			g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowUltrAltitude;
+
+			/*传感器数据同步cnt_5MS*/			
+			g_psSinsReal->sensorDataSync5ms = 20;		
+
+			/*标记超声波能用于控制*/
+			uavStatus->UavSenmodStatus.Vertical.Ultr.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;
+			
+			/*标记本次使用超声波*/
+			uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_ULTR;
+		}
+		/*超声波不可用,就使用气压计作为当前竖直方向观测传感器*/
+		else if (get_bero_estimate_data_status(uavStatus) == UAV_SENMOD_DATA_OK)
+		{
+			/*竖直高度观测值为气压计观测高度*/		
+			g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowBeroAltitude;
+
+			/*传感器数据同步cnt_5MS*/			
+			g_psSinsReal->sensorDataSync5ms = 20;			
+
+			/*标记气压计能用于控制*/
+			uavStatus->UavSenmodStatus.Vertical.Bero.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;			
+			
+			/*标记本次使用气压计*/
+			uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_BERO;
+		}
+		/*超声波和气压计都无效*/
+		else
+		{			
+			/*标记超声波不能用于控制*/
+			uavStatus->UavSenmodStatus.Vertical.Ultr.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_DISALLOW;	
+			
+			/*标记气压计不能用于控制*/
+			uavStatus->UavSenmodStatus.Vertical.Bero.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_DISALLOW;	
+
+			/*标记竖直传感器使用NULL*/
+			uavStatus->UavSenmodStatus.Vertical.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_NULL;			
+		}
 	}
 	
-	/*气压计切超声波 || 超声波切气压计*/
-	if (((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR) && \
-		 (uavStatus->UavSenmodStatus.Vertical.LAST_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_BERO)) || \
-		((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_BERO) && \
-	     (uavStatus->UavSenmodStatus.Vertical.LAST_USE == UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR)))
+	/*(气压计切超声波 || 超声波切气压计) && 切换成的传感器能用于控制*/
+	if ((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE != uavStatus->UavSenmodStatus.Vertical.LAST_USE) && \
+		(uavStatus->UavSenmodStatus.Vertical.CURRENT_USE != UAV_VERTICAL_SENMOD_CURRENT_NULL))
 	{
 		/*设置当前位置*/
 		g_psSinsReal->curPosition[EARTH_FRAME_Z] = g_psSinsReal->estimatePos[EARTH_FRAME_Z];
@@ -198,6 +251,80 @@ void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 	}
 }
 
+/*水平方向,GPS和光流切换(独立融合)*/
+void sins_horizontal_gps_opticflow_auto_change(Uav_Status *uavStatus)
+{	
+	/*|------------|
+		     |
+		 pos > SYS_ULTR_MAX_MEAS_DISTANCE cm    (gps)
+			 |
+	  |------------|
+	         |
+	    0 < pos < SYS_ULTR_MAX_MEAS_DISTANCE cm (gps / opticflow)
+	         |
+	  |------------|
+	*/
+	
+	/*状态更迭*/
+	uavStatus->UavSenmodStatus.Horizontal.LAST_USE = uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE;
+	
+	/*遥控指定: 水平方向仅使用无限制传感器*/
+	if (uavStatus->UavSenmodStatus.Horizontal.WORK_STATUS == UAV_SENMOD_WORK_LIMITLESS)
+	{
+		/*判断GPS是否可用于控制*/
+		if (status_GPS_Fix_Ava_Check(uavStatus) == UAV_SENMOD_USE_CONTROL_ALLOW)
+		{
+			/*标记GPS可用于水平定点*/
+			uavStatus->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;
+			
+			/*标记本次使用GPS*/
+			uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_GPS;
+		}
+		else
+		{
+			/*标记GPS不可用于水平定点*/
+			uavStatus->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_DISALLOW;
+			
+			/*标记本次使用NULL*/
+			uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_NULL;			
+		}
+	}
+	/*遥控指定: 水平方向使用限制传感器和无限制传感器自动切换*/
+	else if (uavStatus->UavSenmodStatus.Horizontal.WORK_STATUS == UAV_SENMOD_WORK_AUTO_SWITCH)
+	{
+		/*判断当前竖直方向是否是用超声波(超声波可用+高度在有效高度以下) && 光流可用*/
+		if ((uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == UAV_VERTICAL_SENMOD_CURRENT_ULTR) && \
+			(uavStatus->UavSenmodStatus.Horizontal.Opticflow.DATA_STATUS == UAV_SENMOD_DATA_OK))
+		{
+			/*标记光流能用于控制*/
+			uavStatus->UavSenmodStatus.Horizontal.Opticflow.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;
+			
+			/*标记本次使用光流*/
+			uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_OPTICFLOW;			
+		}
+		/*光流不可用,就使用GPS作为当前水平方向观测传感器*/
+		else if (status_GPS_Fix_Ava_Check(uavStatus) == UAV_SENMOD_USE_CONTROL_ALLOW)
+		{
+			/*判断GPS是否可用于控制*/
+			uavStatus->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;
+		
+			/*标记本次使用GPS*/
+			uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_GPS;		
+		}
+		/*GPS和光流都无效*/		
+		else
+		{
+			/*标记GPS不可用于水平定点*/
+			uavStatus->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_DISALLOW;
+			
+			/*标记光流不能用于控制*/
+			uavStatus->UavSenmodStatus.Horizontal.Opticflow.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_DISALLOW;			
+			
+			/*标记水平方向本次使用NULL*/
+			uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_NULL;			
+		}		
+	}
+}
 
 #define TIME_CONTANST_ZER   (3.5f)
 #define K_ACC_ZER 	        (1.0f / (TIME_CONTANST_ZER * TIME_CONTANST_ZER * TIME_CONTANST_ZER))
@@ -292,7 +419,7 @@ void sins_kalman_estimate_vertical(void)
 	get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->SINS_High));
 	
 	/*间隔时间换算成秒*/
-	sinsHighDeltaT = g_psSystemPeriodExecuteTime->SINS_High.DeltaTime / 1000.0f;	
+	sinsHighDeltaT = g_psSystemPeriodExecuteTime->SINS_High.DeltaTime / 1000.0f;
 	
 	/*超声波定高和气压计定高自动切换(选择高度观测数据来源)*/
 	sins_vertical_bero_ultr_auto_change(g_psUav_Status);

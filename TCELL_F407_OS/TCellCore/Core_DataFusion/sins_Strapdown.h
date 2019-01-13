@@ -56,6 +56,8 @@ typedef struct
 	fp32 			   lastSpeed[3];								/*上次惯导速度*/
 	fp32 		       estimatePos[3];								/*本次观测位置*/
 	SINS_FUSION_STATUS FUSION_STATUS[2];							/*惯导融合状态*/
+	
+	u16				   sensorDataSync5ms;							/*传感器数据同步cnt*/
 }SINS;
 
 /*三阶互补*/
@@ -77,8 +79,11 @@ typedef struct
 /*机体系->导航系 加速度*/
 void sins_get_body_relative_earth_acc(Acc3f *sinsAcc);
 
-/*竖直方向,气压计和超声波切换*/
+/*竖直方向,气压计和超声波切换(非独立融合)*/
 void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus);
+
+/*水平方向,GPS和光流切换(独立融合)*/
+void sins_horizontal_gps_opticflow_auto_change(Uav_Status *uavStatus);
 
 /*三阶互补求竖直方向上的加速度、速度、位置(Z竖直)*/
 void sins_thirdorder_complement_vertical(void);
@@ -116,10 +121,6 @@ extern SINS *g_psSinsReal;
 /*捷联惯导:原始的惯导状态*/
 extern SINS g_sSinsOrigion;	/*( kalman+Strapdown)z(高度)、(Strapdown+kalman(GPS正常))x,y(水平正东、正北)*/
 extern SINS *g_psSinsOrigion;
-
-/*捷联惯导:滤波后的惯导状态*/
-extern SINS g_sSinsAfterFilter;	/*x、y数据在GPS异常时有效*/
-extern SINS *g_psSinsAfterFilter;
 
 /*捷联惯导:滤波后的惯导反馈量*/
 extern SINS g_sSinsFilterFeedback;

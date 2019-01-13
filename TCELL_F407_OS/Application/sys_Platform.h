@@ -213,45 +213,14 @@ Yaw(欧拉角角,惯导方向,欧拉角绕z轴) - z(惯导元器件z方向) - xxxxxxxxxxxxxx      - 
 
 /************* 模块参数性能 *************/
 /*ULTR超声波*/
-#define SYS_ULTR_MAX_MEAS_DISTANCE		 	           (220)	/*超声波最大允许测量距离:230cm*/
-#define SYS_ULTR_MIN_MEAS_PERIOD_TICK_MS 	           (75)  	/*超声波最小测量周期:75ms*/
+#define SYS_ULTR_MAX_MEAS_DISTANCE		 	           (200)	/*超声波最大允许测量距离:200cm*/
+#define SYS_ULTR_MIN_MEAS_PERIOD_TICK_MS 	           (100)  	/*超声波最小测量周期:100ms*/
 
 /*BERO气压计*/
-#define SYS_BERO_MIN_MEAS_DISTANCE		 	           (250)	/*气压计最小切换距离:200cm*/
-#define SYS_BERO_MIN_MEAS_PERIOD_TICK_MS 	           (110)  	/*超声波最小测量周期:110ms*/
+#define SYS_BERO_MIN_MEAS_PERIOD_TICK_MS 	           (110)  	/*SPL06气压计最小测量周期:110ms*/
 
 /*OPFLOW光流*/
-#define SYS_OPFLOW_MIN_MEAS_DISTANCE		 	       (100)	/*光流最小允许竖直距离:100cm*/
-#define SYS_OPFLOW_MAX_MEAS_DISTANCE		 	       (300)	/*光流最大允许竖直距离:300cm*/
-
-/*GPS有效高度*/
-#define SYS_GPS_MIN_MEAS_DISTANCE_OVER_OPFLOW		   (SYS_OPFLOW_MAX_MEAS_DISTANCE + 200) /*GPS最小允许竖直距离:500cm*/	
-
-/*GPS信号质量*/
-/*10hz,PVT数据,1秒钟窗口(10个数据)*/
-/*信号很差时的卫星最少个数 sateNbr <= 7*/
-/*信号中等时的卫星最少个数 7 < sateNbr < 9*/
-/*信号很好时的卫星最少个数 sateNbr >= 9*/
-	
-/*信号很差时的水平位置精度因子 posQA >= 3.5f*/
-/*信号中等时的水平位置精度因子 3.0f< posQA <3.5f*/	
-/*信号很好时的水平位置精度因子 posQA <= 3.0f*/
-	
-/*信号很差时的定位方式:最近10次中出现7次3D(0x03)模式,3次2D(0x02)模式:(7*3 + 3*2)/10 = 2.7*/
-/*信号中等时的定位方式:最近10次中出现8次3D(0x03)模式,2次2D(0x02)模式:(8*3 + 2*2)/10 = 2.8*/	
-/*信号很好时的定位方式:最近10次中出现9次3D(0x03)模式,1次2D(0x02)模式:(9*3 + 1*2)/10 = 2.9*/
-
-#define SYS_GPS_M8N_DATA_QUALITY_BAD_SATENBR_MIN	   (7.0f)	
-#define SYS_GPS_M8N_DATA_QUALITY_BAD_PDOP_QUALITY_MIN  (3.5f)	
-#define SYS_GPS_M8N_DATA_QUALITY_BAD_FIX_MODE_MAX	   (2.6f)	
-
-#define SYS_GPS_M8N_DATA_QUALITY_MEDIUM_SATENBR_MIN	   (8.0f)	
-#define SYS_GPS_M8N_DATA_QUALITY_MEDIUM_PDOP_QUALITY   (3.0f) 
-#define SYS_GPS_M8N_DATA_QUALITY_MEDIUM_FIX_MODE	   (2.8f)
-
-#define SYS_GPS_M8N_DATA_QUALITY_GOOD_SATENBR_MAX	   (9.0f)    
-#define SYS_GPS_M8N_DATA_QUALITY_GOOD_PDOP_QUALITY_MAX (3.0f)   
-#define SYS_GPS_M8N_DATA_QUALITY_GOOD_FIX_MODE_MIN	   (2.9f)	
+#define SYS_OPFLOW_MAX_MEAS_DISTANCE		 	       (200)	/*光流最大允许竖直距离:200cm*/
 
 /*电子调速器(电调)*/
 #define ESC_MIN_PULSE_ZERO_SPEED_VALUE	               (1000) /*Electronic Speed Control最小脉冲宽度,零速度,电机停转状态*/

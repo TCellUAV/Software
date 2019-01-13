@@ -6,7 +6,7 @@
 
 #define AIRCRAFT_LOCK_CONTINU_TIME_MS		(100)	 /*动作持续100ms(0.1s)以上锁定*/
 #define AIRCRAFT_UNLOCK_CONTINU_TIME_MS		(2000)	 /*动作持续2000ms(2s)以上解锁*/
-#define AIRCRAFT_AUTOLOCK_CONTINU_TIME_MS	(15000)	 /*未飞前未操作持续15000ms(15s)自动上锁*/
+#define AIRCRAFT_AUTOLOCK_CONTINU_TIME_MS	(10000)	 /*未飞前未操作持续15000ms(15s)自动上锁*/
 
 /*= 1.飞行器本身的状态 =*/	
 /*飞行器锁定状态*/
@@ -281,23 +281,32 @@ typedef struct
 	UAV_SENMOD_FUSION_STATUS			 FUSION_STATUS;					/*融合状态*/
 }Uav_Fusion_Senmod_Status;
 
-/*当前使用传感器/模块*/
+/*当前使用传感器/模块类型*/
+/*传感器工作形式*/
 typedef enum
 {
-	UAV_VERTICAL_SENMOD_CURRENT_USE_NULL = 0,
-	UAV_VERTICAL_SENMOD_CURRENT_USE_BERO = 1,
-	UAV_VERTICAL_SENMOD_CURRENT_USE_ULTR = 2,
+	UAV_SENMOD_WORK_LIMITLESS   = 0,	/*无限制传感器:如BERO、GPS(仅使用)*/
+	UAV_SENMOD_WORK_AUTO_SWITCH = 1,	/*有限制传感器:如ULTR、OpticFlow*/
+}UAV_SENMOD_WORK_STATUS;
+
+/*当前使用的传感器/模块*/
+typedef enum
+{
+	UAV_VERTICAL_SENMOD_CURRENT_NULL = 0,       /*NULL*/
+	UAV_VERTICAL_SENMOD_CURRENT_BERO = 1,		/*BERO*/
+	UAV_VERTICAL_SENMOD_CURRENT_ULTR = 2,	   	/*ULTR*/
 }UAV_VERTICAL_SENMOD_CURRENT_USE;
 
 typedef enum
 {
-	UAV_HORIZONTAL_SENMOD_CURRENT_USE_NULL      = 0,
-	UAV_HORIZONTAL_SENMOD_CURRENT_USE_GPS       = 1,	
-	UAV_HORIZONTAL_SENMOD_CURRENT_USE_OPTICFLOW = 2,
+	UAV_HORIZONTAL_SENMOD_CURRENT_NULL      = 0,    /*NULL*/	
+	UAV_HORIZONTAL_SENMOD_CURRENT_GPS       = 1,	/*GPS*/
+	UAV_HORIZONTAL_SENMOD_CURRENT_OPTICFLOW = 2,	/*光流*/
 }UAV_HORIZONTAL_SENMOD_CURRENT_USE;
 
 typedef struct
 {
+	UAV_SENMOD_WORK_STATUS          WORK_STATUS; /*工作状态*/     
 	UAV_VERTICAL_SENMOD_CURRENT_USE LAST_USE;    /*上次使用*/
 	UAV_VERTICAL_SENMOD_CURRENT_USE CURRENT_USE; /*当前使用*/	
 	Uav_Nofusion_Senmod_Status      Bero;		 /*气压计*/
@@ -306,6 +315,7 @@ typedef struct
 
 typedef struct
 {
+	UAV_SENMOD_WORK_STATUS            WORK_STATUS; /*工作状态*/  	
 	UAV_HORIZONTAL_SENMOD_CURRENT_USE LAST_USE;	   /*上次使用*/
 	UAV_HORIZONTAL_SENMOD_CURRENT_USE CURRENT_USE; /*当前使用*/	
 	Uav_Nofusion_Senmod_Status 		  Opticflow;   /*光流*/

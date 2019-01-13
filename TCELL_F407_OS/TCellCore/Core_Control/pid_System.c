@@ -25,12 +25,12 @@ const fp32 g_PidLinkInit[PID_PARAMETER_SETTING_NBR][20]=
 	/*姿态 内环(角速度)+外环(角度)*/
 /*                                       	   Kp        Ki        Kd                kPscale  kIscale kDscale*/
 	/*1  2  3  4  5  6  7  8   9   10   11     12        13        14   15  16   17    18       19      20*/
-	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,500 ,0  ,0  ,200  ,0.75    ,5.5000    ,1.80  ,0  ,0  ,500   ,1       ,1      ,1}, /*Pitch_Gyro  ;俯仰角速度*/
-	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,500 ,0  ,0  ,200  ,0.75    ,5.5000    ,1.80  ,0  ,0  ,500   ,1       ,1      ,1}, /*Roll_Gyro   ;横滚角速度*/	
-	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,250 ,0  ,0  ,100  ,1.00    ,0.5000    ,0.00  ,0  ,0  ,300   ,1       ,1      ,1}, /*Yaw_Gyro    ;偏航角速度*/	
+	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,450 ,0  ,0  ,225  ,0.75    ,5.5000    ,1.80  ,0  ,0  ,500   ,1       ,1      ,1}, /*Pitch_Gyro  ;俯仰角速度*/
+	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,450 ,0  ,0  ,225  ,0.75    ,5.5000    ,1.80  ,0  ,0  ,500   ,1       ,1      ,1}, /*Roll_Gyro   ;横滚角速度*/	
+	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,275 ,0  ,0  ,125  ,1.00    ,0.5000    ,0.00  ,0  ,0  ,300   ,1       ,1      ,1}, /*Yaw_Gyro    ;偏航角速度*/	
 	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,30  ,0  ,0  ,80   ,4.00    ,0.0000    ,0.00  ,0  ,0  ,300   ,1       ,1      ,1}, /*Pitch_Angle ;俯仰角*/
 	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,30  ,0  ,0  ,80   ,4.00    ,0.0000    ,0.00  ,0  ,0  ,300   ,1       ,1      ,1}, /*Roll_Angle  ;横滚角*/
-	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,45  ,0  ,0  ,150  ,5.00    ,0.0000    ,0.00  ,0  ,0  ,300   ,1       ,1      ,1}, /*Yaw_Angle   ;偏航角*/
+	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,45  ,0  ,0  ,175  ,5.00    ,0.0000    ,0.00  ,0  ,0  ,300   ,1       ,1      ,1}, /*Yaw_Angle   ;偏航角*/
 
 	//定高参数
 	//高度单项比例控制，有偏差限幅、总输出即为最大攀升、下降速度400cm/s
@@ -43,8 +43,8 @@ const fp32 g_PidLinkInit[PID_PARAMETER_SETTING_NBR][20]=
 #else
 /*                                       	   Kp        Ki        Kd                kPscale  kIscale kDscale*/
 	/*1  2  3  4  5  6  7  8   9   10   11     12        13        14   15  16   17    18       19      20*/
-	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,400 ,0  ,0  ,500  ,5.0     ,0.300     ,0.1   ,0  ,0  ,500   ,1       ,1      ,1}, /*High_Speed    ;海拔攀升速度*/	
-	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,200 ,0  ,0  ,100  ,0.5     ,0.000     ,0     ,0  ,0  ,400   ,1       ,1      ,1}, /*High_Position ;海拔高度位置*/
+	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,400 ,0  ,0  ,500  ,3.0     ,0.000     ,0.1   ,0  ,0  ,500   ,1       ,1      ,1}, /*High_Speed    ;海拔攀升速度*/	
+	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,200 ,0  ,0  ,100  ,0.4     ,0.000     ,0     ,0  ,0  ,400   ,1       ,1      ,1}, /*High_Position ;海拔高度位置*/
 #endif
  /*
 1偏差限幅标志；  2积分限幅标志；3积分分离标志；   4期望；
@@ -71,7 +71,7 @@ const fp32 g_PidLinkInit[PID_PARAMETER_SETTING_NBR][20]=
 	
 	/*加速度控制器*/
 	//最大加速度200cm/s^2
-	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,600 ,0  ,0  ,500  ,0.12    ,1.5000    ,0     ,0  ,0  ,600   ,1       ,1      ,1}, /*垂直加速度控制器*/
+	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,600 ,0  ,0  ,500  ,0.10    ,0.8000    ,0     ,0  ,0  ,600   ,1       ,1      ,1}, /*垂直加速度控制器*/
 	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,100 ,0  ,0  ,3    ,0.32    ,0.0000    ,0     ,0  ,0  ,150   ,1       ,1      ,1}, /*水平经度方向加速度控制器*/
 	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,100 ,0  ,0  ,15   ,0.45    ,0.0000    ,0     ,0  ,0  ,25    ,1       ,1      ,1}, /*水平维度方向加速度控制器*/
 	{1  ,1 ,0 ,0 ,0 ,0 ,0 ,0   ,0  ,0  ,0    ,0.00    ,0.0000    ,0     ,0  ,0  ,0     ,1       ,1      ,1}, /*光流(水平X方向)加速度*/
@@ -396,7 +396,7 @@ fp32 pid_Control_Div_LPF(PidLink *pidLink, PID_CONTROLER_LINK CONTROLER_LINK)
 	/*加入新数据*/
 	pidLink->disErrHistory[0] = filter_Pid_Control_Device_LPF(pidLink->disErr, \
 															  &(g_sFilterTarg.PidControlBuff[CONTROLER_LINK]), \
-															  &(g_sFilterTarg.PidControlDivPara[0])); /*巴特沃斯低通后得到的微分项,20hz*/
+															  &(g_sFilterTarg.PidControlDivPara[FILTER_LPBW_PID_CONTROLER_DIV_200HZ_20HZ_IDX])); /*巴特沃斯低通后得到的微分项,20hz*/
 	
 	/*偏差限幅标志位*/
 	if (pidLink->ERROR_LIMIT_FLAG == PID_LIMIT_ENABLE)
@@ -490,7 +490,7 @@ fp32 pid_Control_Err_LPF(PidLink *pidLink, PID_CONTROLER_LINK CONTROLER_LINK)
 	pidLink->lastErrLPF = pidLink->errLPF;
 	pidLink->errLPF = filter_Pid_Control_Device_LPF(pidLink->error, \
 													&(g_sFilterTarg.PidControlBuff[CONTROLER_LINK]), \
-													&(g_sFilterTarg.PidControlErrPara[0])); /*巴特沃斯低通后得到的微分项,5hz*/
+													&(g_sFilterTarg.PidControlErrPara[FILTER_LPBW_PID_CONTROLER_ERR_200HZ_5HZ_IDX])); /*巴特沃斯低通后得到的微分项,5hz*/
 	
 	/*微分量*/
 	pidLink->disErrLPF = pidLink->errLPF - pidLink->lastErrLPF;
@@ -616,7 +616,7 @@ fp32 pid_Control_Div_LPF_Gyro(PidLink *pidLink, PID_CONTROLER_LINK CONTROLER_LIN
 	/*加入新数据*/
 	pidLink->disErrHistory[0] = filter_Pid_Control_Device_LPF(pidLink->disErr, \
 															  &(g_sFilterTarg.PidControlBuff[CONTROLER_LINK]), \
-															  &(g_sFilterTarg.PidControlDivGyroPara[0])); /*巴特沃斯低通后得到的微分项,30hz*/
+															  &(g_sFilterTarg.PidControlDivPara[FILTER_LPBW_PID_CONTROLER_DIV_200HZ_30HZ_IDX])); /*巴特沃斯低通后得到的微分项,30hz*/
 	/*微分项限幅*/
 	pidLink->disErrHistory[0] = math_Constrain(pidLink->disErrHistory[0], 500, -500);
 	
@@ -829,11 +829,13 @@ void pid_Horizontal_Takeoff_Integrate_Reset(void)
 	pid_Link_Integrate_Reset(&(g_sPidSystem.YawAngle));
 	pid_Link_Integrate_Reset(&(g_sPidSystem.YawGyro));
 
-	/*位置控制速度环积分项*/
+	/*GPS 位置控制速度环积分项*/
 	pid_Link_Integrate_Reset(&(g_sPidSystem.LongitudeSpeed));
 	pid_Link_Integrate_Reset(&(g_sPidSystem.LatitudeSpeed));
 	pid_Link_Integrate_Reset(&(g_sPidSystem.OpticFlowYSpeed));
 	pid_Link_Integrate_Reset(&(g_sPidSystem.OpticFlowXSpeed));	
+	
+	/*光流 控制积分项*/	
 }
 
 /*PID水平控制积分复位*/
