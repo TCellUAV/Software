@@ -49,7 +49,7 @@ void control_fly_mission_machine_reset(Uav_Status *uavStatus, UAV_FLY_MISSION TA
 /*清除任务*/
 void control_fly_mission_clear(Uav_Status *uavStatus, UAV_FLY_MISSION TARG_MISSION);
 
-/*设置当前任务*/
+/*清除上一个任务,设置当前任务*/
 void control_fly_mission_set(Uav_Status *uavStatus, UAV_FLY_MISSION SET_MISSION, UAV_MISSION_ATTITUDE_CTRL_STATUS ATTITUDE_CTRL_STATUS);
 
 /*获取当前任务*/

@@ -93,8 +93,8 @@ void ANO_DT_Data_Exchange(void)
 	if(f.send_senser) /*主动定时上传 发送惯导传感器数据*/
 	{
 		f.send_senser = 0;
-		ANO_DT_Send_Senser(g_psAccSINS->x, g_psAccSINS->y, g_psAccSINS->z,
-						   g_psGyroAttData->x, g_psGyroAttData->y, g_psGyroAttData->z,
+		ANO_DT_Send_Senser(g_psAccAttitude->x, g_psAccAttitude->y, g_psAccAttitude->z,
+						   g_psGyroAttitude->x, g_psGyroAttitude->y, g_psGyroAttitude->z,
 						   g_psMagFilter->x, g_psMagFilter->y, g_psMagFilter->z, (s32)g_psAttitudeAll->curPressure);
 	}	
 /////////////////////////////////////////////////////////////////////////////////////

@@ -531,7 +531,7 @@ void calib_Mag_Sensor_System_Reset(void)
 
 
 /*=== 传感器进行采集&校准 ===*/
-/*加速度计执行校准*/
+/*加速度计执行采样+校准*/
 SYS_RETSTATUS calib_acc_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 {
 	SYS_RETSTATUS retStatus = SYS_RET_FAIL;
@@ -640,12 +640,7 @@ SYS_RETSTATUS calib_acc_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 	}
 	
 	/*判断是否所有面已经矫正完毕,且是第一次完成全部面采集*/
-	if (((g_psAccCalibSystem->SINGLE_STATUS[SIDE_INDEX_1ST] == SINGLE_SAMPLE_SUCC)  && \
-		 (g_psAccCalibSystem->SINGLE_STATUS[SIDE_INDEX_2ND] == SINGLE_SAMPLE_SUCC)  && \
-		 (g_psAccCalibSystem->SINGLE_STATUS[SIDE_INDEX_3RD] == SINGLE_SAMPLE_SUCC)  && \
-		 (g_psAccCalibSystem->SINGLE_STATUS[SIDE_INDEX_4TH] == SINGLE_SAMPLE_SUCC)  && \
-		 (g_psAccCalibSystem->SINGLE_STATUS[SIDE_INDEX_5TH] == SINGLE_SAMPLE_SUCC)  && \
-		 (g_psAccCalibSystem->SINGLE_STATUS[SIDE_INDEX_6TH] == SINGLE_SAMPLE_SUCC)))
+	if (calib_sample_status_check((u8*)&(g_psAccCalibSystem->SINGLE_STATUS), SINGLE_SAMPLE_SUCC, 6) == SYS_RET_SUCC)
 	{
 		/*标记加速度校准系统退出(完成退出)*/
 		g_psAccCalibSystem->ENTRY_STATUS = ENTRY_CALIB_EXIT;
@@ -697,7 +692,7 @@ const u16 g_Mag360Define[36] =
  120, 130, 140, 150, 160, 170, 180, 190, 200, 210, 220, 230,
  240, 250, 260, 270, 280, 290, 300, 310, 320, 330, 340, 350};
 
-/*磁力计执行校准*/
+/*磁力计执行采样+校准*/
 SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 {
 	SYS_RETSTATUS retStatus = SYS_RET_FAIL;
@@ -768,7 +763,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 				while(sampleZTimes < 10)	/*采集100次*/
 				{
 					/*判断数据是否符合校准*/
-					if ((fabs(g_psAhrsIntAngle->yaw - g_Mag360Define[positionIndex]) <= 5.0f) && \
+					if ((fabs(g_psCircleAngle->yaw - g_Mag360Define[positionIndex]) <= 5.0f) && \
 						(g_psAccCalib->z >= (ACC_MAX_ONE_G / 2.0f)) && \
 						(g_psMagSensorDataStatus->calib == SENSOR_DATA_NEW))	/*加速度计Z轴基本竖直*/
 					{
@@ -790,7 +785,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 					/*用OLED显示陀螺仪校准过程*/
 					hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
 																			  g_psMagCalibSystem->SAMPLE_PROCESS, \
-																			  (u16)g_psAhrsIntAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
+																			  (u16)g_psCircleAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
 																			  g_psAccCalib->z, 0);						
 				}
 				
@@ -815,7 +810,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 				/*用OLED显示陀螺仪校准结果*/
 				hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
 																	      g_psMagCalibSystem->SAMPLE_PROCESS, \
-																		  (u16)g_psAhrsIntAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
+																		  (u16)g_psCircleAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
 																		  g_psAccCalib->z, 1500);				
 			}
 			
@@ -831,7 +826,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 				while(sampleYTimes < 10)	/*采集100次*/
 				{
 					/*判断数据是否符合校准*/
-					if ((fabs(g_psAhrsIntAngle->roll - g_Mag360Define[positionIndex]) <= 5.0f) && \
+					if ((fabs(g_psCircleAngle->roll - g_Mag360Define[positionIndex]) <= 5.0f) && \
 						(g_psAccCalib->y >= (ACC_MAX_ONE_G / 2.0f)) && \
 						(g_psMagSensorDataStatus->calib == SENSOR_DATA_NEW))	/*加速度计Y轴基本竖直*/
 					{
@@ -853,7 +848,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 					/*用OLED显示陀螺仪校准过程*/
 					hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
 																			  g_psMagCalibSystem->SAMPLE_PROCESS, \
-																			  (u16)g_psAhrsIntAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
+																			  (u16)g_psCircleAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
 																			  g_psAccCalib->y, 0);					
 				}
 			
@@ -878,7 +873,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 				/*用OLED显示陀螺仪校准结果*/
 				hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
 																	      g_psMagCalibSystem->SAMPLE_PROCESS, \
-																		  (u16)g_psAhrsIntAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
+																		  (u16)g_psCircleAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
 																		  g_psAccCalib->y, 1500);
 			}
 
@@ -895,7 +890,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 				while(sampleYTimes < 10)	/*采集100次*/
 				{
 					/*判断数据是否符合校准*/
-					if ((fabs(g_psAhrsIntAngle->pitch - g_Mag360Define[positionIndex]) <= 5.0f) && \
+					if ((fabs(g_psCircleAngle->pitch - g_Mag360Define[positionIndex]) <= 5.0f) && \
 						(g_psAccCalib->x >= (ACC_MAX_ONE_G / 2.0f)) && \
 						(g_psMagSensorDataStatus->calib == SENSOR_DATA_NEW))	/*加速度计X轴基本竖直*/
 					{
@@ -917,7 +912,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 					/*用OLED显示陀螺仪校准过程*/
 					hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
 																			  g_psMagCalibSystem->SAMPLE_PROCESS, \
-																			  (u16)g_psAhrsIntAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
+																			  (u16)g_psCircleAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
 																			  g_psAccCalib->x, 0);					
 				}
 			
@@ -942,7 +937,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 				/*用OLED显示陀螺仪校准结果*/
 				hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
 																	      g_psMagCalibSystem->SAMPLE_PROCESS, \
-																		  (u16)g_psAhrsIntAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
+																		  (u16)g_psCircleAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
 																		  g_psAccCalib->x, 1500);
 			}
 
@@ -952,135 +947,28 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 	}
 
 	/*判断第一面(顶面)36个角点是否采集完毕*/
-	if ((g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_1ST]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_2ND]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_3RD]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_4TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_5TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_6TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_7TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_8TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_9TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_10TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_11TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_12TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_13TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_14TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_15TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_16TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_17TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_18TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_19TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_20TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_21TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_22TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_23TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_24TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_25TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_26TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_27TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_28TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_29TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_30TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_31TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_32TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_33TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_34TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_35TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST][POSITION_INDEX_36TH] == POSITION_SAMPLE_SUCC))
+	if (calib_sample_status_check((u8*)&(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST]), POSITION_SAMPLE_SUCC, 36) == SYS_RET_SUCC)
 	{
 		/*标记第一面(顶面,加计Z轴朝上面)采集完毕*/
 		g_psMagCalibSystem->SINGLE_STATUS[SIDE_INDEX_1ST] = SINGLE_SAMPLE_SUCC;
 	}
 
 	/*判断第二面(侧面,加计Y轴朝上面)12个角点是否采集完毕*/
-	if ((g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_1ST]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_2ND]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_3RD]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_4TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_5TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_6TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_7TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_8TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_9TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_10TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_11TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_12TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_13TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_14TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_15TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_16TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_17TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_18TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_19TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_20TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_21TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_22TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_23TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_24TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_25TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_26TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_27TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_28TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_29TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_30TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_31TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_32TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_33TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_34TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_35TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND][POSITION_INDEX_36TH] == POSITION_SAMPLE_SUCC))
+	if (calib_sample_status_check((u8*)&(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_2ND]), POSITION_SAMPLE_SUCC, 36) == SYS_RET_SUCC)
 	{
 		/*标记第二面(侧面,加计Y轴朝上面)采集完毕*/
 		g_psMagCalibSystem->SINGLE_STATUS[SIDE_INDEX_2ND] = SINGLE_SAMPLE_SUCC;
 	}	
 	
 	/*判断第三面(侧面,加计X轴朝上面)36个角点是否采集完毕*/
-	if ((g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_1ST]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_2ND]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_3RD]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_4TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_5TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_6TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_7TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_8TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_9TH]  == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_10TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_11TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_12TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_13TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_14TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_15TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_16TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_17TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_18TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_19TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_20TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_21TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_22TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_23TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_24TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_25TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_26TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_27TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_28TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_29TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_30TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_31TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_32TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_33TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_34TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_35TH] == POSITION_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD][POSITION_INDEX_36TH] == POSITION_SAMPLE_SUCC))
+	if (calib_sample_status_check((u8*)&(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_3RD]), POSITION_SAMPLE_SUCC, 36) == SYS_RET_SUCC)
 	{
 		/*标记第三面(顶面,加计Z轴朝上面)采集完毕*/
 		g_psMagCalibSystem->SINGLE_STATUS[SIDE_INDEX_3RD] = SINGLE_SAMPLE_SUCC;
 	}	
 	
 	/*三面都采集完毕*/
-	if ((g_psMagCalibSystem->SINGLE_STATUS[SIDE_INDEX_1ST] == SINGLE_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->SINGLE_STATUS[SIDE_INDEX_2ND] == SINGLE_SAMPLE_SUCC) && \
-		(g_psMagCalibSystem->SINGLE_STATUS[SIDE_INDEX_3RD] == SINGLE_SAMPLE_SUCC))
+	if (calib_sample_status_check((u8*)&(g_psMagCalibSystem->SINGLE_STATUS), SINGLE_SAMPLE_SUCC, 3) == SYS_RET_SUCC)
 	{	
 		/*标记磁力计校准系统(完成退出)*/
 		g_psMagCalibSystem->ENTRY_STATUS = ENTRY_CALIB_EXIT;
@@ -1121,6 +1009,23 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 	return retStatus;
 }
 
+SYS_RETSTATUS calib_sample_status_check(u8 *BUFF, u8 CHECK_TARG, u16 totalNbr)
+{
+	SYS_RETSTATUS RET_STATUS = SYS_RET_SUCC;
+	u16 i;
+	
+	for (i = 0; i < totalNbr; i++)
+	{
+		if (BUFF[i] != CHECK_TARG)
+		{
+			RET_STATUS = SYS_RET_FAIL;
+			
+			break;
+		}
+	}
+	
+	return RET_STATUS;
+}
 
 /*=== 校准参数读取&初始化 ===*/
 /*加速度传感器校准准参数初始化(读取)*/

@@ -164,7 +164,7 @@ const u8 Save_Config_Buff[13] =
 SYS_RETSTATUS bsp_GPS_M8N_Init(GpsM8N *gpsM8N)
 {
 	SYS_RETSTATUS statusRet = SYS_RET_SUCC;
-	u8 i;
+	u8 i, j;
 	
 	/*1.Uart Init*/
 	gpsM8N->UartMaster = &g_sGpsUart;
@@ -172,62 +172,93 @@ SYS_RETSTATUS bsp_GPS_M8N_Init(GpsM8N *gpsM8N)
 	/*2.禁掉所有NEMA输出语句*/
 	for (i = 0; i < 20; i++)
 	{
-		/*创建发送协议帧*/
-		bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_MSG, (u8*)&NEMA_Disable_Buff[i], 8, g_GpsM8nTxBuff);
+		for (j = 0; j < 3; j++)
+		{
+			/*创建发送协议帧*/
+			bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_MSG, (u8*)&NEMA_Disable_Buff[i], 8, g_GpsM8nTxBuff);
 		
-		/*发送给GPS模块*/
-		msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);
-		
-		sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MS);
+			/*发送给GPS模块*/
+			msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);
+			
+			sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MIN_MS);			
+		}
 	}
+	
+	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MAX_MS);	
 	
 	/*3.禁掉所有UBLOX输出语句*/
 	for (i = 0; i < 59; i++)
 	{
-		/*创建发送协议帧*/
-		bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_MSG, (u8*)&UBLOX_Disable_Buff[i], 8, g_GpsM8nTxBuff);
+		for (j = 0; j < 3; j++)
+		{		
+			/*创建发送协议帧*/
+			bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_MSG, (u8*)&UBLOX_Disable_Buff[i], 8, g_GpsM8nTxBuff);
 		
-		/*发送给GPS模块*/
-		msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);
-		
-		sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MS);
+			/*发送给GPS模块*/
+			msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);
+			
+			sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MIN_MS);			
+		}			
 	}	
+	
+	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MAX_MS);	
 	
 	/*4.打开PVT语句*/
 	/*创建发送协议帧*/
 	bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_MSG, (u8*)&PVT_Enable_Buff, 8, g_GpsM8nTxBuff);	
 	
-	/*发送给GPS模块*/
-	msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);	
+
+	for (j = 0; j < 3; j++)
+	{	
+		/*发送给GPS模块*/
+		msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);	
+		
+		sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MIN_MS);		
+	}
 	
-	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MS);
+	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MAX_MS);
 	
 	/*5.设置10hz刷新*/
 	/*创建发送协议帧*/
 	bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_RATE, (u8*)&Output_Rate_Buff, 6, g_GpsM8nTxBuff);	
 	
-	/*发送给GPS模块*/
-	msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);		
+	for (j = 0; j < 3; j++)
+	{
+		/*发送给GPS模块*/
+		msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);		
+		
+		sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MIN_MS);			
+	}
 	
-	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MS);
+	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MAX_MS);
 	
-	/*6.设置波特率:38400*/
+	/*6.设置波特率*/
 	/*创建发送协议帧*/
 	bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_PRT, (u8*)&Uart_BaudRate_Buff, 20, g_GpsM8nTxBuff);	
 	
-	/*发送给GPS模块*/
-	msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);		
+	for (j = 0; j < 3; j++)
+	{	
+		/*发送给GPS模块*/
+		msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);	
+		
+		sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MIN_MS);		
+	}		
 	
-	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MS);	
+	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MAX_MS);	
 	
 	/*7.保存所有参数到模块内部掉电非易失存储单元*/
 	/*创建发送协议帧*/
 	bsp_GPS_M8N_Make_Command(&g_sGpsM8nCmdTxFrame, GPS_M8N_TX_CLASS_CFG, GPS_M8N_TX_CFG_CFG, (u8*)&Save_Config_Buff, 13, g_GpsM8nTxBuff);	
 	
-	/*发送给GPS模块*/
-	msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);		
+	for (j = 0; j < 3; j++)
+	{	
+		/*发送给GPS模块*/
+		msp_Uart_Send_Data(gpsM8N->UartMaster, (g_GpsM8nTxBuff + 2), g_GpsM8nTxBuff[0] + ((u16)g_GpsM8nTxBuff[1] << 8), MSP_UART_POLL);		
+		
+		sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MIN_MS);		
+	}
 	
-	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MS);	
+	sys_DelayMs(GPS_M8N_INIT_CMC_PERIOD_TICKS_MAX_MS);	
 	
 	return statusRet;
 }

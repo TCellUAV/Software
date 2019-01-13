@@ -22,9 +22,9 @@ Uav_Status g_sUav_Status =
 		.BEFORE_WIRELESS_MISS = UAV_FLY_TYPE_ATTITUDE,
 	},									    /*飞行模式*/
 	
-	.HOME_SET_STATUS = UAV_HOME_SET_NOT,		    /*GPS HOME 点设置状态*/
+	.HOME_SET_STATUS     = UAV_HOME_SET_NOT,		    /*GPS HOME 点设置状态*/
 	.WIRELESS_CMC_STATUS = UAV_WIRELESS_CMC_FAIL,	    /*遥控和飞行器通信状态*/
-	.HCI_SHOW_STATUS = UAV_HCI_SHOW_DISABLE,		/*HCI SHOW*/
+	.HCI_SHOW_STATUS     = UAV_HCI_SHOW_DISABLE,		/*HCI SHOW*/
 										   
 	/*= 2.飞行器工作方式状态 =*/	
 	.UavCurrentFlyMission = 
@@ -87,7 +87,9 @@ Uav_Status g_sUav_Status =
 	{
 		.Vertical = 
 		{
-			.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_USE_NULL,
+			.WORK_STATUS = UAV_SENMOD_WORK_LIMITLESS, 		 /*默认使用无限制传感器*/
+			
+			.CURRENT_USE = UAV_VERTICAL_SENMOD_CURRENT_BERO, /*默认气压计*/
 			
 			.Bero = 
 			{
@@ -110,7 +112,9 @@ Uav_Status g_sUav_Status =
 		
 		.Horizontal = 
 		{
-			.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_USE_NULL,
+			.WORK_STATUS = UAV_SENMOD_WORK_LIMITLESS, 		 /*默认使用无限制传感器*/
+			
+			.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_GPS, /*默认GPS*/
 			
 			.Opticflow = 
 			{
@@ -219,7 +223,7 @@ UAV_WIRELESS_CMC_STATUS status_check_aircraft_remot_communication(SimulateWatchD
 				/*记录失联前的飞行模式,恢复通信后,可再切回之前模式*/
 				uavStatus->UavFlyType.BEFORE_WIRELESS_MISS = uavStatus->UavFlyType.CURRENT;
 		
-				/*失联后,自动进入自动返航任务*/
+				/*失联后,清除上一个任务,自动进入自动返航任务*/
 				control_fly_mission_set(g_psUav_Status, UAV_FLY_MISSION_ONEKEY_LAND_HOME, UAV_MISSION_ATTITUDE_CTRL_DISABLE);				
 			
 				/*标记自动返航已设定*/

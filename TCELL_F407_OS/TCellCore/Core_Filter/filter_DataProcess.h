@@ -40,58 +40,94 @@ fp32 filter_Slider_Dp(FilterSlider *filterSlider, fp32 newVal);
 /*对数据进行滑动均值滤波*/
 fp32 filter_Slider_Average_Dp(FilterSlider *filterSlider, fp32 newVal);
 
-/*3.巴特沃斯二阶低通滤波器*/
+/*3.巴特沃斯二阶滤波器*/
 /*巴特沃斯滤波器选择(采样频率&截止频率)*/
-/*ACC 加速度*/
-#define FILTER_ACC_200HZ_80HZ_IDX						(0)
-#define FILTER_ACC_200HZ_60HZ_IDX						(1)
-#define FILTER_ACC_200HZ_51HZ_IDX						(2)
-#define FILTER_ACC_200HZ_30HZ_IDX						(3)
-#define FILTER_ACC_200HZ_20HZ_IDX						(4)
-#define FILTER_ACC_200HZ_15HZ_IDX						(5)
-#define FILTER_ACC_200HZ_10HZ_IDX						(6)
-#define FILTER_ACC_200HZ_5HZ_IDX						(7)
-#define FILTER_ACC_200HZ_2HZ_IDX						(8)
-#define FILTER_ACC_200HZ_1HZ_IDX						(9)
-					
-/*GYRO 角速度*/					
-#define FILTER_GYRO_200HZ_51HZ_IDX						(0)
-#define FILTER_GYRO_200HZ_30HZ_IDX						(1)
-					
-/*BARO 气压计*/					
-#define FILTER_BARO_9HZ_3HZ_IDX							(0)
-#define FILTER_BARO_9HZ_2HZ_IDX							(1)
+/*ACC 加速度低通*/
+#define FILTER_LPBW_ACC_200HZ_80HZ_IDX						(0)
+#define FILTER_LPBW_ACC_200HZ_60HZ_IDX						(1)
+#define FILTER_LPBW_ACC_200HZ_51HZ_IDX						(2)
+#define FILTER_LPBW_ACC_200HZ_30HZ_IDX						(3)
+#define FILTER_LPBW_ACC_200HZ_20HZ_IDX						(4)
+#define FILTER_LPBW_ACC_200HZ_15HZ_IDX						(5)
+#define FILTER_LPBW_ACC_200HZ_10HZ_IDX						(6)
+#define FILTER_LPBW_ACC_200HZ_5HZ_IDX						(7)
+#define FILTER_LPBW_ACC_200HZ_2HZ_IDX						(8)
+#define FILTER_LPBW_ACC_200HZ_1HZ_IDX						(9)
 
-/*PID 控制*/
-#define FILTER_PID_CONTROLER_PITCH_ANGLE_IDX 			(0)
-#define FILTER_PID_CONTROLER_PITCH_GYRO_IDX				(1)
-#define FILTER_PID_CONTROLER_ROLL_ANGLE_IDX				(2)
-#define FILTER_PID_CONTROLER_ROLL_GYRO_IDX				(3)
-#define FILTER_PID_CONTROLER_YAW_ANGLE_IDX				(4)
-#define FILTER_PID_CONTROLER_YAW_GYRO_IDX 				(5)
-#define FILTER_PID_CONTROLER_HIGH_POSITION_IDX			(6)
-#define FILTER_PID_CONTROLER_HIGH_SPEED_IDX				(7)
-#define FILTER_PID_CONTROLER_LONGITUDE_POSITION_IDX		(8)
-#define FILTER_PID_CONTROLER_LONGITUDE_SPEED_IDX		(9)
-#define FILTER_PID_CONTROLER_LATITUDE_POSITION _IDX		(10)
-#define FILTER_PID_CONTROLER_LATITUDE_SPEED_IDX			(11)
-#define FILTER_PID_CONTROLER_OPTICFLOW_X_POSITION_IDX	(12)
-#define FILTER_PID_CONTROLER_OPTICFLOW_X_SPEED_IDX		(13)
-#define FILTER_PID_CONTROLER_OPTICFLOW_Y_POSITION_IDX	(14)
-#define FILTER_PID_CONTROLER_OPTICFLOW_Y_SPEED_IDX		(15)
-#define FILTER_PID_CONTROLER_HIGH_ACC_IDX 				(16)
-#define FILTER_PID_CONTROLER_LONGITUDE_ACC_IDX 			(17)
-#define FILTER_PID_CONTROLER_LATITUDE_ACC_IDX			(18)
-#define FILTER_PID_CONTROLER_OPTICFLOW_X_ACC_IDX 		(19)
-#define FILTER_PID_CONTROLER_OPTICFLOW_Y_ACC_IDX		(20)
+/*ACC 加速度带阻*/
+#define FILTER_BSBW_ACC_200HZ_30HZ_98HZ_IDX					(0)
+#define FILTER_BSBW_ACC_200HZ_30HZ_94HZ_IDX					(1)
+		
+/*GYRO 角速度低通*/					
+#define FILTER_LPBW_GYRO_200HZ_51HZ_IDX						(0)
+#define FILTER_LPBW_GYRO_200HZ_30HZ_IDX						(1)
+
+/*GYRO 角速度带阻*/
+#define FILTER_BSBW_GYRO_200HZ_30HZ_98HZ_IDX				(0)
+#define FILTER_BSBW_GYRO_200HZ_30HZ_94HZ_IDX				(1)
+					
+/*BARO 气压计低通*/					
+#define FILTER_LPBW_BARO_9HZ_3HZ_IDX						(0)
+#define FILTER_LPBW_BARO_9HZ_2HZ_IDX						(1)
+
+/*GYRO 角速度模长低通*/					
+#define FILTER_LPBW_GYROLENTH_200HZ_5HZ_IDX					(0)
+
+/*PID 控制低通*/
+/*para*/
+#define FILTER_LPBW_PID_CONTROLER_ERR_200HZ_5HZ_IDX			(0)
+
+#define FILTER_LPBW_PID_CONTROLER_DIV_200HZ_20HZ_IDX		(0)
+#define FILTER_LPBW_PID_CONTROLER_DIV_200HZ_30HZ_IDX		(1)
+
+/*buff*/
+#define FILTER_LPBW_PID_CONTROLER_PITCH_GYRO_IDX			(00)
+#define FILTER_LPBW_PID_CONTROLER_ROLL_GYRO_IDX				(01)
+#define FILTER_LPBW_PID_CONTROLER_YAW_GYRO_IDX 				(02)
+#define FILTER_LPBW_PID_CONTROLER_PITCH_ANGLE_IDX 			(03)
+#define FILTER_LPBW_PID_CONTROLER_ROLL_ANGLE_IDX			(04)
+#define FILTER_LPBW_PID_CONTROLER_YAW_ANGLE_IDX				(05)
+#define FILTER_LPBW_PID_CONTROLER_HIGH_SPEED_IDX			(06)
+#define FILTER_LPBW_PID_CONTROLER_HIGH_POSITION_IDX			(07)
+#define FILTER_LPBW_PID_CONTROLER_LATITUDE_SPEED_IDX		(08)
+#define FILTER_LPBW_PID_CONTROLER_LATITUDE_POSITION _IDX	(09)
+#define FILTER_LPBW_PID_CONTROLER_LONGITUDE_SPEED_IDX		(10)
+#define FILTER_LPBW_PID_CONTROLER_LONGITUDE_POSITION_IDX	(11)
+#define FILTER_LPBW_PID_CONTROLER_OPTICFLOW_X_SPEED_IDX		(12)
+#define FILTER_LPBW_PID_CONTROLER_OPTICFLOW_X_POSITION_IDX	(13)
+#define FILTER_LPBW_PID_CONTROLER_OPTICFLOW_Y_SPEED_IDX		(14)
+#define FILTER_LPBW_PID_CONTROLER_OPTICFLOW_Y_POSITION_IDX	(15)
+#define FILTER_LPBW_PID_CONTROLER_HIGH_ACC_IDX 				(16)
+#define FILTER_LPBW_PID_CONTROLER_LONGITUDE_ACC_IDX 		(17)
+#define FILTER_LPBW_PID_CONTROLER_LATITUDE_ACC_IDX			(18)
+#define FILTER_LPBW_PID_CONTROLER_OPTICFLOW_X_ACC_IDX 		(19)
+#define FILTER_LPBW_PID_CONTROLER_OPTICFLOW_Y_ACC_IDX		(20)
+
+/*滤波器类型*/
+typedef enum
+{
+	FILTER_TYPE_LOWPASS  = 0, /*低通*/
+	FILTER_TYPE_BANDSTOP = 1, /*带阻*/
+	FILTER_TYPE_BANDPASS = 2, /*带通*/
+	FILTER_TYPE_NOTCH    = 3, /*陷波*/
+}FILTER_TYPE;
 
 /*滤波器参数*/
 typedef struct
 {
-	u16  FS;	/*采样频率*/
-	u16  FC;	/*截止频率*/
-	fp32 A[3];	/*分母*/
-	fp32 B[3];	/*分子*/
+	FILTER_TYPE FTYPE;
+	u16  		FS;	    /*采样频率*/
+	/*低通*/
+	u16  		FC;	    /*截止频率*/
+	/*带通/带阻*/
+	u16  		bandLow;   /*低带*/
+	u16  		bandHigh;  /*高带*/
+	/*陷波*/
+	u16  		notch;     /*陷波*/
+	u16  		bandWidth; /*带宽*/
+	
+	fp32 		A[3];	    /*分母*/
+	fp32 		B[3];   	/*分子*/
 }FilterLpButterworthPara;
 
 /*滤波器输入输出缓存*/
@@ -167,9 +203,17 @@ typedef struct
 	FilterLpButterworthBuff AccLpBwCalib[3];	/*磁力计(矫正)巴特沃斯二阶低通滤波器输入输出缓存*/	
 	FilterLpButterworthBuff AccLpBwControl[3];	/*加速度(控制)巴特沃斯二阶低通滤波器输入输出缓存*/	
 
+	/*加速度 二阶巴特沃斯带阻滤波器*/
+	FilterLpButterworthPara AccBsBwPara[2];
+	FilterLpButterworthBuff AccBsBwBuff[3];
+	
 	/*角速度 二阶巴特沃斯低通滤波器*/	
 	FilterLpButterworthPara GyroLpBwPara[2];	/*角速度原始数据巴特沃斯二阶低通滤波器_2个*/
 	FilterLpButterworthBuff GyroLpBwBuff[3];	/*角速度原始数据巴特沃斯二阶低通滤波器输入输出缓存*/
+	
+	/*角速度 二阶巴特沃斯带阻滤波器*/
+	FilterLpButterworthPara GyroBsBwPara[2];
+	FilterLpButterworthBuff GyroBsBwBuff[3];	
 	
 	/*气压计 二阶巴特沃斯低通滤波器*/
 	FilterLpButterworthPara BaroAboveLpBwPara[2];	/*气压计(上方)原始数据巴特沃斯二阶低通滤波器_2个*/
@@ -189,10 +233,13 @@ typedef struct
 	/*超声波 窗口滑动平均滤波器*/
 	FilterSlider            UltrSliderAverage;  /*超声波原始数据窗口滑动平均滤波*/
 	
+	/*角速度模长滤波*/
+	FilterLpButterworthPara GyroLenthLpBwPara[1];
+	FilterLpButterworthBuff GyroLenthLpBwBuff[1];
+	
 	/*PID控制 二阶巴特沃斯低通滤波器*/
 	FilterLpButterworthPara PidControlErrPara[1];
-	FilterLpButterworthPara PidControlDivPara[1];
-	FilterLpButterworthPara PidControlDivGyroPara[1];
+	FilterLpButterworthPara PidControlDivPara[2];
 	FilterLpButterworthBuff PidControlBuff[21]; 	   /*PID 控制器低通输入输出缓冲*/
 
     FilterYijieHubu         YijieHubuPitch;  		    /*Pitch角一阶互补滤波器*/

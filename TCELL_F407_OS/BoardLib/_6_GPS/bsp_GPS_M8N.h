@@ -6,13 +6,14 @@
 #include "msp_UART.h"
 #include "sys_McuInit.h"
 
-#define GPS_M8N_INIT_CMC_PERIOD_TICKS_MS    (10)
+#define GPS_M8N_INIT_CMC_PERIOD_TICKS_MIN_MS    (5)
+#define GPS_M8N_INIT_CMC_PERIOD_TICKS_MAX_MS    (10)
 
-#define GPS_M8N_TX_PAYLOAD_LENTH	 		(30)
-#define GPS_M8N_RX_PVT_ALL_LENTH 			(100)
-#define GPS_M8N_RX_PVT_PAYLOAD_LENTH 		(92)
-#define GPS_M8N_TX_BUFF_LENTH		 		(50)
-#define GPS_M8N_RX_BUFF_LENTH		 		(100)
+#define GPS_M8N_TX_PAYLOAD_LENTH	 			(30)
+#define GPS_M8N_RX_PVT_ALL_LENTH 				(100)
+#define GPS_M8N_RX_PVT_PAYLOAD_LENTH 			(92)
+#define GPS_M8N_TX_BUFF_LENTH		 			(50)
+#define GPS_M8N_RX_BUFF_LENTH		 			(100)
 
 /*通信方式*/
 typedef enum

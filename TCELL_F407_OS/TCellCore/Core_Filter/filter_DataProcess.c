@@ -36,7 +36,8 @@ void filter_Slider_Init(FilterSlider *filterSlider, u8 arrayLen)
 /*巴特沃斯二阶低通滤波器初始化:MATLAB计算*/
 void filter_LpButterworth_Matlab_Init(void)
 {
-	/*1.ACC 加速度巴特沃斯滤波*/
+	/*1. ACC 加速度巴特沃斯低通滤波*/
+	g_sFilterTarg.AccLpBwPara[0].FTYPE = FILTER_TYPE_LOWPASS;
 	g_sFilterTarg.AccLpBwPara[0].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[0].FC    = 80;
 	g_sFilterTarg.AccLpBwPara[0].A[0]  = 1;
@@ -46,6 +47,7 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[0].B[1]  = 1.277891050318;
 	g_sFilterTarg.AccLpBwPara[0].B[2]  = 0.638945525159;  
 	
+	g_sFilterTarg.AccLpBwPara[1].FTYPE = FILTER_TYPE_LOWPASS;	
 	g_sFilterTarg.AccLpBwPara[1].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[1].FC    = 60;
 	g_sFilterTarg.AccLpBwPara[1].A[0]  = 1;
@@ -54,7 +56,8 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[1].B[0]  = 0.3913357725018;
 	g_sFilterTarg.AccLpBwPara[1].B[1]  = 0.7826715450035;
 	g_sFilterTarg.AccLpBwPara[1].B[2]  = 0.3913357725018;
-                                      
+                            
+	g_sFilterTarg.AccLpBwPara[2].FTYPE = FILTER_TYPE_LOWPASS;							
 	g_sFilterTarg.AccLpBwPara[2].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[2].FC    = 51;
 	g_sFilterTarg.AccLpBwPara[2].A[0]  = 1;
@@ -63,7 +66,8 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[2].B[0]  = 0.3021549744157;
 	g_sFilterTarg.AccLpBwPara[2].B[1]  = 0.6043099488315;
 	g_sFilterTarg.AccLpBwPara[2].B[2]  = 0.3021549744157;	
-	                       
+	                   
+	g_sFilterTarg.AccLpBwPara[3].FTYPE = FILTER_TYPE_LOWPASS;					   
 	g_sFilterTarg.AccLpBwPara[3].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[3].FC    = 30;
 	g_sFilterTarg.AccLpBwPara[3].A[0]  = 1;
@@ -72,7 +76,8 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[3].B[0]  = 0.1311064399166;
 	g_sFilterTarg.AccLpBwPara[3].B[1]  = 0.2622128798333;
 	g_sFilterTarg.AccLpBwPara[3].B[2]  = 0.1311064399166;
-                                      
+                        
+	g_sFilterTarg.AccLpBwPara[4].FTYPE = FILTER_TYPE_LOWPASS;						
 	g_sFilterTarg.AccLpBwPara[4].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[4].FC    = 20;
 	g_sFilterTarg.AccLpBwPara[4].A[0]  = 1;
@@ -82,6 +87,7 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[4].B[1]  = 0.1349105477781;
 	g_sFilterTarg.AccLpBwPara[4].B[2]  = 0.06745527388907;
 	                        
+	g_sFilterTarg.AccLpBwPara[5].FTYPE = FILTER_TYPE_LOWPASS;							
 	g_sFilterTarg.AccLpBwPara[5].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[5].FC    = 15;
 	g_sFilterTarg.AccLpBwPara[5].A[0]  = 1;
@@ -90,7 +96,8 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[5].B[0]  = 0.04125353724172;
 	g_sFilterTarg.AccLpBwPara[5].B[1]  = 0.08250707448344;
 	g_sFilterTarg.AccLpBwPara[5].B[2]  = 0.04125353724172;	
-	                      
+	                     
+	g_sFilterTarg.AccLpBwPara[6].FTYPE = FILTER_TYPE_LOWPASS;
 	g_sFilterTarg.AccLpBwPara[6].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[6].FC    = 10;
 	g_sFilterTarg.AccLpBwPara[6].A[0]  = 1;
@@ -99,7 +106,8 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[6].B[0]  = 0.02008336556421;
 	g_sFilterTarg.AccLpBwPara[6].B[1]  = 0.04016673112842;
 	g_sFilterTarg.AccLpBwPara[6].B[2]  = 0.02008336556421;
-                         
+                      
+	g_sFilterTarg.AccLpBwPara[7].FTYPE = FILTER_TYPE_LOWPASS;					  
 	g_sFilterTarg.AccLpBwPara[7].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[7].FC    = 5;
 	g_sFilterTarg.AccLpBwPara[7].A[0]  = 1;
@@ -109,6 +117,7 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[7].B[1]  = 0.01108543442056;
 	g_sFilterTarg.AccLpBwPara[7].B[2]  = 0.005542717210281; 
 	
+	g_sFilterTarg.AccLpBwPara[8].FTYPE = FILTER_TYPE_LOWPASS;	
 	g_sFilterTarg.AccLpBwPara[8].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[8].FC    = 2;
 	g_sFilterTarg.AccLpBwPara[8].A[0]  = 1;
@@ -118,6 +127,7 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[8].B[1]  = 0.00188938368768;
 	g_sFilterTarg.AccLpBwPara[8].B[2]  = 0.0009446918438402;   
 	
+	g_sFilterTarg.AccLpBwPara[9].FTYPE = FILTER_TYPE_LOWPASS;	
 	g_sFilterTarg.AccLpBwPara[9].FS    = 200;
 	g_sFilterTarg.AccLpBwPara[9].FC    = 1;
 	g_sFilterTarg.AccLpBwPara[9].A[0]  = 1;
@@ -127,90 +137,156 @@ void filter_LpButterworth_Matlab_Init(void)
 	g_sFilterTarg.AccLpBwPara[9].B[1]  = 0.000482718098084;
 	g_sFilterTarg.AccLpBwPara[9].B[2]  = 0.000241359049042;
 	
-	/*2.GYRO 角速度巴特沃斯滤波*/
-	g_sFilterTarg.GyroLpBwPara[0].FS   = 200;
-	g_sFilterTarg.GyroLpBwPara[0].FC   = 51;
-	g_sFilterTarg.GyroLpBwPara[0].A[0] = 1;
-	g_sFilterTarg.GyroLpBwPara[0].A[1] = 0.03680751639284;
-	g_sFilterTarg.GyroLpBwPara[0].A[2] = 0.1718123812701;
-	g_sFilterTarg.GyroLpBwPara[0].B[0] = 0.3021549744157;
-	g_sFilterTarg.GyroLpBwPara[0].B[1] = 0.6043099488315;
-	g_sFilterTarg.GyroLpBwPara[0].B[2] = 0.3021549744157;
+	/*1.1 ACC 加速度巴特沃斯带阻滤波*/
+	g_sFilterTarg.AccBsBwPara[0].FTYPE    = FILTER_TYPE_BANDSTOP;
+	g_sFilterTarg.AccBsBwPara[0].FS       = 200;
+	g_sFilterTarg.AccBsBwPara[0].bandLow  = 30;
+	g_sFilterTarg.AccBsBwPara[0].bandHigh = 98;
+	g_sFilterTarg.AccBsBwPara[0].A[0]  	  = 1;
+	g_sFilterTarg.AccBsBwPara[0].A[1]  	  = 0.6270403082828;
+	g_sFilterTarg.AccBsBwPara[0].A[2]  	  = -0.2905268567319;
+	g_sFilterTarg.AccBsBwPara[0].B[0]  	  = 0.354736571634;
+	g_sFilterTarg.AccBsBwPara[0].B[1]  	  = 0.6270403082828;
+	g_sFilterTarg.AccBsBwPara[0].B[2]  	  = 0.354736571634;	
 	
-	g_sFilterTarg.GyroLpBwPara[1].FS   = 200;
-	g_sFilterTarg.GyroLpBwPara[1].FC   = 30;
-	g_sFilterTarg.GyroLpBwPara[1].A[0] = 1;
-	g_sFilterTarg.GyroLpBwPara[1].A[1] = -0.7477891782585;
-	g_sFilterTarg.GyroLpBwPara[1].A[2] = 0.272214937925;
-	g_sFilterTarg.GyroLpBwPara[1].B[0] = 0.1311064399166;
-	g_sFilterTarg.GyroLpBwPara[1].B[1] = 0.2622128798333;
-	g_sFilterTarg.GyroLpBwPara[1].B[2] = 0.1311064399166;
+	g_sFilterTarg.AccBsBwPara[1].FTYPE    = FILTER_TYPE_BANDSTOP;
+	g_sFilterTarg.AccBsBwPara[1].FS       = 200;
+	g_sFilterTarg.AccBsBwPara[1].bandLow  = 30;
+	g_sFilterTarg.AccBsBwPara[1].bandHigh = 94;
+	g_sFilterTarg.AccBsBwPara[1].A[0]     = 1;
+	g_sFilterTarg.AccBsBwPara[1].A[1]     = 0.5334540355829;
+	g_sFilterTarg.AccBsBwPara[1].A[2]     = -0.2235264828971;
+	g_sFilterTarg.AccBsBwPara[1].B[0]     = 0.3882367585514;
+	g_sFilterTarg.AccBsBwPara[1].B[1]     = 0.5334540355829;
+	g_sFilterTarg.AccBsBwPara[1].B[2]     = 0.3882367585514;	
+	
+	/*2.GYRO 角速度巴特沃斯滤波*/
+	g_sFilterTarg.GyroLpBwPara[0].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.GyroLpBwPara[0].FS    = 200;
+	g_sFilterTarg.GyroLpBwPara[0].FC    = 51;
+	g_sFilterTarg.GyroLpBwPara[0].A[0]  = 1;
+	g_sFilterTarg.GyroLpBwPara[0].A[1]  = 0.03680751639284;
+	g_sFilterTarg.GyroLpBwPara[0].A[2]  = 0.1718123812701;
+	g_sFilterTarg.GyroLpBwPara[0].B[0]  = 0.3021549744157;
+	g_sFilterTarg.GyroLpBwPara[0].B[1]  = 0.6043099488315;
+	g_sFilterTarg.GyroLpBwPara[0].B[2]  = 0.3021549744157;
+	
+	g_sFilterTarg.GyroLpBwPara[1].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.GyroLpBwPara[1].FS    = 200;
+	g_sFilterTarg.GyroLpBwPara[1].FC    = 30;
+	g_sFilterTarg.GyroLpBwPara[1].A[0]  = 1;
+	g_sFilterTarg.GyroLpBwPara[1].A[1]  = -0.7477891782585;
+	g_sFilterTarg.GyroLpBwPara[1].A[2]  = 0.272214937925;
+	g_sFilterTarg.GyroLpBwPara[1].B[0]  = 0.1311064399166;
+	g_sFilterTarg.GyroLpBwPara[1].B[1]  = 0.2622128798333;
+	g_sFilterTarg.GyroLpBwPara[1].B[2]  = 0.1311064399166;
+	
+	/*Gyro 角速度巴特沃斯带阻滤波*/
+	g_sFilterTarg.GyroBsBwPara[0].FTYPE    = FILTER_TYPE_BANDSTOP;
+	g_sFilterTarg.GyroBsBwPara[0].FS       = 200;
+	g_sFilterTarg.GyroBsBwPara[0].bandLow  = 30;
+	g_sFilterTarg.GyroBsBwPara[0].bandHigh = 98;
+	g_sFilterTarg.GyroBsBwPara[0].A[0]     = 1;
+	g_sFilterTarg.GyroBsBwPara[0].A[1]     = 0.6270403082828;
+	g_sFilterTarg.GyroBsBwPara[0].A[2]     = -0.2905268567319;
+	g_sFilterTarg.GyroBsBwPara[0].B[0]     = 0.354736571634;
+	g_sFilterTarg.GyroBsBwPara[0].B[1]     = 0.6270403082828;
+	g_sFilterTarg.GyroBsBwPara[0].B[2]     = 0.354736571634;	
+	
+	g_sFilterTarg.GyroBsBwPara[1].FTYPE    = FILTER_TYPE_BANDSTOP;
+	g_sFilterTarg.GyroBsBwPara[1].FS       = 200;
+	g_sFilterTarg.GyroBsBwPara[1].bandLow  = 30;
+	g_sFilterTarg.GyroBsBwPara[1].bandHigh = 94;
+	g_sFilterTarg.GyroBsBwPara[1].A[0]     = 1;
+	g_sFilterTarg.GyroBsBwPara[1].A[1]     = 0.5334540355829;
+	g_sFilterTarg.GyroBsBwPara[1].A[2]     = -0.2235264828971;
+	g_sFilterTarg.GyroBsBwPara[1].B[0]     = 0.3882367585514;
+	g_sFilterTarg.GyroBsBwPara[1].B[1]     = 0.5334540355829;
+	g_sFilterTarg.GyroBsBwPara[1].B[2]     = 0.3882367585514;	
 
 	/*3.BARO 气压计巴特沃斯滤波*/
-	g_sFilterTarg.BaroAboveLpBwPara[0].FS   = 9;
-	g_sFilterTarg.BaroAboveLpBwPara[0].FC   = 3;
-	g_sFilterTarg.BaroAboveLpBwPara[0].A[0] = 1;
-	g_sFilterTarg.BaroAboveLpBwPara[0].A[1] = 0.6202041028867;
-	g_sFilterTarg.BaroAboveLpBwPara[0].A[2] = 0.2404082057735;
-	g_sFilterTarg.BaroAboveLpBwPara[0].B[0] = 0.465153077165;
-	g_sFilterTarg.BaroAboveLpBwPara[0].B[1] = 0.9303061543301;
-	g_sFilterTarg.BaroAboveLpBwPara[0].B[2] = 0.465153077165;
+	g_sFilterTarg.BaroAboveLpBwPara[0].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.BaroAboveLpBwPara[0].FS    = 9;
+	g_sFilterTarg.BaroAboveLpBwPara[0].FC    = 3;
+	g_sFilterTarg.BaroAboveLpBwPara[0].A[0]  = 1;
+	g_sFilterTarg.BaroAboveLpBwPara[0].A[1]  = 0.6202041028867;
+	g_sFilterTarg.BaroAboveLpBwPara[0].A[2]  = 0.2404082057735;
+	g_sFilterTarg.BaroAboveLpBwPara[0].B[0]  = 0.465153077165;
+	g_sFilterTarg.BaroAboveLpBwPara[0].B[1]  = 0.9303061543301;
+	g_sFilterTarg.BaroAboveLpBwPara[0].B[2]  = 0.465153077165;
 	
-	g_sFilterTarg.BaroAboveLpBwPara[1].FS   = 9;
-	g_sFilterTarg.BaroAboveLpBwPara[1].FC   = 2;
-	g_sFilterTarg.BaroAboveLpBwPara[1].A[0] = 1;
-	g_sFilterTarg.BaroAboveLpBwPara[1].A[1] = -0.2047298257527;
-	g_sFilterTarg.BaroAboveLpBwPara[1].A[2] = 0.1789920775639;
-	g_sFilterTarg.BaroAboveLpBwPara[1].B[0] = 0.2435655629528;
-	g_sFilterTarg.BaroAboveLpBwPara[1].B[1] = 0.4871311259056;
-	g_sFilterTarg.BaroAboveLpBwPara[1].B[2] = 0.2435655629528;
+	g_sFilterTarg.BaroAboveLpBwPara[1].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.BaroAboveLpBwPara[1].FS    = 9;
+	g_sFilterTarg.BaroAboveLpBwPara[1].FC    = 2;
+	g_sFilterTarg.BaroAboveLpBwPara[1].A[0]  = 1;
+	g_sFilterTarg.BaroAboveLpBwPara[1].A[1]  = -0.2047298257527;
+	g_sFilterTarg.BaroAboveLpBwPara[1].A[2]  = 0.1789920775639;
+	g_sFilterTarg.BaroAboveLpBwPara[1].B[0]  = 0.2435655629528;
+	g_sFilterTarg.BaroAboveLpBwPara[1].B[1]  = 0.4871311259056;
+	g_sFilterTarg.BaroAboveLpBwPara[1].B[2]  = 0.2435655629528;
 	
 	/*4.光流 巴特沃斯滤波*/
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].FS   = 50;
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].FC   = 20;	
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].A[0] = 1;
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].A[1] = 1.14298050254;
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].A[2] = 0.4128015980962;	
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].B[0] = 0.638945525159;
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].B[1] = 1.277891050318;
-	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].B[2] = 0.638945525159;	
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].FS    = 50;
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].FC    = 20;	
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].A[0]  = 1;
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].A[1]  = 1.14298050254;
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].A[2]  = 0.4128015980962;	
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].B[0]  = 0.638945525159;
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].B[1]  = 1.277891050318;
+	g_sFilterTarg.OpticFlowIntPixLpBwPara[0].B[2]  = 0.638945525159;	
 	
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].FS     = 50;
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].FC     = 10;	
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].A[0]   = 1;
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].A[1]   = -0.3695273773512;  
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].A[2]   = 0.1958157126558;	
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].B[0]   = 0.2065720838261; 
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].B[1]   = 0.4131441676523;
-	g_sFilterTarg.OpticFlowGyroLpBwPara[0].B[2]   = 0.2065720838261;	
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].FS    = 50;
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].FC    = 10;	
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].A[0]  = 1;
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].A[1]  = -0.3695273773512;  
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].A[2]  = 0.1958157126558;	
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].B[0]  = 0.2065720838261; 
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].B[1]  = 0.4131441676523;
+	g_sFilterTarg.OpticFlowGyroLpBwPara[0].B[2]  = 0.2065720838261;	
 
+	/*角速度模长滤波*/
+	g_sFilterTarg.GyroLenthLpBwPara[0].FTYPE = FILTER_TYPE_LOWPASS;
+	g_sFilterTarg.GyroLenthLpBwPara[0].FS    = 200;
+	g_sFilterTarg.GyroLenthLpBwPara[0].FC    = 5;
+	g_sFilterTarg.GyroLenthLpBwPara[0].A[0]  = 1;
+	g_sFilterTarg.GyroLenthLpBwPara[0].A[1]  = -1.778631777825;
+	g_sFilterTarg.GyroLenthLpBwPara[0].A[2]  = 0.8008026466657;
+	g_sFilterTarg.GyroLenthLpBwPara[0].B[0]  = 0.005542717210281;
+	g_sFilterTarg.GyroLenthLpBwPara[0].B[1]  = 0.01108543442056;
+	g_sFilterTarg.GyroLenthLpBwPara[0].B[2]  = 0.005542717210281; 	
+	
 	/*5.PID控制 巴特沃斯滤波*/
-	g_sFilterTarg.PidControlErrPara[0].FS   = 200;
-	g_sFilterTarg.PidControlErrPara[0].FC   = 5;
-	g_sFilterTarg.PidControlErrPara[0].A[0] = 1;
-	g_sFilterTarg.PidControlErrPara[0].A[1] = -1.778631777825;
-	g_sFilterTarg.PidControlErrPara[0].A[2] = 0.8008026466657;
-	g_sFilterTarg.PidControlErrPara[0].B[0] = 0.005542717210281;
-	g_sFilterTarg.PidControlErrPara[0].B[1] = 0.01108543442056;
-	g_sFilterTarg.PidControlErrPara[0].B[2] = 0.005542717210281;
+	g_sFilterTarg.PidControlErrPara[0].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.PidControlErrPara[0].FS    = 200;
+	g_sFilterTarg.PidControlErrPara[0].FC    = 5;
+	g_sFilterTarg.PidControlErrPara[0].A[0]  = 1;
+	g_sFilterTarg.PidControlErrPara[0].A[1]  = -1.778631777825;
+	g_sFilterTarg.PidControlErrPara[0].A[2]  = 0.8008026466657;
+	g_sFilterTarg.PidControlErrPara[0].B[0]  = 0.005542717210281;
+	g_sFilterTarg.PidControlErrPara[0].B[1]  = 0.01108543442056;
+	g_sFilterTarg.PidControlErrPara[0].B[2]  = 0.005542717210281;
 	
-	g_sFilterTarg.PidControlDivPara[0].FS   = 200;
-	g_sFilterTarg.PidControlDivPara[0].FC   = 20;
-	g_sFilterTarg.PidControlDivPara[0].A[0] = 1;
-	g_sFilterTarg.PidControlDivPara[0].A[1] = -1.14298050254;
-	g_sFilterTarg.PidControlDivPara[0].A[2] = 0.4128015980962;
-	g_sFilterTarg.PidControlDivPara[0].B[0] = 0.06745527388907;
-	g_sFilterTarg.PidControlDivPara[0].B[1] = 0.1349105477781;
-	g_sFilterTarg.PidControlDivPara[0].B[2] = 0.06745527388907;
+	g_sFilterTarg.PidControlDivPara[0].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.PidControlDivPara[0].FS    = 200;
+	g_sFilterTarg.PidControlDivPara[0].FC    = 20;
+	g_sFilterTarg.PidControlDivPara[0].A[0]  = 1;
+	g_sFilterTarg.PidControlDivPara[0].A[1]  = -1.14298050254;
+	g_sFilterTarg.PidControlDivPara[0].A[2]  = 0.4128015980962;
+	g_sFilterTarg.PidControlDivPara[0].B[0]  = 0.06745527388907;
+	g_sFilterTarg.PidControlDivPara[0].B[1]  = 0.1349105477781;
+	g_sFilterTarg.PidControlDivPara[0].B[2]  = 0.06745527388907;
 	
-	g_sFilterTarg.PidControlDivGyroPara[0].FS   = 200;
-	g_sFilterTarg.PidControlDivGyroPara[0].FC   = 30;
-	g_sFilterTarg.PidControlDivGyroPara[0].A[0] = 1;
-	g_sFilterTarg.PidControlDivGyroPara[0].A[1] = -0.7477891782585;
-	g_sFilterTarg.PidControlDivGyroPara[0].A[2] = 0.272214937925;
-	g_sFilterTarg.PidControlDivGyroPara[0].B[0] = 0.1311064399166;
-	g_sFilterTarg.PidControlDivGyroPara[0].B[1] = 0.2622128798333;
-	g_sFilterTarg.PidControlDivGyroPara[0].B[2] = 0.1311064399166;	
+	g_sFilterTarg.PidControlDivPara[1].FTYPE = FILTER_TYPE_LOWPASS;	
+	g_sFilterTarg.PidControlDivPara[1].FS    = 200;
+	g_sFilterTarg.PidControlDivPara[1].FC    = 30;
+	g_sFilterTarg.PidControlDivPara[1].A[0]  = 1;
+	g_sFilterTarg.PidControlDivPara[1].A[1]  = -0.7477891782585;
+	g_sFilterTarg.PidControlDivPara[1].A[2]  = 0.272214937925;
+	g_sFilterTarg.PidControlDivPara[1].B[0]  = 0.1311064399166;
+	g_sFilterTarg.PidControlDivPara[1].B[1]  = 0.2622128798333;
+	g_sFilterTarg.PidControlDivPara[1].B[2]  = 0.1311064399166;	
 }
 
 /*巴特沃斯二阶低通滤波器初始化:公式计算*/
@@ -373,18 +449,18 @@ Acc3f* filter_AccAttLpButterworth_Dp(Acc3f *targAcc, FilterLpButterworthBuff *bu
 	u8 axis;
 	
 	/*获取最新x(n)*/
-	buff[0].Input[2] = (s16)(targAcc->x);
-	buff[1].Input[2] = (s16)(targAcc->y);
-	buff[2].Input[2] = (s16)(targAcc->z);
+	buff[0].Input[2] = targAcc->x;
+	buff[1].Input[2] = targAcc->y;
+	buff[2].Input[2] = targAcc->z;
 	
 	/*butterworth滤波*/
 	for (axis = 0; axis < 3; axis++)
 	{
-		buff[axis].Output[2] = (s16)(para->B[0] * buff[axis].Input[2] + \
-									 para->B[1] * buff[axis].Input[1] + \
-									 para->B[2] * buff[axis].Input[0] - \
-									 para->A[1] * buff[axis].Output[1] - \
-								     para->A[2] * buff[axis].Output[0]);
+		buff[axis].Output[2] = para->B[0] * buff[axis].Input[2] + \
+							   para->B[1] * buff[axis].Input[1] + \
+							   para->B[2] * buff[axis].Input[0] - \
+							   para->A[1] * buff[axis].Output[1] - \
+							   para->A[2] * buff[axis].Output[0];
 	}
 	
 	for (axis = 0; axis < 3; axis++)

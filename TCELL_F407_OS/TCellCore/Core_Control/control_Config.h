@@ -27,8 +27,8 @@
 
 /*======= 1.Altitude Hold(竖直定高) =======*/
 #define CTRL_HEIGHT_YAW_SPEED_FEEDFORWARD			   (SYS_ENABLE)  /*竖直速度前馈控制器*/
-#define CTRL_HEIGHT_POS_CONTROL_ACC_STATUS             (SYS_DISABLE) /*开启三环定高模式:即竖直高度位置+竖直速度+竖直加速度:SYS_ENABLE(1)开启,SYS_DISABLE(0)关闭*/
-#define CTRL_HEIGHT_ONEKEY_TAKEOFF_HEIGHT			   (120)		 /*一键起飞离地高度(cm),此值应在超声波范围(150cm)内*/
+#define CTRL_HEIGHT_POS_CONTROL_ACC_STATUS             (SYS_ENABLE)  /*开启三环定高模式:即竖直高度位置+竖直速度+竖直加速度:SYS_ENABLE(1)开启,SYS_DISABLE(0)关闭*/
+#define CTRL_HEIGHT_ONEKEY_TAKEOFF_HEIGHT			   (150)		 /*一键起飞离地高度(cm),此值应在超声波范围(200cm)内*/
 
 
 /*======= 2.Position Hold(水平定点) =======*/
@@ -43,19 +43,15 @@
 
 /*起飞*/
 #define CTRL_THROTTLE_START_TURN  				       (1100) 		 /*起转油门量，油门倾角补偿用，太大会导致过补偿*/
-#define CTRL_THROTTLE_START_FLY_VALUE  			       (1250) 		 /*起飞油门量 1250*/
+#define CTRL_THROTTLE_START_FLY_VALUE  			       (1250) 		 /*起飞油门量*/
 
 /*悬停油门*/
 #define CTRL_THROTTLE_HOVER_ENABLE_STATUS			   (SYS_ENABLE)  /*默认悬停油门*/
-#define CTRL_THROTTLE_HOVER_DEFAULT_VALUE			   (1500) 		 /*默认悬停油门(姿态模式下实验测得)*/
+#define CTRL_THROTTLE_HOVER_DEFAULT_VALUE			   (1450) 		 /*默认悬停油门*/
 
 
 /*着陆*/
-//1.未解锁: <= 1500
-//2.先切定高/定点 再解锁: 起飞前<=1500, 起飞后<=1150
-//3.先解锁: 起飞前<=1500, 起飞后 <=1150
-#define CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN		   (1150) /*着陆检测油门最小值_1*/
-#define CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MAX		   (1600) /*着陆检测油门最小值_2*/
+#define CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN		   (1150) 		 /*着陆检测油门最小值*/
 
 /*======= 4.控制系统各环控制周期(ms) taskPeriod * cnt =======*/
 /*控制周期时基: PLATFORM_TASK_SCHEDULER_MIN_FOC_MS*/

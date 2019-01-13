@@ -111,8 +111,6 @@ typedef struct
 	Vector2f_Nav								RelativeHomeDistance;			/*当前点距离HOME点水平距离*/
 }ControlLand;
 
-/*获取着陆油门输出检测最大值*/
-u16 ctrl_Landing_ThrottleOutput_Min_Get(Uav_Status *uavStatus, ControlLand *controlLand);
 
 /*触地状态检测*/
 UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus);

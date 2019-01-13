@@ -10,28 +10,6 @@ ControlLand	g_sControlLand =
 
 ControlLand *g_psControlLand = &g_sControlLand;
 
-/*获取着陆油门输出检测最大值*/
-u16 ctrl_Landing_ThrottleOutput_Min_Get(Uav_Status *uavStatus, ControlLand *controlLand)
-{
-	/*未解锁*/
-	if (uavStatus->LOCK_STATUS == UAV_LOCK_YES)
-	{
-		controlLand->land_throttle_min_check = CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MAX;
-	}
-	else if (uavStatus->LOCK_STATUS == UAV_LOCK_NOT)
-	{
-		if (uavStatus->UavLandStatus.ThisTime == UAV_LAND_YES)
-		{
-			controlLand->land_throttle_min_check = CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MAX;
-		}
-		else if (uavStatus->UavLandStatus.ThisTime == UAV_LAND_NOT)
-		{
-			controlLand->land_throttle_min_check = CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN;			
-		}
-	}
-	
-	return (controlLand->land_throttle_min_check);
-}
 
 vu16 g_vu16LandCheckContinueTicks = 0; /*飞行器检测着陆持续ticks*/
 
@@ -46,13 +24,11 @@ UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus)
 	/*记录上次飞行状态*/
 	uavStatus->UavLandStatus.LastTime = uavStatus->UavLandStatus.ThisTime;
 	
-	/*1.当前油门输出,2.触地后无旋转(合角速度小于20deg/s),3.惯导竖直方向速度<±25cm/s*/
-	/*  i.未解锁: <= 1500
-	   ii.先切定高/定点 再解锁: 起飞前<=1500, 起飞后<=1150
-	  iii.先解锁: 起飞前<=1500, 起飞后 <=1150	*/
-	if ((g_psControlAircraft->throttleOutput <= ctrl_Landing_ThrottleOutput_Min_Get(uavStatus, g_psControlLand)) && \
+	/*1.当前油门输出,2.触地后无旋转(合角速度小于20deg/s),3.惯导竖直方向速度<±20cm/s,4.无水平手动操作*/
+	if ((g_psControlAircraft->throttleOutput <= CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN) && \
 		(g_GyroLenth <= 20.0f) && \
-		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_Z]) <= 25.0f))
+		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_Z]) <= 20.0f) && \
+		(ctrl_Go_Home_Horizontal_Hand_Meddle() == CTRL_GO_HOME_HAND_MEDDLE_FALSE))
 	{
 		g_vu16LandCheckContinueTicks++; /*5ms执行一次*/	
 	}
@@ -73,8 +49,8 @@ UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus)
 		uavStatus->UavLandStatus.ThisTime = UAV_LAND_YES;
 		
 		/*允许一键起飞,禁止一键着陆*/
-		uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.ENABLE_STATUS = UAV_MISSION_ENABLE; 
-		uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.ENABLE_STATUS       = UAV_MISSION_DISABLE;
+//		uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.ENABLE_STATUS = UAV_MISSION_ENABLE; 
+//		uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.ENABLE_STATUS       = UAV_MISSION_DISABLE;
 		
 		/*着陆后标记禁止 失联自动返航*/
 		g_psControlAircraft->GO_HOME_STATUS = CTRL_AIRCRAFT_GO_HOME_DISABLE;
@@ -92,8 +68,8 @@ UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus)
 		uavStatus->UavLandStatus.ThisTime = UAV_LAND_NOT;	
 
 		/*允许一键降落,禁止一键起飞*/
-		uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.ENABLE_STATUS       = UAV_MISSION_ENABLE;		
-		uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.ENABLE_STATUS = UAV_MISSION_DISABLE; 
+//		uavStatus->UavCurrentFlyMission.Onekey_Mission.LandHome.ENABLE_STATUS       = UAV_MISSION_ENABLE;		
+//		uavStatus->UavCurrentFlyMission.Onekey_Mission.FixedHeightFly.ENABLE_STATUS = UAV_MISSION_DISABLE; 
 
 		/*起飞后标记使能 失联自动返航*/
 		g_psControlAircraft->GO_HOME_STATUS = CTRL_AIRCRAFT_GO_HOME_ENABLE;

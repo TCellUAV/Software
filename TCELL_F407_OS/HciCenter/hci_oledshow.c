@@ -1040,29 +1040,29 @@ Ep:±11.411 Ey:±111.11
 	
 	/*=== 1.ACC ===*/
 	/*1.1显示AHRS -> Sensor -> IMU -> Acc -> x*/
-	math_Floater_Number_Analy(g_psAccOrigion->x, 7, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psAccAttitude->x, 7, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, xNbr1Pos, 2, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
 	
 	/*1.2显示AHRS -> Sensor -> IMU -> Acc -> y*/
-	math_Floater_Number_Analy(g_psAccOrigion->y, 7, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psAccAttitude->y, 7, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, xNbr2Pos, 2, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
 	
 	/*1.3显示AHRS -> Sensor -> IMU -> Acc -> z*/
-	math_Floater_Number_Analy(g_psAccOrigion->z, 7, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psAccAttitude->z, 7, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, xNbr1Pos, 3, OLED096_ACSII_6X8, g_sMathFloaterAnaly);	
 	
 	
 	/*=== 2.GYRO ===*/	
 	/*2.1显示AHRS -> Sensor -> IMU -> Gyro -> x*/
-	math_Floater_Number_Analy(g_psGyroAttData->x, 7, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psGyroAttitude->x, 7, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, xNbr2Pos, 3, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
 	
 	/*2.2显示AHRS -> Sensor -> IMU -> Gyro -> y*/
-	math_Floater_Number_Analy(g_psGyroAttData->y, 7, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psGyroAttitude->y, 7, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, xNbr1Pos, 4, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
 	
 	/*2.3显示AHRS -> Sensor -> IMU -> Gyro -> z*/
-	math_Floater_Number_Analy(g_psGyroAttData->z, 7, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psGyroAttitude->z, 7, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, xNbr2Pos, 4, OLED096_ACSII_6X8, g_sMathFloaterAnaly);	
 	
 	

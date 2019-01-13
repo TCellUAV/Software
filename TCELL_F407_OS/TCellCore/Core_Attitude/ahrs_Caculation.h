@@ -128,19 +128,33 @@ extern Acc3s *g_psAccRaw;
 /*加速度校准后的数据*/
 extern Acc3f g_sAccCorrect;
 extern Acc3f *g_psAccCorrect;
-/*加速度姿态解算(滤波后)*/
-extern Acc3f g_sAccAttData;
-extern Acc3f *g_psAccAttData;
+/*加速度滤波处理*/
+/*带阻*/
+extern Acc3f g_sAccBwBF;
+extern Acc3f *g_psAccBwBF;
+/*低通*/
+extern Acc3f g_sAccBwLP;
+extern Acc3f *g_psAccBwLP;
+/*姿态*/
+extern Acc3f g_sAccAttitude;
+extern Acc3f *g_psAccAttitude;
 
 /*2.陀螺仪原始数据*/
 extern Gyro3s g_sGyroRaw;
 extern Gyro3s *g_psGyroRaw;
-/*陀螺仪姿态解算*/
-extern Gyro3f g_sGyroAttData;
-extern Gyro3f *g_psGyroAttData;
-/*陀螺仪滤波后的数据*/
-extern Gyro3f g_sGyroFilter;
-extern Gyro3f *g_psGyroFilter;
+/*角速度校准后的数据*/
+extern Gyro3f g_sGyroCorrect;
+extern Gyro3f *g_psGyroCorrect;
+/*陀螺仪滤波处理*/
+/*带阻*/
+extern Gyro3f g_sGyroBwBF;
+extern Gyro3f *g_psGyroBPF;
+/*低通*/
+extern Gyro3f g_sGyroBwLP;
+extern Gyro3f *g_psGyroBwLP;
+/*姿态*/
+extern Gyro3f g_sGyroAttitude;
+extern Gyro3f *g_psGyroAttitude;
 
 /*3.磁力计原始数据*/
 extern Mag3s g_sMagRaw;
@@ -152,19 +166,16 @@ extern Mag3f *g_psMagCorrect;
 extern Mag3f g_sMagFilter;
 extern Mag3f *g_psMagFilter;
 /*磁力计姿态解算*/
-extern MagAtt g_sMagAttData;
-extern MagAtt *g_psMagAttData;
+extern MagAtt g_sMagAttitude;
+extern MagAtt *g_psMagAttitude;
 
 /*AHRS表示姿态*/
 extern AhrsAttitude g_sAhrsAttitude;
 extern AhrsAttitude *g_psAhrsAttitude;
 
 /*角速度积分姿态角,用于磁力计校准*/
-extern AhrsAttitude g_sAhrsIntAngle;
-extern AhrsAttitude *g_psAhrsIntAngle;
-
-/*方向余弦矩阵*/
-extern Vector3f g_sDCM_Acc, g_sDCM_Gyro;
+extern AhrsAttitude g_sCircleAngle;
+extern AhrsAttitude *g_psCircleAngle;
 
 /*四元数值*/
 extern AhrsQuater g_sAhrsQuater;
@@ -195,8 +206,8 @@ extern Acc3f g_sAccCtlFeedback;
 extern Acc3f *g_psAccCtlFeedback;
 
 /*角度,角速度反馈*/
-extern AngleGyro g_sAngleGyro;
-extern AngleGyro *g_psAngleGyro;
+extern AngleGyro g_sGyroFeedback;
+extern AngleGyro *g_psGyroFeedback;
 
 /*方向余弦矩阵*/
 extern fp32 rMatrix[3][3]; 

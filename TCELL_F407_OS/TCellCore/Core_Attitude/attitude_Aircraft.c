@@ -48,7 +48,7 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 	gpsData->Coordinate_f8.lat = pvtData.Coordinate.lat * 0.0000001f;
 	
 	/*GPS海拔高度*/
-	gpsData->hMSL /= 100.0f;	/*cm*/
+	gpsData->hMSL *= 0.1f;	   /*cm*/
 	
 	/*水平位置估计精度*/
 	gpsData->HV_Accuracy.hAcc = pvtData.HV_Accuracy.hAcc * 0.01f; /*m*/
@@ -93,10 +93,9 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 	gpsData->DeltaSpeed.north = (gpsData->CurSpeed.north - gpsData->LastSpeed.north) / deltaT;   /*单位cm/s^2*/
 	gpsData->DeltaSpeed.up    = (gpsData->CurSpeed.up - gpsData->LastSpeed.up) / deltaT;		 /*单位cm/s^2*/	
 	
-	/*根据卫星信号质量(优时可用)*/
+	/*判断卫星信号是否满足定位条件*/
 	if ((gpsData->satelliteNbr >= 9) && \
-		(gpsData->quality <= 3.0f) && \
-		(gpsData->POS_FIX_TYPE == M8N_POS_FIX_3D))
+		(gpsData->quality <= 3.0f))
 	{
 		/*标记GPS数据可用*/
 		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_OK;		
@@ -375,7 +374,7 @@ void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 		bsp_SPL06_Get_Temperature(&g_sSpl06);
 	}
 	/*判断是否满足气压计高度更新时间*/
-	else if (g_BeroUpdateContinueTicks >= (110 / PLATFORM_TASK_SCHEDULER_MIN_FOC_MS))	/*110ms获取1次*/
+	else if (g_BeroUpdateContinueTicks >= (SYS_BERO_MIN_MEAS_PERIOD_TICK_MS / PLATFORM_TASK_SCHEDULER_MIN_FOC_MS))	/*110ms获取1次*/
 	{
 		/*cntTicks清0*/
 		g_BeroUpdateContinueTicks = 0;
@@ -389,8 +388,8 @@ void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 			/*判断是否已设定气压计零参考点气压和参考点高度*/
 			if (uavStatus->UavSenmodStatus.Vertical.Bero.ZERO_REFERENCE_SET_STATUS != UAV_SENMOD_ZERO_REFERENCE_SET_OK)				
 			{	
-				/*采集10次后,待气压数据稳定后(必要步骤),设定初始位置气压值*/
-				if (g_BeroZeroSampleContinueTicks > 10)
+				/*采集50次后,待气压数据稳定后(必要步骤),设定初始位置气压值*/
+				if (g_BeroZeroSampleContinueTicks > 50)
 				{
 					/*设定参考点的气压值*/
 					g_psAttitudeAll->zeroPressure = g_sSpl06.Pressure;
@@ -432,7 +431,7 @@ void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 			
 				/*Bero Altitude: 2rd lpButterWorth FS:9HZ, FC:3HZ (气压计观测高度巴特沃斯低通滤波)*/
 				g_psAttitudeAll->nowBeroAltitude = (s32)filter_BaroAltitudeLpButterworth_Dp(rawAltitude, &(g_sFilterTarg.BaroAboveLpBwBuff[0]), \
-																				            &(g_sFilterTarg.BaroAboveLpBwPara[FILTER_BARO_9HZ_3HZ_IDX]));	
+																				            &(g_sFilterTarg.BaroAboveLpBwPara[FILTER_LPBW_BARO_9HZ_3HZ_IDX]));	
 			
 				/*计算气压计数据计算出的Z轴垂直向上方向上的速度(cm/s)*/
 				g_psAttitudeAll->beroClimbSpeed = (g_psAttitudeAll->nowBeroAltitude - \
@@ -473,7 +472,7 @@ void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 	
 	g_UltrUpdateContinueTicks++; /*PLATFORM_TASK_SCHEDULER_MIN_FOC_MS 执行一次*/
 
-	if (g_UltrUpdateContinueTicks >= (75 / PLATFORM_TASK_SCHEDULER_MIN_FOC_MS))	/*5ms执行一次,75ms获取1次*/
+	if (g_UltrUpdateContinueTicks >= (SYS_ULTR_MIN_MEAS_PERIOD_TICK_MS / PLATFORM_TASK_SCHEDULER_MIN_FOC_MS))	/*5ms执行一次,100ms获取1次*/
 	{	
 		/*cntTicks清0*/
 		g_UltrUpdateContinueTicks = 0;
@@ -488,7 +487,7 @@ void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 			if (uavStatus->UavSenmodStatus.Vertical.Ultr.ZERO_REFERENCE_SET_STATUS != UAV_SENMOD_ZERO_REFERENCE_SET_OK)				
 			{
 				/*采集10次后,待超声波数据稳定后(必要步骤),设定初始位置超声波高度值*/
-				if (g_UltrZeroSampleContinueTicks > 10)
+				if (g_UltrZeroSampleContinueTicks > 50)
 				{
 					/*设定超声波零参考点的高度*/
 					g_psAttitudeAll->zeroUltrHeight = rawAltitude;
