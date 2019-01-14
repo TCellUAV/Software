@@ -13,9 +13,9 @@
 #define CTRL_HEIGHT_CLIMB_DOWN_MAX_ACCELERATION   	   (200)         /*向下最大攀爬加速度(150cm/s^2)*/
 
 /*x,y方向,速度限制*/
-#define CTRL_HORIZONTAL_MAX_MOVE_SPEED		           (6.0f) 		 /*水平方向最大期望速度30度*6/100=1.8m/s*/
+#define CTRL_HORIZONTAL_MAX_MOVE_SPEED		           (200) 		 /*水平方向最大期望速度(200cm/s)*/
 /*x,y方向,角度限制*/
-#define REMOT_PITCH_ROLL_ANGLE_EXPECT_MAX              (45)			 /*遥控PITCH、ROLL最大期望行程角度*/
+#define REMOT_PITCH_ROLL_ANGLE_EXPECT_MAX              (30)			 /*遥控PITCH、ROLL最大期望行程角度*/
 #define REMOT_YAW_ANGLE_EXPECT_MAX  	               (150)		 /*遥控YAW最大期望行程:+150~-150*/
 #define GIMBAL_PITCH_ANGLE_EXPECT_MAX              	   (90)			 /*万向节云台PITCH、ROLL最大期望行程:+90~-90*/
 #define GIMBAL_YAW_ANGLE_EXPECT_MAX  	               (150)		 /*万向节云台YAW最大期望行程:+150~-150*/

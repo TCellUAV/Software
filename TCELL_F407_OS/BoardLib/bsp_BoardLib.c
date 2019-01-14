@@ -245,7 +245,12 @@ SYS_RETERR bsp_GPS_Module_Init(BSP_BoardStatus *boardStatus)
 	
 #ifdef GPS_MD__M8N
 	/*MD GPS_M8N 初始化*/
+	/*如果插得是新的GPS,则需要初始化;如果不是,则不需要再重新初始化*/
+	#if (HW_THE_GPS_IS_A_NEW_ONE == SYS_DEFINE_IS_TRUE)
 	boardStatus->MD_GPS = bsp_GPS_M8N_Init(&g_sGpsM8N);
+	#else
+	boardStatus->MD_GPS = SYS_RET_SUCC;
+	#endif
 #endif
 	
 #ifdef GPS_BD__M8N

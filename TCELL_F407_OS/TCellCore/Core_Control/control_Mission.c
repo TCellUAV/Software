@@ -273,8 +273,7 @@ Control_Fly_Mission_Switch_Motion gs_mission_check_ultr_opflow =
 /*任务检测*/
 UAV_FLY_MISSION control_fly_mission_check_ultr_opflow_pos(Uav_Status *uavStatus, u32 checkPeriodMS)
 {
-	/*若任务切换异常,默认返回当前正在执行的任务*/
-	UAV_FLY_MISSION FLY_MISSION_RET = uavStatus->UavCurrentFlyMission.LAST_FLY_MISSION;
+	UAV_FLY_MISSION FLY_MISSION_RET = UAV_FLY_MISSION_NULL;
 	
 	/*检测SWD拨键位置*/
 	if (remot_Data_Range(g_sRemotData.SWD, REMOT_DATA_MIN) == REMOT_DATA_MIN)
@@ -368,8 +367,7 @@ Control_Fly_Mission_Switch_Motion gs_mission_check_bero_gps =
 /*任务检测*/
 UAV_FLY_MISSION control_fly_mission_check_bero_gps_pos(Uav_Status *uavStatus, u32 checkPeriodMS)
 {
-	/*若任务切换异常,默认返回当前正在执行的任务*/	
-	UAV_FLY_MISSION FLY_MISSION_RET = uavStatus->UavCurrentFlyMission.LAST_FLY_MISSION;
+	UAV_FLY_MISSION FLY_MISSION_RET = UAV_FLY_MISSION_NULL;
 	
 	/*检测SWD拨键位置*/
 	if (remot_Data_Range(g_sRemotData.SWD, REMOT_DATA_MIN) == REMOT_DATA_MIN)
@@ -388,7 +386,7 @@ UAV_FLY_MISSION control_fly_mission_check_bero_gps_pos(Uav_Status *uavStatus, u3
 			gs_mission_check_bero_gps.CHECK_STATUS = CONTROL_MISSION_START_CHECK_ENABLE;
 			
 			/*开始倒计时250 * 20ms = 5000ms*/
-			feed_control_fly_mission_check_dog(checkPeriodMS / 20 / 10, &gs_mission_check_ultr_opflow.count_down);
+			feed_control_fly_mission_check_dog(checkPeriodMS / 20 / 10, &gs_mission_check_bero_gps.count_down);
 			
 			/*标记已开始倒计时*/
 			gs_mission_check_bero_gps.COUNTDOWN_STATUS = CONTROL_MISSION_COUNTDOWN_START;

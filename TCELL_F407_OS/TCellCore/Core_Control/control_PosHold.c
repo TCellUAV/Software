@@ -109,7 +109,7 @@ vu16 g_vu16GpsHorizontalSpeedControlTicks = 0; /*GPS水平速度控制计数器*/
 void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 {
 	/************************** 水平位置控制器 开始 ********************************/
-	/*遥控居中,水平方向无遥控给定期望角度*/
+	/*遥控居中,水平方向无遥控给定期望角度/速度*/
 	if ((g_psControlAircraft->RemotExpectAngle.pitch == 0) && \
 		(g_psControlAircraft->RemotExpectAngle.roll == 0))
 	{
@@ -149,7 +149,7 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 				g_psAttitudeAll->EarthFramePosError.north = g_psPidSystem->LatitudePosition.expect - g_psPidSystem->LatitudePosition.feedback;
 				g_psAttitudeAll->EarthFramePosError.east  = g_psPidSystem->LongitudePosition.expect - g_psPidSystem->LongitudePosition.feedback;
 			
-				/*导航坐标系下旋转到机体坐标方向上位置偏差*/
+				/*导航坐标系 旋转到 机体坐标系 位置偏差*/
 				g_psAttitudeAll->BodyFramePosError.pitch = -g_psAttitudeAll->EarthFramePosError.east * SIN_YAW + \
 															g_psAttitudeAll->EarthFramePosError.north * COS_YAW;
 	
@@ -169,7 +169,7 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 				g_psAttitudeAll->BodyFrameBrakeSpeed.pitch = g_psPidSystem->LatitudePosition.PID.kP * g_psAttitudeAll->BodyFramePosError.pitch;  /*y*/
 				g_psAttitudeAll->BodyFrameBrakeSpeed.roll  = g_psPidSystem->LongitudePosition.PID.kP * g_psAttitudeAll->BodyFramePosError.roll;  /*x*/
 			
-				/*更新水平方向Pitch、Roll速度控制器期望*/
+				/*更新【机体系】水平方向Pitch、Roll速度控制器期望*/
 				g_psPidSystem->LatitudeSpeed.expect  = g_psAttitudeAll->BodyFrameBrakeSpeed.pitch;  /*横纬-沿y轴方向(N向)*/
 				g_psPidSystem->LongitudeSpeed.expect = g_psAttitudeAll->BodyFrameBrakeSpeed.roll;   /*竖经-沿x轴方向(E向)*/
 				
@@ -194,11 +194,11 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 			g_psAttitudeAll->BodyFrameSpeedFeedback.roll  =  g_psSinsReal->curSpeed[EARTH_FRAME_X] * COS_YAW + \
 															 g_psSinsReal->curSpeed[EARTH_FRAME_Y] * SIN_YAW;					
 			
-			/*更新沿载体水平方向速度反馈量*/
-			g_psPidSystem->LatitudeSpeed.feedback  = g_psAttitudeAll->BodyFrameSpeedFeedback.pitch; /*横纬-沿y轴方向(N向)*/
-			g_psPidSystem->LongitudeSpeed.feedback = g_psAttitudeAll->BodyFrameSpeedFeedback.roll;  /*竖经-沿x轴方向(E向)*/
+			/*更新 机体系 水平方向速度反馈量*/
+			g_psPidSystem->LatitudeSpeed.feedback  = g_psAttitudeAll->BodyFrameSpeedFeedback.pitch; /*y轴方向*/
+			g_psPidSystem->LongitudeSpeed.feedback = g_psAttitudeAll->BodyFrameSpeedFeedback.roll;  /*x轴方向*/
 			
-			/*沿载体水平方向速度控制及输出*/
+			/*机体系 水平方向速度控制及输出*/
 			g_psPidSystem->LatitudeSpeed.controlOutput  = pid_Control_Div_LPF(&g_psPidSystem->LatitudeSpeed, PID_CONTROLER_LATITUDE_SPEED);  /*PID DIV控制低通滤波*/
 			g_psPidSystem->LongitudeSpeed.controlOutput = pid_Control_Div_LPF(&g_psPidSystem->LongitudeSpeed, PID_CONTROLER_LONGITUDE_SPEED);  /*PID DIV控制低通滤波*/
 			
@@ -243,15 +243,15 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 				g_vu16GpsHorizontalSpeedControlTicks = 0;
 				
 				/*N向(沿PITCH方向)最大移动速度*/
-				g_psPidSystem->LatitudeSpeed.expect  = -g_psControlAircraft->RemotExpectAutoAngle.pitch * \
-													    CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度*/
+				g_psPidSystem->LatitudeSpeed.expect  = -(g_psControlAircraft->RemotExpectAutoAngle.pitch / REMOT_PITCH_ROLL_ANGLE_EXPECT_MAX) * \
+													     CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度*/
 
 				/*E向(沿ROLL方向)最大移动速度*/
-				g_psPidSystem->LongitudeSpeed.expect = g_psControlAircraft->RemotExpectAutoAngle.roll * \
-													   CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度*/						
+				g_psPidSystem->LongitudeSpeed.expect =  (g_psControlAircraft->RemotExpectAutoAngle.roll / REMOT_PITCH_ROLL_ANGLE_EXPECT_MAX) * \
+													     CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度*/						
 				
-				/*导航系的水平速度，转化到机体坐标系X-Y方向上*/
-				/*沿载体Pitch、Roll方向水平速度控制*/
+				/*导航系的水平速度，转化到机体坐标系方向上*/
+				/*沿机体Pitch、Roll方向水平速度控制*/
 				g_psAttitudeAll->BodyFrameSpeedFeedback.pitch = -g_psSinsReal->curSpeed[EARTH_FRAME_X] * SIN_YAW + \
 																 g_psSinsReal->curSpeed[EARTH_FRAME_Y] * COS_YAW;
 
@@ -259,8 +259,8 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 																 g_psSinsReal->curSpeed[EARTH_FRAME_Y] * SIN_YAW;
 				
 				/*更新水平速度反馈*/
-				g_psPidSystem->LatitudeSpeed.feedback  = g_psAttitudeAll->BodyFrameSpeedFeedback.pitch; /*横纬-沿y轴方向(N向)*/	
-				g_psPidSystem->LongitudeSpeed.feedback = g_psAttitudeAll->BodyFrameSpeedFeedback.roll;  /*竖经-沿x轴方向(E向)*/
+				g_psPidSystem->LatitudeSpeed.feedback  = g_psAttitudeAll->BodyFrameSpeedFeedback.pitch; /*y轴方向*/	
+				g_psPidSystem->LongitudeSpeed.feedback = g_psAttitudeAll->BodyFrameSpeedFeedback.roll;  /*x轴方向*/
 				
 				/*水平速度PID计算及输出 (水平控速)*/
 				g_psPidSystem->LatitudeSpeed.controlOutput  = pid_Control_Div_LPF(&g_psPidSystem->LatitudeSpeed, PID_CONTROLER_LATITUDE_SPEED);    /*PID DIV控制低通滤波*/

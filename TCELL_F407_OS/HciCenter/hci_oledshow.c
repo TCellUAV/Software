@@ -911,6 +911,12 @@ void hci_show_on_run_progress(void)
 				/*NO10.传感器校准结果*/
 				hci_Show_Sensor_Calib_Result();
 			}break;
+			
+			case HCI_SHOW_PAGE_11:
+			{
+				/*N11.Gps home点数据*/
+				hci_Show_Gps_Home_Data();
+			}break;			
 
 			default:break;
 		}
@@ -1336,11 +1342,11 @@ U:±0.99999 PDOP±999.0
 	
 	/*=== 3._3_dimensional===*/
 	/*3.1显示GpsDate -> _3_dimensional -> latitude*/
-	math_Floater_Number_Analy(g_psAttitudeAll->GpsData.Coordinate_f8.lat, 12, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psAttitudeAll->HomePos.Coordinate_f8.lat, 12, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, 24, 3, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
 
 	/*3.2显示GpsDate -> _3_dimensional -> longitude*/
-	math_Floater_Number_Analy(g_psAttitudeAll->GpsData.Coordinate_f8.lon, 12, &g_sMathFloaterAnaly);
+	math_Floater_Number_Analy(g_psAttitudeAll->HomePos.Coordinate_f8.lon, 12, &g_sMathFloaterAnaly);
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, 24, 4, OLED096_ACSII_6X8, g_sMathFloaterAnaly);	
 	
 	/*3.3显示GpsDate -> _3_dimensional -> height*/
@@ -2555,7 +2561,121 @@ OZ:±0.9999
 	bsp_OLED0_96_Show_Floater(&g_sOled0_96, 18, 7, OLED096_ACSII_6X8, g_sMathFloaterAnaly);	
 }
 
-/*==== 4.传感器校准交互 ====*/
+/*==== 4.飞行器大数据显示 ====*/
+/*N11.Gps home点数据*/
+void hci_Show_Gps_Home_Data(void)
+{
+/*1.显示内容*/
+/*
+	          |-lat
+	    |curr |
+	    |     |-lon
+GpsData |  
+	    |     |-lat
+	    |curr |
+	    |     |-lon
+*/  				
+/*6.简排版
+NOB: GPS_POS_DATA  *
+c_lat: 36.00000000
+c_lon: 360.0000000
+USE_CTRL: ALLOW
+EF_Lat_cm: ±1232222.0    cm   
+EF_Lon_cm: ±1232222.0    cm
+BF_Lat_cm: ±1232222.0    cm
+BF_Lon_cm: ±1232222.0    cm
+*/
+	/*判断是否锁定当前页*/
+	if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_HOLD_PAGE)
+	{
+		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, '*', OLED096_ACSII_6X8);
+	}
+	else if (g_sHciShowPage.PAGE_STATUS == UAV_HCI_SHOW_FREE_PAGE)
+	{
+		bsp_OLED0_96_ShowChar(&g_sOled0_96, 120, 0, ' ', OLED096_ACSII_6X8);	
+	}
+
+	/*显示布局框架,然后再填数字*/
+	if (g_sHciShowPage.MOULD_STATUS == HCI_SHOW_MOULD_FIRST)
+	{
+		/*第0行*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 0, (u8*)&"NOB: GPS_POS_DATA", OLED096_ACSII_6X8);		
+		
+		/*第1行*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 1, (u8*)&"c_lat: ", OLED096_ACSII_6X8);		
+		
+		/*第2行*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 2, (u8*)&"c_lon: ", OLED096_ACSII_6X8);					
+		
+		/*第3行隔行*/	
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 3, (u8*)&"USE_CTRL: ", OLED096_ACSII_6X8);		
+		
+		/*第4行*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 4, (u8*)&"EF_Lat_cm: ", OLED096_ACSII_6X8);	
+
+		/*第5行*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 5, (u8*)&"EF_Lon_cm: ", OLED096_ACSII_6X8);
+
+		/*第6行*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 6, (u8*)&"BF_Lat_cm: ", OLED096_ACSII_6X8);					
+		
+		/*第7行*/
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 0, 7, (u8*)&"BF_Lon_cm: ", OLED096_ACSII_6X8);	
+
+		/*标记模板框显示过了*/
+		g_sHciShowPage.MOULD_STATUS = HCI_SHOW_MOULD_NOTFIRST;
+	}
+	
+	/*=== 1.CURRENT POS===*/
+	/*1.1显示当前座标Lat*/
+	math_Floater_Number_Analy(g_psAttitudeAll->GpsData.Coordinate_f8.lat, 12, &g_sMathFloaterAnaly);
+	bsp_OLED0_96_Show_Floater(&g_sOled0_96, 42, 1, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
+
+	/*1.2显示当前座标Lon*/
+	math_Floater_Number_Analy(g_psAttitudeAll->GpsData.Coordinate_f8.lon, 12, &g_sMathFloaterAnaly);
+	bsp_OLED0_96_Show_Floater(&g_sOled0_96, 42, 2, OLED096_ACSII_6X8, g_sMathFloaterAnaly);	
+	
+	/*=== 2.USE_CTRL STATUS ===*/
+	if (g_psUav_Status->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS == UAV_SENMOD_USE_CONTROL_ALLOW)
+	{
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 60, 3, (u8*)&"ALLOW   ", OLED096_ACSII_6X8);		
+	}
+	else if (g_psUav_Status->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS == UAV_SENMOD_USE_CONTROL_DISALLOW)
+	{
+		bsp_OLED0_96_ShowString(&g_sOled0_96, 60, 3, (u8*)&"DISALLOW", OLED096_ACSII_6X8);	
+	}
+	
+	/*=== 3.Distamce ===*/
+	/*有效才显示*/
+	if (g_psUav_Status->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS == UAV_SENMOD_USE_CONTROL_ALLOW)
+	{
+		/*3.1 EarthFrame_Lat_cm*/	
+	    math_Floater_Number_Analy(g_psAttitudeAll->EarthFrameRelativeHome.north, 10, &g_sMathFloaterAnaly);		
+		bsp_OLED0_96_Show_Floater(&g_sOled0_96, 66, 4, OLED096_ACSII_6X8, g_sMathFloaterAnaly);		
+	
+		/*3.2 EarthFrame_Lon_cm*/
+	    math_Floater_Number_Analy(g_psAttitudeAll->EarthFrameRelativeHome.east, 10, &g_sMathFloaterAnaly);		
+		bsp_OLED0_96_Show_Floater(&g_sOled0_96, 66, 5, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
+	
+		/*3.3 BodyFrame_Lat_cm*/
+        math_Floater_Number_Analy(g_psAttitudeAll->BodyFrameRelativeHome.y, 10, &g_sMathFloaterAnaly);		
+		bsp_OLED0_96_Show_Floater(&g_sOled0_96, 66, 6, OLED096_ACSII_6X8, g_sMathFloaterAnaly);
+	
+		/*3.4 BodyFrame_Lon_cm*/
+        math_Floater_Number_Analy(g_psAttitudeAll->BodyFrameRelativeHome.x, 10, &g_sMathFloaterAnaly);		
+		bsp_OLED0_96_Show_Floater(&g_sOled0_96, 66, 7, OLED096_ACSII_6X8, g_sMathFloaterAnaly);	
+	}
+	/*无效清除*/
+	else if (g_psUav_Status->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS == UAV_SENMOD_USE_CONTROL_DISALLOW)
+	{
+		bsp_OLED0_96_Display_Part(&g_sOled0_96, 66, 4, 127, 4, 0x00);
+		bsp_OLED0_96_Display_Part(&g_sOled0_96, 66, 5, 127, 5, 0x00);
+		bsp_OLED0_96_Display_Part(&g_sOled0_96, 66, 6, 127, 6, 0x00);
+		bsp_OLED0_96_Display_Part(&g_sOled0_96, 66, 7, 127, 7, 0x00);		
+	}
+}
+
+/*==== 5.传感器校准交互 ====*/
 /*1.进入/退出加速度计校准提示*/
 void hci_Show_Acc_Calib_Status(ENTRY_CALIB_STATUS ENTRY_STATUS, CALIB_SIDE_INDEX GONNA_CALIB_SIDE)
 { 
