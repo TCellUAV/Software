@@ -156,7 +156,7 @@ void math_Floater_Number_Analy(fp32 db_number, u8 totalWidth, MATH_Floater *floa
 		floater->integerPartBitNumber = 1;		
 	}
 	
-	/*小数点在第一个数字后的位置序号*/
+	/*小数点在整数部分各位后的位置序号*/
 	floater->decimalPointPos = floater->integerPartBitNumber + 1;
 	
 	/*根据总位宽,显示数据,整数部分显示完毕后,剩余位宽给小数部分*/
@@ -177,11 +177,11 @@ void math_Floater_Number_Analy(fp32 db_number, u8 totalWidth, MATH_Floater *floa
 	/*计算小数部分有效位数*/
 	floater->decimalPartAvaBitNumber = 0; /*先清0*/
 	
-	while((floater->decimalABS / powInt_10) != 0)
+	while((floater->decimalABS / powFloat_10) != 0)
 	{
 		floater->decimalPartAvaBitNumber++;
 		
-		powInt_10 *= 10;
+		powFloat_10 *= 10;
 	}
 
 	/*小数部分,非0数开始前0的个数*/

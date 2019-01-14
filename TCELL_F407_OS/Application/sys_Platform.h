@@ -186,6 +186,10 @@ Yaw(欧拉角角,惯导方向,欧拉角绕z轴) - z(惯导元器件z方向) - xxxxxxxxxxxxxx      - 
 #define SYS_NO_AVA_MARK					  (-255)	/*无效标记*/
 #define SYS_ENABLE						  (1)		/*使能*/
 #define SYS_DISABLE						  (0)		/*不使能*/
+
+/*宏判断*/
+#define SYS_DEFINE_IS_TRUE				  (0)		/*宏定义是正确的*/
+#define SYS_DEFINE_IS_FALSE				  (1)		/*宏定义是错误的*/
 /*********************************************/
 
 /**************** 自然事物常数 ***************/

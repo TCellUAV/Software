@@ -5,6 +5,7 @@
 #include "sins_Strapdown.h"
 
 #define KALMAN_GPS_PROCESS_NOISE_CONSTANT	(1.0f)
+#define KALMAN_GPS_DATA_UPDATE_PERIOD_S		(0.1f) /*100ms*/
 
 typedef enum
 {

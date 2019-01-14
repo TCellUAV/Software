@@ -157,7 +157,7 @@ void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 			g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowBeroAltitude;
 			
 			/*传感器数据同步cnt_5MS*/
-			g_psSinsReal->sensorDataSync5ms = 20;
+			g_psSinsReal->sensorDataSync5ms[EARTH_FRAME_Z] = 20;
 			
 			/*标记气压计能用于控制*/
 			uavStatus->UavSenmodStatus.Vertical.Bero.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;				
@@ -184,7 +184,7 @@ void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 			g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowUltrAltitude;
 
 			/*传感器数据同步cnt_5MS*/			
-			g_psSinsReal->sensorDataSync5ms = 20;		
+			g_psSinsReal->sensorDataSync5ms[EARTH_FRAME_Z] = 20;		
 
 			/*标记超声波能用于控制*/
 			uavStatus->UavSenmodStatus.Vertical.Ultr.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;
@@ -199,7 +199,7 @@ void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 			g_psSinsReal->estimatePos[EARTH_FRAME_Z] = g_psAttitudeAll->nowBeroAltitude;
 
 			/*传感器数据同步cnt_5MS*/			
-			g_psSinsReal->sensorDataSync5ms = 20;			
+			g_psSinsReal->sensorDataSync5ms[EARTH_FRAME_Z] = 20;			
 
 			/*标记气压计能用于控制*/
 			uavStatus->UavSenmodStatus.Vertical.Bero.USE_CONTROL_STATUS = UAV_SENMOD_USE_CONTROL_ALLOW;			
@@ -237,9 +237,6 @@ void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 		/*加入位置新数据*/
 		g_psSinsReal->pos_History[EARTH_FRAME_Z][0] = g_psSinsReal->estimatePos[EARTH_FRAME_Z];
 		
-		/*设置竖直位置控制的期望位置*/
-		g_psPidSystem->HighPosition.expect = g_psSinsReal->estimatePos[EARTH_FRAME_Z];
-		
 		/*设置当前原始位置和速度*/
 		g_psSinsOrigion->curPosition[EARTH_FRAME_Z] = g_psSinsReal->estimatePos[EARTH_FRAME_Z];
 		g_psSinsOrigion->curSpeed[EARTH_FRAME_Z]    = 0;
@@ -248,6 +245,9 @@ void sins_vertical_bero_ultr_auto_change(Uav_Status *uavStatus)
 		g_psTOCSystem->BackCorrect[EARTH_FRAME_Z].acc   = 0;  /*加速度矫正量*/
 		g_psTOCSystem->BackCorrect[EARTH_FRAME_Z].speed = 0;  /*速度矫正量*/
 		g_psTOCSystem->BackCorrect[EARTH_FRAME_Z].pos   = 0;  /*位置矫正量*/
+		
+		/*重置竖直方向参考点*/
+		uavStatus->UavControlMode.Vertical.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_NO;
 	}
 }
 
@@ -324,6 +324,13 @@ void sins_horizontal_gps_opticflow_auto_change(Uav_Status *uavStatus)
 			uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE = UAV_HORIZONTAL_SENMOD_CURRENT_NULL;			
 		}		
 	}
+	
+	/*发生传感器切换 && 传感器可用,重置水平参考点*/
+	if ((uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE != uavStatus->UavSenmodStatus.Horizontal.LAST_USE) && \
+		(uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE != UAV_HORIZONTAL_SENMOD_CURRENT_NULL))
+	{
+		uavStatus->UavControlMode.Horizontal.REFERENCE_SET_STATUS = UAV_SWITCH_REFERENCE_SET_NO;
+	}
 }
 
 #define TIME_CONTANST_ZER   (3.5f)
@@ -332,8 +339,6 @@ void sins_horizontal_gps_opticflow_auto_change(Uav_Status *uavStatus)
 #define K_POS_ZER           (3.0f / TIME_CONTANST_ZER)
 
 /*三阶互补求竖直方向上的加速度、速度、位置(高度)*/
-vu16 g_vu16HighDelayCnt = 20;
-
 vs16 g_TOCHighPosSolidTicks = 0;
 
 void sins_thirdorder_complement_vertical(void)
@@ -366,7 +371,7 @@ void sins_thirdorder_complement_vertical(void)
 	}	
 
 	/*观测高度与估算(SINS)高度的误差(cm)*/
-	g_psTOCSystem->estimateDealt[EARTH_FRAME_Z] = g_psSinsReal->estimatePos[EARTH_FRAME_Z] - g_psSinsReal->pos_History[EARTH_FRAME_Z][g_vu16HighDelayCnt];
+	g_psTOCSystem->estimateDealt[EARTH_FRAME_Z] = g_psSinsReal->estimatePos[EARTH_FRAME_Z] - g_psSinsReal->pos_History[EARTH_FRAME_Z][g_psSinsReal->sensorDataSync5ms[EARTH_FRAME_Z]];
 	
 	/*三路积分反馈量修正惯导的acc,speed,pos*/
 	g_psTOCSystem->BackCorrect[EARTH_FRAME_Z].acc   += g_psTOCSystem->estimateDealt[EARTH_FRAME_Z] * K_ACC_ZER * deltaT;  /*加速度矫正量*/
@@ -424,12 +429,12 @@ void sins_kalman_estimate_vertical(void)
 	/*超声波定高和气压计定高自动切换(选择高度观测数据来源)*/
 	sins_vertical_bero_ultr_auto_change(g_psUav_Status);
 	
-	filter_Kalman_Estimate_Vertical(g_psSinsReal->estimatePos[EARTH_FRAME_Z],  /*位置观测量*/
-									g_vu16HighDelayCnt,   				  /*观测传感器延时*/
-									g_psSinsReal, 	  	   			      /*惯导结构体*/
-									g_psSinsOrigion->curAcc[EARTH_FRAME_Z],	  /*系统原始驱动量*/
+	filter_Kalman_Estimate_Vertical(g_psSinsReal->estimatePos[EARTH_FRAME_Z],  		  /*位置观测量*/
+									g_psSinsReal->sensorDataSync5ms[EARTH_FRAME_Z],   /*观测传感器延时*/
+									g_psSinsReal, 	  	   			      			  /*惯导结构体*/
+									g_psSinsOrigion->curAcc[EARTH_FRAME_Z],	  		  /*系统原始驱动量*/
 									&g_sFilterKalmanVertical,
-									EARTH_FRAME_Z, 							  /*z = 2*/
+									EARTH_FRAME_Z, 							  		  /*z = 2*/
 								    sinsHighDeltaT);
 }
 
@@ -456,9 +461,6 @@ void sins_thirdorder_complement_horizontal(void)
 	
 	/*间隔时间换算成秒*/
 	deltaT = g_psSystemPeriodExecuteTime->SINS_Horizontal.DeltaTime / 1000.0f;
-	
-	/*GPS获取机体相对home的水平偏移,cm*/		
-	gps_Offset_Relative_To_Home();
 		
 	/*导航坐标系下,正北、正东方向位置,单位cm*/
 	g_psSinsReal->estimatePos[EARTH_FRAME_Y] = g_psAttitudeAll->EarthFrameRelativeHome.north;	
@@ -553,7 +555,7 @@ void sins_thirdorder_complement_horizontal(void)
 }
 
 vs16 g_KalmanHorizontalPosSolidTicks = 0;
-u16 g_KalmanHorizontalDelayCnt = 10;	 /*100ms: buff[49] -> buff[9] = 40 * 5ms???*/
+u16 g_KalmanHorizontalPosDelayCnt = 10;	 /*100ms: buff[49] -> buff[9] = 40 * 5ms???*/
 
 /*卡尔曼滤波求水平方向上的加速度、速度、位置(X,Y水平)*/
 void sins_kalman_estimate_horizontal(void)
@@ -566,9 +568,6 @@ void sins_kalman_estimate_horizontal(void)
 	
 	/*间隔时间换算成秒*/
 	sinsHorizontalDeltaT = g_psSystemPeriodExecuteTime->SINS_Horizontal.DeltaTime / 1000.0f;
-	
-	/*GPS获取机体相对home的水平偏移*/		
-	gps_Offset_Relative_To_Home();
 	
 	/*位置观测量赋值*/
 	g_psSinsReal->estimatePos[EARTH_FRAME_Y] = g_psAttitudeAll->EarthFrameRelativeHome.north;
@@ -585,45 +584,45 @@ void sins_kalman_estimate_horizontal(void)
 		for(i = SINS_HISTORY_DATA_DEEP - 1; i > 0; i--) /*10ms滑动一次*/
         {
 			/*位置*/
-			g_psSinsReal->pos_History[EARTH_FRAME_X][i] = g_psSinsReal->pos_History[EARTH_FRAME_X][i - 1]; /*X正东方向*/
-			g_psSinsReal->pos_History[EARTH_FRAME_Y][i]  = g_psSinsReal->pos_History[EARTH_FRAME_Y][i - 1];  /*Y正北方向*/
+			g_psSinsReal->pos_History[EARTH_FRAME_X][i] = g_psSinsReal->pos_History[EARTH_FRAME_X][i - 1];   /*X正东方向*/
+			g_psSinsReal->pos_History[EARTH_FRAME_Y][i] = g_psSinsReal->pos_History[EARTH_FRAME_Y][i - 1];  /*Y正北方向*/
 			
 			/*速度*/
-			g_psSinsReal->speed_History[EARTH_FRAME_X][i] = g_psSinsReal->speed_History[EARTH_FRAME_X][i - 1]; /*X正东方向*/
-			g_psSinsReal->speed_History[EARTH_FRAME_Y][i]  = g_psSinsReal->speed_History[EARTH_FRAME_Y][i - 1];  /*Y正北方向*/
+			g_psSinsReal->speed_History[EARTH_FRAME_X][i] = g_psSinsReal->speed_History[EARTH_FRAME_X][i - 1];   /*X正东方向*/
+			g_psSinsReal->speed_History[EARTH_FRAME_Y][i] = g_psSinsReal->speed_History[EARTH_FRAME_Y][i - 1];  /*Y正北方向*/
         }
 		
 		/*加入位置新数据*/
-		g_psSinsReal->pos_History[EARTH_FRAME_X][0] = g_psSinsReal->curPosition[EARTH_FRAME_X]; /*X正东方向*/
-		g_psSinsReal->pos_History[EARTH_FRAME_Y][0]  = g_psSinsReal->curPosition[EARTH_FRAME_Y];  /*Y正北方向*/		
+		g_psSinsReal->pos_History[EARTH_FRAME_X][0] = g_psSinsReal->curPosition[EARTH_FRAME_X];   /*X正东方向*/
+		g_psSinsReal->pos_History[EARTH_FRAME_Y][0] = g_psSinsReal->curPosition[EARTH_FRAME_Y];  /*Y正北方向*/		
 		
 		/*加入速度新数据*/
-		g_psSinsReal->speed_History[EARTH_FRAME_X][0] = g_psSinsReal->curSpeed[EARTH_FRAME_X]; /*X正东方向*/
-		g_psSinsReal->speed_History[EARTH_FRAME_Y][0]  = g_psSinsReal->curSpeed[EARTH_FRAME_Y];  /*Y正北方向*/				
+		g_psSinsReal->speed_History[EARTH_FRAME_X][0] = g_psSinsReal->curSpeed[EARTH_FRAME_X];   /*X正东方向*/
+		g_psSinsReal->speed_History[EARTH_FRAME_Y][0] = g_psSinsReal->curSpeed[EARTH_FRAME_Y];  /*Y正北方向*/				
 	}
 	
 	/*加速度观测量赋值*/
 	g_psSinsReal->curAcc[EARTH_FRAME_X] = g_psSinsOrigion->curAcc[EARTH_FRAME_X];
-	g_psSinsReal->curAcc[EARTH_FRAME_Y]  = g_psSinsOrigion->curAcc[EARTH_FRAME_Y];
+	g_psSinsReal->curAcc[EARTH_FRAME_Y] = g_psSinsOrigion->curAcc[EARTH_FRAME_Y];
 	
 	/*GPS 原始数据是否可用*/
 	if (g_sUav_Status.UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_OK)
 	{
-		/*水平E向 卡尔曼估计*/
+		/*水平E向(正东) 卡尔曼估计*/
 		filter_Kalman_Estimate_GPS_Horizontal(g_psSinsReal->estimatePos[EARTH_FRAME_X],   /*位置观测量*/
 											  g_psAttitudeAll->GpsData.NED_Velocity.velE, /*速度观测量*/
 											  g_psAttitudeAll->GpsData.quality,			  /*GPS定位质量*/
-											  g_KalmanHorizontalDelayCnt, 	   		      /*观测传感器延时*/
+											  g_KalmanHorizontalPosDelayCnt, 	   		  /*位置观测传感器延时*/
 											  g_psSinsReal, 	   						  /*惯导结构体*/
 											  &g_sFilter_Kalman_GPS_Horizontal,
 											  EARTH_FRAME_X,
 											  sinsHorizontalDeltaT);
 		
-		/*水平N向 卡尔曼估计*/
+		/*水平N向(正北) 卡尔曼估计*/
 		filter_Kalman_Estimate_GPS_Horizontal(g_psSinsReal->estimatePos[EARTH_FRAME_Y],   /*位置观测量*/
 											  g_psAttitudeAll->GpsData.NED_Velocity.velN, /*速度观测量*/
 											  g_psAttitudeAll->GpsData.quality,			  /*GPS定位质量*/
-											  g_KalmanHorizontalDelayCnt, 	   		      /*观测传感器延时*/
+											  g_KalmanHorizontalPosDelayCnt, 	   		  /*位置观测传感器延时*/
 											  g_psSinsReal, 	   						  /*惯导结构体*/
 											  &g_sFilter_Kalman_GPS_Horizontal,
 											  EARTH_FRAME_Y,

@@ -85,6 +85,7 @@
 /*=== 5.GPS ===*/
 #if 1
 	#define HW_CUT__USE_GPS
+	#define HW_THE_GPS_IS_A_NEW_ONE	  	(SYS_DEFINE_IS_FALSE)   /*GPS是新插上的,则需要初始化,不是则不需要再重复初始化*/
 #endif
 
 /*=== 6.光流 ===*/

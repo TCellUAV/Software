@@ -6,38 +6,39 @@ Filter_Kalman_Vertical g_sFilterKalmanVertical =
 	/*R*/
 	.R = 
 	{
-		5.0e-4f, 3.0e-4f,
+		5.0e-4f, 6.0e-4f,
 	},
 	
 	/*quality factor*/
-	.Q = 50,
+	.Q = 30,
 	
 	/*bias Gain*/
 	.accBiasGain = 
 	{
-		0.001f, 0.001f, 0.001f,
+		0.0005f, 0.0005f, 0.0005f,
 	},
 	
 	/*present covariance*/
 	.pre_conv = 
 	{
-		0.001f, 0, 0, 0.001f,
+		0.18f, 0.1f, 0.1f, 0.18f,
 	},
 };
 
 /*竖直卡尔曼观测估计*/
 void filter_Kalman_Estimate_Vertical(fp32 pos_observation,  /*位置观测量*/
-									 u16 estimateDelay, /*观测传感器延时*/
-									 SINS *SinsKf, 	   /*惯导结构体*/
-									 fp32 driveTarg,	   /*系统原始驱动量*/
+									 u16 estimateDelay, 	/*观测传感器延时*/
+									 SINS *SinsKf, 	   		/*惯导结构体*/
+									 fp32 driveTarg,	    /*系统原始驱动量*/
 									 Filter_Kalman_Vertical *Kalman,
 									 EARTH_FRAME_AXIS AXIS,
 								     fp32 deltaT)
 {
-	u16 i = 0;
+	u16 i;
+	static u16 speed_sync_cnt = 0; /*速度同步cnt*/
 	fp32 conv_z = 0, z_cor = 0;
-	fp32 temp_conv[4] = {0};	/*先验协方差*/
-	fp32 k[2] = {0}; /*增益矩阵*/
+	fp32 temp_conv[4] = {0};	   /*先验协方差*/
+	fp32 k[2] = {0}; 			   /*增益矩阵*/
 	fp32 c_temp = 0;
 	
 	/*先验状态*/
@@ -71,14 +72,31 @@ void filter_Kalman_Estimate_Vertical(fp32 pos_observation,  /*位置观测量*/
 	Kalman->pre_conv[2] = temp_conv[2] - k[1] * temp_conv[0];
 	Kalman->pre_conv[3] = temp_conv[3] - k[1] * temp_conv[1];
 	
-	/*老数据滑动*/
-	for (i = SINS_HISTORY_DATA_DEEP - 1; i > 0; i--)
+	/*位置:老数据滑动*/
+	for (i = SINS_HISTORY_DATA_DEEP - 1; i > 0; i--) /*5ms滑动*/
 	{
 		SinsKf->pos_History[AXIS][i] = SinsKf->pos_History[AXIS][i - 1];
 	}
 	
-	/*加入新数据*/
+	/*位置:加入新数据*/
 	SinsKf->pos_History[AXIS][0] = SinsKf->curPosition[AXIS];
+	
+	/*cnt++*/
+	speed_sync_cnt++;
+	
+	if (speed_sync_cnt >= 20) /*100ms滑动*/
+	{
+		speed_sync_cnt = 0;
+		
+		/*速度:老数据滑动*/
+		for (i = SINS_HISTORY_DATA_DEEP - 1; i > 0; i--)
+		{
+			SinsKf->speed_History[AXIS][i] = SinsKf->speed_History[AXIS][i - 1];
+		}		
+	}
+	
+	/*速度:加入新数据*/
+	SinsKf->speed_History[AXIS][0] = SinsKf->curSpeed[AXIS];	
 } 
 
 
@@ -122,7 +140,7 @@ Filter_Kalman_Horizontal g_sFilter_Kalman_GPS_Horizontal =
 void filter_Kalman_Estimate_GPS_Horizontal(fp32 pos_observation,    /*位置观测量*/
 									       fp32 speeed_observation, /*速度观测量*/
 									       fp32 gpsQuality,			/*GPS定位质量*/
-									       u16 estimateDelay, 	    /*观测传感器延时*/
+									       u16 estimateDelay, 	    /*位置观测传感器延时*/
 									       SINS *SinsKf, 	   		/*惯导结构体*/
 									       Filter_Kalman_Horizontal *Kalman,
 									       EARTH_FRAME_AXIS AXIS,
@@ -134,8 +152,8 @@ void filter_Kalman_Estimate_GPS_Horizontal(fp32 pos_observation,    /*位置观测量
 	fp32 temp_conv[4] = {0};	/*先验协方差*/
 	
 	/*计算动态量*/
-	Kalman->R[KALMAN_POS] = 0.5f * KALMAN_GPS_PROCESS_NOISE_CONSTANT * deltaT * deltaT; /*POS Noise*/
-	Kalman->R[KALMAN_SPD] = KALMAN_GPS_PROCESS_NOISE_CONSTANT * deltaT;				   /*SPEED Noise*/
+	Kalman->R[KALMAN_POS] = 0.5f * KALMAN_GPS_PROCESS_NOISE_CONSTANT * KALMAN_GPS_DATA_UPDATE_PERIOD_S * KALMAN_GPS_DATA_UPDATE_PERIOD_S; /*POS Noise*/
+	Kalman->R[KALMAN_SPD] = KALMAN_GPS_PROCESS_NOISE_CONSTANT * KALMAN_GPS_DATA_UPDATE_PERIOD_S;				 					      /*SPEED Noise*/
 	
 	/*先验状态*/
 	SinsKf->curPosition[AXIS] += SinsKf->curSpeed[AXIS] * deltaT + \
@@ -160,7 +178,7 @@ void filter_Kalman_Estimate_GPS_Horizontal(fp32 pos_observation,    /*位置观测量
 	
 	/*融合数据输出*/
 	z_delta[0] = pos_observation - SinsKf->pos_History[AXIS][estimateDelay];
-	z_delta[1] = speeed_observation - SinsKf->speed_History[AXIS][estimateDelay];
+	z_delta[1] = speeed_observation - SinsKf->speed_History[AXIS][estimateDelay * 2];
 	
 	/*当前位置和速度更新*/
 	SinsKf->curPosition[AXIS] += (Kalman->k[0][0] * z_delta[0]) + (Kalman->k[0][1] * z_delta[1]);

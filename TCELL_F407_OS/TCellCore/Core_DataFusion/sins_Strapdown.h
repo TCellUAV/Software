@@ -57,7 +57,7 @@ typedef struct
 	fp32 		       estimatePos[3];								/*本次观测位置*/
 	SINS_FUSION_STATUS FUSION_STATUS[2];							/*惯导融合状态*/
 	
-	u16				   sensorDataSync5ms;							/*传感器数据同步cnt*/
+	u16				   sensorDataSync5ms[3];					    /*传感器数据同步cnt*/
 }SINS;
 
 /*三阶互补*/

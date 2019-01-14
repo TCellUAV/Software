@@ -260,13 +260,16 @@ void rt_entry_gps_data_horizontal_fusion(void* parameter)
 		/*线程执行周期计算*/
 		get_Period_Execute_Time_Info(&(g_psSystemPeriodExecuteTime->GpsHorFusion));
 		
+		/*GPS获取机体相对home的水平偏移*/
+		gps_Offset_Relative_To_Home();
+		
 		#ifdef HW_CUT__USE_GPS	/*GPS*/
 		/*判断HOME是否已经设定(每次上电且GPS可用只设定一次)*/
 		gps_home_location_set();
-		#endif
+		#endif		
 		
 		/*机体系->导航系 加速度*/
-		sins_get_body_relative_earth_acc(g_psAccSINS);
+		sins_get_body_relative_earth_acc(g_psAccSINS);		
 		
 		/*HOME已经设定,即可进行数据融合*/
 		if (g_sUav_Status.HOME_SET_STATUS == UAV_HOME_SET_YES)

@@ -103,7 +103,7 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 	else
 	{
 		/*标记GPS数据不可用*/		
-		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_NO;	
+		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_NO;
 
 		/*GPS测得运动加速度清0*/
 		gpsData->DeltaSpeed.east  = 0;	 /*单位cm/s^2*/
@@ -139,12 +139,12 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 
 void gps_home_location_set(void)
 {	
-	/*home点只设置一次,且卫星信号持续100次检测为优时才允许使用卫星数据设定HOME点*/
+	/*home点只设置一次,且卫星信号持续100次检测为可用时才允许使用卫星数据设定HOME点*/
 	if ((g_sUav_Status.HOME_SET_STATUS != UAV_HOME_SET_YES) && \
 		(g_sUav_Status.UavSenmodStatus.Horizontal.Gps.FIRST_USE_AVA_STATUS == UAV_SENMOD_FIRST_USE_AVA_OK))
 	{
-		g_psAttitudeAll->HomePos.Coordinate_s4.lat = g_psAttitudeAll->GpsData.Coordinate_s4.lat;	/*纬度*/
-		g_psAttitudeAll->HomePos.Coordinate_s4.lon = g_psAttitudeAll->GpsData.Coordinate_s4.lon;   	/*经度*/
+		g_psAttitudeAll->HomePos.Coordinate_s4.lat = g_psAttitudeAll->GpsData.Coordinate_s4.lat;	/*纬度^7*/
+		g_psAttitudeAll->HomePos.Coordinate_s4.lon = g_psAttitudeAll->GpsData.Coordinate_s4.lon;   	/*经度^7*/
 
 		g_psAttitudeAll->HomePos.Coordinate_f8.lat = g_psAttitudeAll->GpsData.Coordinate_f8.lat;	/*纬度*/
 		g_psAttitudeAll->HomePos.Coordinate_f8.lon = g_psAttitudeAll->GpsData.Coordinate_f8.lon;   	/*经度*/		

@@ -362,7 +362,7 @@ typedef struct
 	/*= 1.飞行器本身的状态 =*/	               
 	volatile UAV_LOCK_STATUS  		   	     LOCK_STATUS;				/*飞控锁定状态*/
 	volatile Uav_Land_Status   		   	     UavLandStatus;				/*飞行器着陆状态*/
-	volatile Uav_Fly_Type         	   	     UavFlyType;				/*飞行模式*/
+	volatile Uav_Fly_Type         	   	     UavFlyType;				/*飞行模式(仅作为上位机数据)*/
 	volatile UAV_HOME_SET_STATUS  		   	 HOME_SET_STATUS;		    /*GPS HOME 点设置状态*/
 	volatile UAV_WIRELESS_CMC_STATUS   		 WIRELESS_CMC_STATUS;	    /*遥控和飞行器通信状态*/
 	volatile UAV_HCI_SHOW_STATUS			 HCI_SHOW_STATUS;			/*HCI SHOW*/
