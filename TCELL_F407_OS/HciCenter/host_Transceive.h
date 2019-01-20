@@ -105,22 +105,18 @@ typedef struct
 	s32 corPos;			/*位置修正量*/
 }SendSINSData;
 
-/*PID控制调参数据*/
-typedef struct
-{
-	s32 expect;			/*期望*/
-	s32 feedBack;		/*反馈*/
-}PIDPara;
-
 /*PID控制环参数(4个)*/
 typedef struct
 {
-	PIDPara Link1;
-	PIDPara Link2;
-	PIDPara Link3;
-	PIDPara Link4;
-	
-	u8		waveChNbr; /*波形通道数*/
+	s32 data1;
+	s32 data2;
+	s32 data3;
+	s32 data4;
+	s32 data5;
+	s32 data6;
+	s32 data7;
+	s32 data8;	
+	u8  waveChNbr; /*波形通道数*/
 }SendPIDPara;
 
 /*光流位移和速度*/

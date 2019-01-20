@@ -58,6 +58,31 @@ typedef struct
 	Vector2f RealSpeed;
 }OpticFlow_Data;
 
+/*气压计姿态数据*/
+typedef struct
+{
+	fp32 zeroPressure;	    /*零参考点气压值*/
+	fp32 rawPressure;		/*气压值原始值*/	
+	fp32 filterPressure;	/*气压值滤波值*/
+	fp32 zeroHeight;		/*零参考点气压计高度值*/
+	s32	 rawAltitude;		/*原始高度*/
+	fp32 obAltitudeOffset;	/*气压计观测高度偏移*/		
+	s32  lastAltitude;  	/*上次(气压计)高度(cm)*/
+    s32  curAltitude;   	/*当前(气压计)高度(cm)*/
+	fp32 climbSpeed;		/*气压计观测到的(向上爬升速度)(cm/s)*/	
+}Baro_Data;
+
+/*超声波姿态数据*/
+typedef struct
+{
+	s16  zeroHeight;		/*零参考点超声波高度值*/	
+	s16	 rawAltitude;		/*超声波观测高度原始值*/
+	s16	 filterAltitude;	/*超声波观测高度滤波值*/	
+    s16  lastAltitude;  	/*上次(超声波)高度(cm)*/
+    s16  curAltitude;   	/*当前(超声波)高度(cm)*/
+	fp32 climbSpeed;	    /*超声波观测到的(向上爬升速度)(cm/s)*/
+}Ultr_Data;
+
 /*GPS控制*/
 typedef struct
 {
@@ -87,17 +112,12 @@ typedef struct
 	OpticFlow_Data OpticFlowData;
 	
 	/*竖直方向*/
-	fp32 		   zeroPressure;				/*零参考点气压值*/
-	fp32		   curPressure;			    /*当前气压值*/					  
-	fp32 		   zeroBeroHeight;			/*零参考点气压计高度值*/		
-	fp32 		   zeroUltrHeight;			/*零参考点超声波高度值*/	
-    s32 		   lastBeroAltitude;  		/*上次(气压计)高度(cm)*/
-    s32 		   nowBeroAltitude;   		/*当前(气压计)高度(cm)*/
-	fp32 		   beroClimbSpeed;			/*气压计观测到的(向上爬升速度)(cm/s)*/
-    s32 		   lastUltrAltitude;  		/*上次(超声波)高度(cm)*/
-    s32 		   nowUltrAltitude;   		/*当前(超声波)高度(cm)*/
-	fp32 		   ultrClimbSpeed;			/*超声波观测到的(向上爬升速度)(cm/s)*/
-					
+	/*气压计*/
+	Baro_Data	   BaroData;
+	
+	/*超声波*/
+	Ultr_Data      UltrData;
+	
 	/*水平方向*/       
 	fp32 		   gpsRelativeHome;			/*GPS相对HOME点直线距离*/
 }AttitudeAll;
@@ -113,7 +133,7 @@ void gps_home_location_set(void);
 UAV_HOME_SET_STATUS get_gps_home_set_status(Uav_Status *uavStatus);
 
 /*两点间的xy距离*/
-Vector2s_Nav gps_Two_Pos_XY_Offset(GPS_Coordinate_s4 loc1, GPS_Coordinate_s4 loc2);
+Vector2f_Nav gps_Two_Pos_XY_Offset(GPS_Coordinate_s4 loc1, GPS_Coordinate_s4 loc2);
 
 /*经度比例*/
 fp32 gps_Longitude_Scale(GPS_Coordinate_s4 loc);
@@ -129,6 +149,9 @@ void gps_Offset_Relative_To_Home(void);
 void opflow_Offset_Relative_To_Home(OpFlowUpixelsLC306DataFrame OpFlowData, fp32 sinsHeight_cm, AttitudeAll *attitudeAll);
 
 /*====== Bero和Ultr高度数据获取及处理(校准、滤波) ======*/
+/*获取气压计相对观测高度*/
+s32 baro_get_relative_altitude(fp32 currentPa, fp32 referencePa);
+
 /*Bero Altitude数据获取和处理 */
 void bero_altitude_data_get_and_dp(Uav_Status *uavStatus);
 

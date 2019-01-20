@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>STM32F40_41xxx,USE_STDPERIPH_DRIVER,__FPU_PRESENT=1,__FPU_USED=1,ARM_MATH_CM4,__CC_ARM,ARM_MATH_MATRIX_CHECK,ARM_MATH_ROUNDING</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\StDevice\CORE;..\..\StDevice\DSP_LIB;..\..\StDevice\DSP_LIB\Include;..\..\StDevice\FWLIB\inc;..\..\McuDriver\McuBare_Driver;..\..\Application;..\..\BoardLib\_0_HumanComputerInter;..\..\BoardLib\_1_OhterBase;..\..\BoardLib\_2_EEPROM;..\..\BoardLib\_3_AHRS;..\..\BoardLib\_4_Berometer;..\..\BoardLib\_5_Ultrasonic;..\..\BoardLib\_6_GPS;..\..\BoardLib\_7_OpticalFlow;..\..\BoardLib;..\..\HciCenter;..\..\TCellCore\Core_MathLib;..\..\TCellCore\Core_Attitude;..\..\TCellCore\Core_Calibration;..\..\TCellCore\Core_DataFusion;..\..\TCellCore\Core_Control;..\..\TCellCore\Core_Filter;..\..\TCellCore\Core_Remot;..\..\TCellCore\Core_SafeOperate;..\..\rt-thread-v3.1.0\components\finsh;..\..\rt-thread-v3.1.0\include;..\..\rt-thread-v3.1.0\include\libc;..\..\rt-thread-v3.1.0\add_UserConfig;..\..\rt-thread-v3.1.0\add_SampleAPI\_1_thread;..\..\rt-thread-v3.1.0\add_SampleAPI\_2_idlehook;..\..\rt-thread-v3.1.0\add_SampleAPI\_3_heap;..\..\rt-thread-v3.1.0\add_SampleAPI\_4_semaphore;..\..\rt-thread-v3.1.0\add_SampleAPI\_5_mutex;..\..\rt-thread-v3.1.0\add_SampleAPI\_6_mailbox;..\..\rt-thread-v3.1.0\add_SampleAPI\_7_msgqueue;..\..\rt-thread-v3.1.0\add_SampleAPI\_8_event;..\..\rt-thread-v3.1.0\add_SampleAPI\_9_signal;..\..\rt-thread-v3.1.0\add_SampleAPI\_10_softtimer;..\..\rt-thread-v3.1.0\add_SampleAPI\_11_mempool;..\..\rt-thread-v3.1.0\add_SampleAPI\_12_interrupt;..\..\McuDriver\McuOS_Driver;..\..\rt-thread-v3.1.0\components\drivers\include;..\..\rt-thread-v3.1.0\components\finsh;..\..\rt-thread-v3.1.0\components\libc\compilers\armlibc</IncludePath>
+              <IncludePath>..\..\StDevice\CORE;..\..\StDevice\DSP_LIB;..\..\StDevice\DSP_LIB\Include;..\..\StDevice\FWLIB\inc;..\..\McuDriver\McuBare_Driver;..\..\McuDriver\McuOS_Driver;..\..\Application;..\..\BoardLib\_0_HumanComputerInter;..\..\BoardLib\_1_OhterBase;..\..\BoardLib\_2_EEPROM;..\..\BoardLib\_3_AHRS;..\..\BoardLib\_4_Berometer;..\..\BoardLib\_5_Ultrasonic;..\..\BoardLib\_6_GPS;..\..\BoardLib\_7_OpticalFlow;..\..\BoardLib;..\..\HciCenter;..\..\TCellCore\Core_MathLib;..\..\TCellCore\Core_Attitude;..\..\TCellCore\Core_Calibration;..\..\TCellCore\Core_DataFusion;..\..\TCellCore\Core_Control;..\..\TCellCore\Core_Filter;..\..\TCellCore\Core_Remot;..\..\TCellCore\Core_SafeOperate;..\..\rt-thread-v3.1.0\components\finsh;..\..\rt-thread-v3.1.0\include;..\..\rt-thread-v3.1.0\include\libc;..\..\rt-thread-v3.1.0\add_UserConfig;..\..\rt-thread-v3.1.0\components\drivers\include;..\..\rt-thread-v3.1.0\components\finsh;..\..\rt-thread-v3.1.0\components\libc\compilers\armlibc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1236,71 +1236,6 @@
         </Group>
         <Group>
           <GroupName>OS_McuDriver</GroupName>
-        </Group>
-        <Group>
-          <GroupName>OS_SampleAPI</GroupName>
-          <Files>
-            <File>
-              <FileName>user_thread.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_1_thread\user_thread.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_idlehook.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_2_idlehook\user_idlehook.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_heap.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_3_heap\user_heap.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_semaphore.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_4_semaphore\user_semaphore.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_mutex.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_5_mutex\user_mutex.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_mailbox.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_6_mailbox\user_mailbox.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_msgqueue.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_7_msgqueue\user_msgqueue.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_event.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_8_event\user_event.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_signal.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_9_signal\user_signal.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_softtimer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_10_softtimer\user_softtimer.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_mempool.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_11_mempool\user_mempool.c</FilePath>
-            </File>
-            <File>
-              <FileName>user_interrupt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\rt-thread-v3.1.0\add_SampleAPI\_12_interrupt\user_interrupt.c</FilePath>
-            </File>
-          </Files>
         </Group>
       </Groups>
     </Target>

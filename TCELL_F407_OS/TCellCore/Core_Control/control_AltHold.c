@@ -195,7 +195,19 @@ void vertical_Control_AltHold(fp32 controlDeltaT)
 	{
 		g_psPidSystem->HighSpeed.controlOutput = math_Constrain(g_psPidSystem->HighSpeed.controlOutput, \
 															    CTRL_HEIGHT_CLIMB_DOWN_MAX_ACCELERATION, -CTRL_HEIGHT_CLIMB_DOWN_MAX_ACCELERATION);		
-	} 	
+	}
+	
+	/*标记飞行器空中悬停状态*/
+	/*竖直方向悬停*/
+	if (g_psControlAircraft->AIRCRAFT_VER_MOVE_TREND == CTRL_AIRCRAFT_MOVE_VER_HOLD)
+	{
+		g_psUav_Status->AIRSTOP_TYPE |= UAV_AIRSTOP_ONLY_VERTICAL;
+	}
+	/*竖直方向未悬停*/
+	else
+	{
+		g_psUav_Status->AIRSTOP_TYPE &= UAV_AIRSTOP_ONLY_HORIZONTAL;
+	}
 	
 	/************************** 竖直速度控制器 结束 ********************************/
 	/*高度控制器第3步*/

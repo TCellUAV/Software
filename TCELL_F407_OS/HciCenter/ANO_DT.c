@@ -87,7 +87,7 @@ void ANO_DT_Data_Exchange(void)
 	{
 		f.send_status = 0;
 		ANO_DT_Send_Status(g_psAttitudeAll->Ahrs.roll, g_psAttitudeAll->Ahrs.pitch, g_psAttitudeAll->Ahrs.yaw, \
-					       g_psAttitudeAll->nowBeroAltitude, g_sUav_Status.UavFlyType.CURRENT, g_sUav_Status.LOCK_STATUS);
+					       g_psAttitudeAll->BaroData.curAltitude, g_sUav_Status.UavFlyType.CURRENT, g_sUav_Status.LOCK_STATUS);
 	}	
 /////////////////////////////////////////////////////////////////////////////////////
 	if(f.send_senser) /*主动定时上传 发送惯导传感器数据*/
@@ -95,7 +95,7 @@ void ANO_DT_Data_Exchange(void)
 		f.send_senser = 0;
 		ANO_DT_Send_Senser(g_psAccAttitude->x, g_psAccAttitude->y, g_psAccAttitude->z,
 						   g_psGyroAttitude->x, g_psGyroAttitude->y, g_psGyroAttitude->z,
-						   g_psMagFilter->x, g_psMagFilter->y, g_psMagFilter->z, (s32)g_psAttitudeAll->curPressure);
+						   g_psMagFilter->x, g_psMagFilter->y, g_psMagFilter->z, (s32)g_psAttitudeAll->BaroData.filterPressure);
 	}	
 /////////////////////////////////////////////////////////////////////////////////////
 	if(f.send_rcdata) /*主动定时上传 发送10通道遥控值:1000~2000*/
@@ -122,7 +122,7 @@ void ANO_DT_Data_Exchange(void)
 	if(f.send_height) /*主动定时上传 气压计和超声波测量高度*/
 	{
 		f.send_height = 0;
-		ANO_DT_Send_Height(g_psAttitudeAll->nowBeroAltitude, g_psAttitudeAll->nowUltrAltitude);
+		ANO_DT_Send_Height(g_psAttitudeAll->BaroData.curAltitude, g_psAttitudeAll->UltrData.curAltitude);
 	}
 /////////////////////////////////////////////////////////////////////////////////////
 	if(f.send_gps) /*主动定时上传 GPS信息*/

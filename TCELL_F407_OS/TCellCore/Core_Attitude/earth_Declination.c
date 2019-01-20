@@ -174,7 +174,8 @@ static fp32 get_lookup_value(u8 x, u8 y)
     return val;	
 }
 
-fp32 get_earth_declination(fp32 lat, fp32 lon)
+/*获取当地地磁偏角*/
+fp32 get_earth_local_declination(fp32 lat, fp32 lon)
 {
     s16 decSW, decSE, decNW, decNE, lonmin, latmin;
     u8 latmin_index,lonmin_index;

@@ -22,38 +22,13 @@ Uav_Status g_sUav_Status =
 		.BEFORE_WIRELESS_MISS = UAV_FLY_TYPE_ATTITUDE,
 	},									    /*飞行模式*/
 	
+	.AIRSTOP_TYPE = UAV_AIRSTOP_NOT, 		/*空中悬停状态*/
+	
 	.HOME_SET_STATUS     = UAV_HOME_SET_NOT,		    /*GPS HOME 点设置状态*/
 	.WIRELESS_CMC_STATUS = UAV_WIRELESS_CMC_FAIL,	    /*遥控和飞行器通信状态*/
 	.HCI_SHOW_STATUS     = UAV_HCI_SHOW_DISABLE,		/*HCI SHOW*/
 										   
-	/*= 2.飞行器工作方式状态 =*/	
-	.UavCurrentFlyMission = 
-	{
-		.CURRENT_FLY_MISSION  = UAV_FLY_MISSION_NULL,			   /*当前飞行任务*/
-		.LAST_FLY_MISSION     = UAV_FLY_MISSION_NULL,			   /*上次飞行任务*/
-		.ATTITUDE_CTRL_STATUS = UAV_MISSION_ATTITUDE_CTRL_DISABLE, /*是否允许执行任务同时执行姿态控制*/
-		
-		/*一键任务*/
-		.Onekey_Mission =
-		{
-			.FixedHeightFly = 
-			{
-				.ENABLE_STATUS        = UAV_MISSION_DISABLE,
-				.TARG_SET_STATUS      = UAV_MISSION_TARG_SET_NO,
-				.TARG_REACH_STATUS    = UAV_MISSION_TARG_REACH_NO,
-				.EXECUTE_STATUS       = UAV_MISSION_EXECUTE_NOT,
-			},
-			
-			.LandHome = 
-			{
-				.ENABLE_STATUS        = UAV_MISSION_DISABLE,
-				.TARG_SET_STATUS      = UAV_MISSION_TARG_SET_NO,
-				.TARG_REACH_STATUS    = UAV_MISSION_TARG_REACH_NO,		
-				.EXECUTE_STATUS       = UAV_MISSION_EXECUTE_NOT,				
-			},
-		},
-	},														  /*当前飞行任务*/
-	
+	/*= 2.飞行器工作方式状态 =*/													  /*当前飞行任务*/
 	.UavControlMode = 
 	{
 		.Vertical = 
@@ -98,6 +73,7 @@ Uav_Status g_sUav_Status =
 				.ZERO_REFERENCE_SET_STATUS = UAV_SENMOD_ZERO_REFERENCE_SET_NO,
 				.FIRST_USE_AVA_STATUS      = UAV_SENMOD_FIRST_USE_AVA_NO,
 				.USE_CONTROL_STATUS        = UAV_SENMOD_USE_CONTROL_DISALLOW,
+				.FUSION_STATUS 			   = UAV_SENMOD_FUSION_FINISH,					
 			},
 			
 			.Ultr = 
@@ -106,7 +82,8 @@ Uav_Status g_sUav_Status =
 				.DATA_STATUS               = UAV_SENMOD_DATA_NO,
 				.ZERO_REFERENCE_SET_STATUS = UAV_SENMOD_ZERO_REFERENCE_SET_NO,
 				.FIRST_USE_AVA_STATUS      = UAV_SENMOD_FIRST_USE_AVA_NO,	
-				.USE_CONTROL_STATUS        = UAV_SENMOD_USE_CONTROL_DISALLOW,				
+				.USE_CONTROL_STATUS        = UAV_SENMOD_USE_CONTROL_DISALLOW,	
+				.FUSION_STATUS 			   = UAV_SENMOD_FUSION_FINISH,					
 			},
 		},
 		
@@ -132,7 +109,7 @@ Uav_Status g_sUav_Status =
 				.ZERO_REFERENCE_SET_STATUS = UAV_SENMOD_ZERO_REFERENCE_SET_NO,
 				.FIRST_USE_AVA_STATUS      = UAV_SENMOD_FIRST_USE_AVA_NO,			
 				.USE_CONTROL_STATUS        = UAV_SENMOD_USE_CONTROL_DISALLOW,				
-				.FUSION_STATUS 			   = UAV_SENMOD_FUSION_NO,				
+				.FUSION_STATUS 			   = UAV_SENMOD_FUSION_FINISH,				
 			},
 		},
 	},	/*传感器/模块状态*/
@@ -175,6 +152,22 @@ UAV_SENMOD_USE_CONTROL_STATUS status_GPS_Fix_Ava_Check(Uav_Status *uavStatus)
 	return (uavStatus->UavSenmodStatus.Horizontal.Gps.USE_CONTROL_STATUS);
 }
 
+/*获取当前无人机的姿态控制模式和所用传感器*/
+SYS_BOOLSTATUS check_uav_ctrl_and_sensor_use(Uav_Status *uavStatus, UAV_FLY_TYPE FLY_TYPE, UAV_VERTICAL_SENMOD_CURRENT_USE VER_SENMOD_USE, UAV_HORIZONTAL_SENMOD_CURRENT_USE HOR_SENMOD_USE)
+{
+	/*判断和指定check是否一致*/
+	if ((uavStatus->UavFlyType.CURRENT == FLY_TYPE) && \
+		(uavStatus->UavSenmodStatus.Vertical.CURRENT_USE == VER_SENMOD_USE) && \
+		(uavStatus->UavSenmodStatus.Horizontal.CURRENT_USE == HOR_SENMOD_USE))
+	{
+		/*返回正确*/
+		return SYS_BOOL_TRUE;
+	}
+	
+	/*返回错误*/
+	return SYS_BOOL_FALSE;
+}
+
 SimulateWatchDog g_sUavRemotCMCDog = 
 {
 	.curTicks         = 0, /*初始值必须清0*/
@@ -184,7 +177,7 @@ SimulateWatchDog g_sUavRemotCMCDog =
 SimulateWatchDog *g_psUavRemotCMCDog = &g_sUavRemotCMCDog;
 
 /*遥控与飞机通讯状态*/
-UAV_WIRELESS_CMC_STATUS status_check_aircraft_remot_communication(SimulateWatchDog *uavRemotCMCDog, Uav_Status *uavStatus)
+UAV_WIRELESS_CMC_STATUS status_check_uav_wireless(SimulateWatchDog *uavRemotCMCDog, Uav_Status *uavStatus)
 {		
 	uavRemotCMCDog->curTicks = my_GetTick();	/*获取当前tick foc = 10ms*/
 	 
@@ -201,7 +194,7 @@ UAV_WIRELESS_CMC_STATUS status_check_aircraft_remot_communication(SimulateWatchD
 			uavStatus->UavFlyType.CURRENT = uavStatus->UavFlyType.BEFORE_WIRELESS_MISS;
 			
 			/*清空当前飞行任务*/
-			control_fly_mission_clear(uavStatus, uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION);
+			control_fly_mission_clear(&gs_Uav_Fly_Mission, gs_Uav_Fly_Mission.CURRENT_FLY_MISSION);
 			
 			/*标记自动返航未设定*/
 			g_psControlAircraft->GO_HOME_SET = CTRL_AIRCRAFT_GO_HOME_NOTSET;
@@ -224,7 +217,7 @@ UAV_WIRELESS_CMC_STATUS status_check_aircraft_remot_communication(SimulateWatchD
 				uavStatus->UavFlyType.BEFORE_WIRELESS_MISS = uavStatus->UavFlyType.CURRENT;
 		
 				/*失联后,清除上一个任务,自动进入自动返航任务*/
-				control_fly_mission_set(g_psUav_Status, UAV_FLY_MISSION_ONEKEY_LAND_HOME, UAV_MISSION_ATTITUDE_CTRL_DISABLE);				
+				control_fly_mission_set(&gs_Uav_Fly_Mission, UAV_FLY_MISSION_ONEKEY_LAND_HOME, UAV_MISSION_ATTITUDE_CTRL_DISABLE);				
 			
 				/*标记自动返航已设定*/
 				g_psControlAircraft->GO_HOME_SET = CTRL_AIRCRAFT_GO_HOME_SET;

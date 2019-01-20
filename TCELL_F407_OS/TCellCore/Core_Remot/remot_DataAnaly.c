@@ -479,7 +479,7 @@ REMOT_DATA_STATUS remot_Data_Range(u16 ChannelData, REMOT_DATA_STATUS testStatus
 		case REMOT_DATA_MIN:	/*判断数据是不是最小值*/
 		{
 			if ((ChannelData >= (REMOT_DATA_MIN_VALUE - REMOT_DATA_PRECISION)) && \
-				(ChannelData <= (REMOT_DATA_MIN_VALUE + REMOT_DATA_PRECISION)))
+				(ChannelData <= (REMOT_DATA_MIN_VALUE + REMOT_DATA_PRECISION + REMOT_DATA_MIN_COMPENSATE)))
 			{
 				retStatus = REMOT_DATA_MIN;	  /*满足最小值条件*/
 			}

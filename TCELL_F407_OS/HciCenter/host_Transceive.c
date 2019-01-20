@@ -345,8 +345,8 @@ void user_Host_Data_Receive_Anl(u8 *data_buf,u8 num)
 
 void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTaskMs)
 {
-	static vu8 cnt             = 0;
-	static vu8 sendFlag 	   = 0;
+	static vu8 cnt      = 0;
+	static vu8 sendFlag = 0;
 	
 	/*发送数据前,发送buff清0*/
 	memset(ano_user_data_to_send, 0, DEBUG_TX_BUFF_SIZE);
@@ -422,7 +422,7 @@ void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTas
 				user_ANO_Send_Sins_Height_Data(g_sSendSinsDataHeight);
 			}break;
 
-			/*水平X方向融合数据*/
+			/*水平X方向融合数据(导航系)*/
 			case USER_HOST_MSG_SINS_HORIZONTAL_X:
 			{
 				g_sSendSinsDataHorizontalX.sinsPosition = g_psSinsReal->curPosition[EARTH_FRAME_X];	        /*惯导估算位置*/
@@ -437,7 +437,7 @@ void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTas
 				user_ANO_Send_Sins_Horizontal_X_Data(g_sSendSinsDataHorizontalX);
 			}break;
 
-			/*水平Y方向融合数据*/
+			/*水平Y方向融合数据(导航系)*/
 			case USER_HOST_MSG_SINS_HORIZONTAL_Y:
 			{
 				g_sSendSinsDataHorizontalY.sinsPosition = g_psSinsReal->curPosition[EARTH_FRAME_Y];	       	    /*惯导估算位置*/
@@ -471,71 +471,69 @@ void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTas
 			case USER_HOST_MSG_VER_LINK_CONTROL:
 			{				
 				/*ver pos*/
-				g_sSendPidPara.Link1.expect   = g_psPidSystem->HighPosition.expect;
-				g_sSendPidPara.Link1.feedBack = g_psPidSystem->HighPosition.feedback;
+				g_sSendPidPara.data1 = g_psPidSystem->HighPosition.expect;
+				g_sSendPidPara.data2 = g_psPidSystem->HighPosition.feedback;
 				
 				/*ver speed*/
-				g_sSendPidPara.Link2.expect   = g_psPidSystem->HighSpeed.expect;
-				g_sSendPidPara.Link2.feedBack = g_psPidSystem->HighSpeed.feedback;		
+				g_sSendPidPara.data3 = g_psPidSystem->HighSpeed.expect;
+				g_sSendPidPara.data4 = g_psPidSystem->HighSpeed.feedback;		
 
 				/*ver acc*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->HighAcc.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->HighAcc.feedback;
+				g_sSendPidPara.data5 = g_psPidSystem->HighAcc.expect;
+				g_sSendPidPara.data6 = g_psPidSystem->HighAcc.feedback;
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 3;
+				g_sSendPidPara.waveChNbr = 6;
 
 				/*上传*/
 				user_ANO_Send_Pid_Link_Data(g_sSendPidPara);				
 			}break;
 			
-			/*GPS 水平X方向*/
+			/*GPS 水平X方向控制(机体系)*/
 			case USER_HOST_MSG_GPS_HOR_X_LINK_CONTROL:
 			{
 				/*hor_x pos*/
-				g_sSendPidPara.Link1.expect   = g_psPidSystem->LongitudePosition.expect;
-				g_sSendPidPara.Link1.feedBack = g_psPidSystem->LongitudePosition.feedback;
+				g_sSendPidPara.data1 = g_psAttitudeAll->BodyFramePosError.roll; /*pos error*/
 				
 				/*hor_x speed*/
-				g_sSendPidPara.Link2.expect   = g_psPidSystem->LongitudeSpeed.expect;
-				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LongitudeSpeed.feedback;		
+				g_sSendPidPara.data2 = g_psPidSystem->LongitudeSpeed.expect;
+				g_sSendPidPara.data3 = g_psPidSystem->LongitudeSpeed.feedback;		
 
 				/*hor_x angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->RollAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->RollAngle.feedback;
+				g_sSendPidPara.data4 = g_psPidSystem->RollAngle.expect;
+				g_sSendPidPara.data5 = g_psPidSystem->RollAngle.feedback;
 				
 				/*hor_x gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->RollGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->RollGyro.feedback;				
+				g_sSendPidPara.data6 = g_psPidSystem->RollGyro.expect;
+				g_sSendPidPara.data7 = g_psPidSystem->RollGyro.feedback;				
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 4;
+				g_sSendPidPara.waveChNbr = 7;
 
 				/*上传*/
 				user_ANO_Send_Pid_Link_Data(g_sSendPidPara);				
 			}break;		
 
-			/*GPS 水平Y方向*/
+			/*GPS 水平Y方向控制(机体系)*/
 			case USER_HOST_MSG_GPS_HOR_Y_LINK_CONTROL:
 			{
 				/*hor_y pos*/
-				g_sSendPidPara.Link1.expect   = g_psPidSystem->LatitudePosition.expect;
-				g_sSendPidPara.Link1.feedBack = g_psPidSystem->LatitudePosition.feedback;
+				g_sSendPidPara.data1 = g_psAttitudeAll->BodyFramePosError.pitch; /*pos error*/
 				
 				/*hor_y speed*/
-				g_sSendPidPara.Link2.expect   = g_psPidSystem->LatitudeSpeed.expect;
-				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LatitudeSpeed.feedback;		
+				g_sSendPidPara.data2 = g_psPidSystem->LatitudeSpeed.expect;
+				g_sSendPidPara.data3 = g_psPidSystem->LatitudeSpeed.feedback;		
 
 				/*hor_y angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->PitchAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->PitchAngle.feedback;
+				g_sSendPidPara.data4 = g_psPidSystem->PitchAngle.expect;
+				g_sSendPidPara.data5 = g_psPidSystem->PitchAngle.feedback;
 				
 				/*hor_y gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->PitchGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->PitchGyro.feedback;				
+				g_sSendPidPara.data6 = g_psPidSystem->PitchGyro.expect;
+				g_sSendPidPara.data7 = g_psPidSystem->PitchGyro.feedback;				
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 4;
+				g_sSendPidPara.waveChNbr = 7;
 
 				/*上传*/
 				user_ANO_Send_Pid_Link_Data(g_sSendPidPara);				
@@ -552,13 +550,13 @@ void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTas
 //				g_sSendPidPara.Link2.expect   = g_psPidSystem->LongitudeSpeed.expect;
 //				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LongitudeSpeed.feedback;		
 
-				/*hor_x angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->RollAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->RollAngle.feedback;
-				
-				/*hor_x gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->RollGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->RollGyro.feedback;				
+//				/*hor_x angle*/
+//				g_sSendPidPara.Link3.expect   = g_psPidSystem->RollAngle.expect;
+//				g_sSendPidPara.Link3.feedBack = g_psPidSystem->RollAngle.feedback;
+//				
+//				/*hor_x gyro*/
+//				g_sSendPidPara.Link4.expect   = g_psPidSystem->RollGyro.expect;
+//				g_sSendPidPara.Link4.feedBack = g_psPidSystem->RollGyro.feedback;				
 				
 				/*控制环总计个数*/
 				g_sSendPidPara.waveChNbr = 2 * 4;
@@ -578,13 +576,13 @@ void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTas
 //				g_sSendPidPara.Link2.expect   = g_psPidSystem->LatitudeSpeed.expect;
 //				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LatitudeSpeed.feedback;		
 
-				/*hor_y angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->PitchAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->PitchAngle.feedback;
-				
-				/*hor_y gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->PitchGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->PitchGyro.feedback;				
+//				/*hor_y angle*/
+//				g_sSendPidPara.Link3.expect   = g_psPidSystem->PitchAngle.expect;
+//				g_sSendPidPara.Link3.feedBack = g_psPidSystem->PitchAngle.feedback;
+//				
+//				/*hor_y gyro*/
+//				g_sSendPidPara.Link4.expect   = g_psPidSystem->PitchGyro.expect;
+//				g_sSendPidPara.Link4.feedBack = g_psPidSystem->PitchGyro.feedback;				
 				
 				/*控制环总计个数*/
 				g_sSendPidPara.waveChNbr = 2 * 4;
@@ -597,15 +595,15 @@ void user_ANO_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTas
 			case USER_HOST_MSG_HOR_Z_LINK_CONTROL:
 			{
 				/*hor_z angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->YawAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->YawAngle.feedback;
+				g_sSendPidPara.data1 = g_psPidSystem->YawAngle.expect;
+				g_sSendPidPara.data2 = g_psPidSystem->YawAngle.feedback;
 				
 				/*hor_z gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->YawGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->YawGyro.feedback;				
+				g_sSendPidPara.data3 = g_psPidSystem->YawGyro.expect;
+				g_sSendPidPara.data4 = g_psPidSystem->YawGyro.feedback;				
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 2;
+				g_sSendPidPara.waveChNbr = 4;
 
 				/*上传*/
 				user_ANO_Send_Pid_Link_Data(g_sSendPidPara);
@@ -989,56 +987,56 @@ void user_ANO_Send_Pid_Link_Data(SendPIDPara sendPidPara)
 	ano_user_data_to_send[_cnt++] = 0;
 	
 	/*LINK1 期望值*/
-	temp = (s32)sendPidPara.Link1.expect;
+	temp = (s32)sendPidPara.data1;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
 	ano_user_data_to_send[_cnt++] = BYTE0(temp);
 	
 	/*LINK1 反馈值*/
-	temp = (s32)sendPidPara.Link1.feedBack;
+	temp = (s32)sendPidPara.data2;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
 	ano_user_data_to_send[_cnt++] = BYTE0(temp);
 
 	/*LINK2 期望值*/
-	temp = (s32)sendPidPara.Link2.expect;
+	temp = (s32)sendPidPara.data3;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
 	ano_user_data_to_send[_cnt++] = BYTE0(temp);
 	
 	/*LINK2 反馈值*/
-	temp = (s32)sendPidPara.Link2.feedBack;
+	temp = (s32)sendPidPara.data4;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
 	ano_user_data_to_send[_cnt++] = BYTE0(temp);
 	
 	/*LINK3 期望值*/
-	temp = (s32)sendPidPara.Link3.expect;
+	temp = (s32)sendPidPara.data5;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
 	ano_user_data_to_send[_cnt++] = BYTE0(temp);
 	
 	/*LINK3 反馈值*/
-	temp = (s32)sendPidPara.Link3.feedBack;
+	temp = (s32)sendPidPara.data6;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
 	ano_user_data_to_send[_cnt++] = BYTE0(temp);
 	
 	/*LINK4 期望值*/
-	temp = (s32)sendPidPara.Link4.expect;
+	temp = (s32)sendPidPara.data7;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
 	ano_user_data_to_send[_cnt++] = BYTE0(temp);
 	
 	/*LINK4 反馈值*/
-	temp = (s32)sendPidPara.Link4.feedBack;
+	temp = (s32)sendPidPara.data8;
 	ano_user_data_to_send[_cnt++] = BYTE3(temp);
 	ano_user_data_to_send[_cnt++] = BYTE2(temp);
 	ano_user_data_to_send[_cnt++] = BYTE1(temp);
@@ -1203,7 +1201,7 @@ void user_VCAN_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTa
 				user_VCAN_Send_Sins_Height_Data(g_sSendSinsDataHeight);				
 			}break;
 
-			/*水平X方向融合数据*/
+			/*水平X方向融合数据(导航系)*/
 			case USER_HOST_MSG_SINS_HORIZONTAL_X:
 			{
 				g_sSendSinsDataHorizontalX.sinsPosition = g_psSinsReal->curPosition[EARTH_FRAME_X];	        /*惯导估算位置*/
@@ -1218,7 +1216,7 @@ void user_VCAN_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTa
 				user_VCAN_Send_Sins_Horizontal_X_Data(g_sSendSinsDataHorizontalX);
 			}break;
 
-			/*水平Y方向融合数据*/
+			/*水平Y方向融合数据(导航系)*/
 			case USER_HOST_MSG_SINS_HORIZONTAL_Y:
 			{
 				g_sSendSinsDataHorizontalY.sinsPosition = g_psSinsReal->curPosition[EARTH_FRAME_Y];	       	    /*惯导估算位置*/
@@ -1252,71 +1250,69 @@ void user_VCAN_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTa
 			case USER_HOST_MSG_VER_LINK_CONTROL:
 			{
 				/*ver pos*/
-				g_sSendPidPara.Link1.expect   = g_psPidSystem->HighPosition.expect;
-				g_sSendPidPara.Link1.feedBack = g_psPidSystem->HighPosition.feedback;
+				g_sSendPidPara.data1 = g_psPidSystem->HighPosition.expect;
+				g_sSendPidPara.data2 = g_psPidSystem->HighPosition.feedback;
 				
 				/*ver speed*/
-				g_sSendPidPara.Link2.expect   = g_psPidSystem->HighSpeed.expect;
-				g_sSendPidPara.Link2.feedBack = g_psPidSystem->HighSpeed.feedback;		
+				g_sSendPidPara.data3 = g_psPidSystem->HighSpeed.expect;
+				g_sSendPidPara.data4 = g_psPidSystem->HighSpeed.feedback;		
 
 				/*ver acc*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->HighAcc.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->HighAcc.feedback;
+				g_sSendPidPara.data5 = g_psPidSystem->HighAcc.expect;
+				g_sSendPidPara.data6 = g_psPidSystem->HighAcc.feedback;
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 3;
+				g_sSendPidPara.waveChNbr = 6;
 
 				/*上传*/
 				user_VCAN_Send_Pid_Link_Data(g_sSendPidPara);				
 			}break;
 			
-			/*GPS 水平X方向控制*/
+			/*GPS 水平X方向控制(机体系)*/
 			case USER_HOST_MSG_GPS_HOR_X_LINK_CONTROL:
 			{
 				/*hor_x pos*/
-				g_sSendPidPara.Link1.expect   = g_psPidSystem->LongitudePosition.expect;
-				g_sSendPidPara.Link1.feedBack = g_psPidSystem->LongitudePosition.feedback;
+				g_sSendPidPara.data1 = g_psAttitudeAll->BodyFramePosError.roll; /*pos error*/
 				
 				/*hor_x speed*/
-				g_sSendPidPara.Link2.expect   = g_psPidSystem->LongitudeSpeed.expect;
-				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LongitudeSpeed.feedback;		
+				g_sSendPidPara.data2 = g_psPidSystem->LongitudeSpeed.expect;
+				g_sSendPidPara.data3 = g_psPidSystem->LongitudeSpeed.feedback;		
 
 				/*hor_x angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->RollAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->RollAngle.feedback;
+				g_sSendPidPara.data4 = g_psPidSystem->RollAngle.expect;
+				g_sSendPidPara.data5 = g_psPidSystem->RollAngle.feedback;
 				
 				/*hor_x gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->RollGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->RollGyro.feedback;				
+				g_sSendPidPara.data6 = g_psPidSystem->RollGyro.expect;
+				g_sSendPidPara.data7 = g_psPidSystem->RollGyro.feedback;				
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 4;
+				g_sSendPidPara.waveChNbr = 7;
 
 				/*上传*/
 				user_VCAN_Send_Pid_Link_Data(g_sSendPidPara);				
 			}break;		
 
-			/*GPS 水平Y方向控制*/
+			/*GPS 水平Y方向控制(机体系)*/
 			case USER_HOST_MSG_GPS_HOR_Y_LINK_CONTROL:
 			{
 				/*hor_y pos*/
-				g_sSendPidPara.Link1.expect   = g_psPidSystem->LatitudePosition.expect;
-				g_sSendPidPara.Link1.feedBack = g_psPidSystem->LatitudePosition.feedback;
+				g_sSendPidPara.data1 = g_psAttitudeAll->BodyFramePosError.pitch; /*pos error*/
 				
 				/*hor_y speed*/
-				g_sSendPidPara.Link2.expect   = g_psPidSystem->LatitudeSpeed.expect;
-				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LatitudeSpeed.feedback;		
+				g_sSendPidPara.data2 = g_psPidSystem->LatitudeSpeed.expect;
+				g_sSendPidPara.data3 = g_psPidSystem->LatitudeSpeed.feedback;		
 
 				/*hor_y angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->PitchAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->PitchAngle.feedback;
+				g_sSendPidPara.data4 = g_psPidSystem->PitchAngle.expect;
+				g_sSendPidPara.data5 = g_psPidSystem->PitchAngle.feedback;
 				
 				/*hor_y gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->PitchGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->PitchGyro.feedback;				
+				g_sSendPidPara.data6 = g_psPidSystem->PitchGyro.expect;
+				g_sSendPidPara.data7 = g_psPidSystem->PitchGyro.feedback;				
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 4;
+				g_sSendPidPara.waveChNbr = 7;
 
 				/*上传*/
 				user_VCAN_Send_Pid_Link_Data(g_sSendPidPara);				
@@ -1333,13 +1329,13 @@ void user_VCAN_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTa
 //				g_sSendPidPara.Link2.expect   = g_psPidSystem->LongitudeSpeed.expect;
 //				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LongitudeSpeed.feedback;		
 
-				/*hor_x angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->RollAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->RollAngle.feedback;
-				
-				/*hor_x gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->RollGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->RollGyro.feedback;				
+//				/*hor_x angle*/
+//				g_sSendPidPara.Link3.expect   = g_psPidSystem->RollAngle.expect;
+//				g_sSendPidPara.Link3.feedBack = g_psPidSystem->RollAngle.feedback;
+//				
+//				/*hor_x gyro*/
+//				g_sSendPidPara.Link4.expect   = g_psPidSystem->RollGyro.expect;
+//				g_sSendPidPara.Link4.feedBack = g_psPidSystem->RollGyro.feedback;				
 				
 				/*控制环总计个数*/
 				g_sSendPidPara.waveChNbr = 2 * 4;
@@ -1359,13 +1355,13 @@ void user_VCAN_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTa
 //				g_sSendPidPara.Link2.expect   = g_psPidSystem->LatitudeSpeed.expect;
 //				g_sSendPidPara.Link2.feedBack = g_psPidSystem->LatitudeSpeed.feedback;		
 
-				/*hor_y angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->PitchAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->PitchAngle.feedback;
-				
-				/*hor_y gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->PitchGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->PitchGyro.feedback;				
+//				/*hor_y angle*/
+//				g_sSendPidPara.Link3.expect   = g_psPidSystem->PitchAngle.expect;
+//				g_sSendPidPara.Link3.feedBack = g_psPidSystem->PitchAngle.feedback;
+//				
+//				/*hor_y gyro*/
+//				g_sSendPidPara.Link4.expect   = g_psPidSystem->PitchGyro.expect;
+//				g_sSendPidPara.Link4.feedBack = g_psPidSystem->PitchGyro.feedback;				
 				
 				/*控制环总计个数*/
 				g_sSendPidPara.waveChNbr = 2 * 4;
@@ -1378,15 +1374,15 @@ void user_VCAN_Send_Host_Wave_Data(USER_HOST_MSG_ID USER_WAVE_TARG, u32 periodTa
 			case USER_HOST_MSG_HOR_Z_LINK_CONTROL:
 			{
 				/*hor_z angle*/
-				g_sSendPidPara.Link3.expect   = g_psPidSystem->YawAngle.expect;
-				g_sSendPidPara.Link3.feedBack = g_psPidSystem->YawAngle.feedback;
+				g_sSendPidPara.data1   = g_psPidSystem->YawAngle.expect;
+				g_sSendPidPara.data2 = g_psPidSystem->YawAngle.feedback;
 				
 				/*hor_z gyro*/
-				g_sSendPidPara.Link4.expect   = g_psPidSystem->YawGyro.expect;
-				g_sSendPidPara.Link4.feedBack = g_psPidSystem->YawGyro.feedback;				
+				g_sSendPidPara.data3   = g_psPidSystem->YawGyro.expect;
+				g_sSendPidPara.data4 = g_psPidSystem->YawGyro.feedback;				
 				
 				/*控制环总计个数*/
-				g_sSendPidPara.waveChNbr = 2 * 2;
+				g_sSendPidPara.waveChNbr = 4;
 
 				/*上传*/
 				user_VCAN_Send_Pid_Link_Data(g_sSendPidPara);				

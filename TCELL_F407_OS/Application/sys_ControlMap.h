@@ -12,7 +12,7 @@
 	#define SINS_DATA_FUSION__VER_KALMAN
 #endif
 
-#if 0	
+#if 0
 	/*水平方向:三阶互补数据融合*/
 	#define SINS_DATA_FUSION__HOR_THIRDORDER
 #endif

@@ -23,7 +23,7 @@
 
 /*x,y方向,角度过大保护,自动关闭电机*/
 #define CTRL_HORIZONTAL_ANGLE_OVER_CHECK			   (SYS_ENABLE)
-#define CTRL_HORIZONTAL_ANGLE_SAFE_MAX				   (60)			 /*最大允许倾斜角度*/
+#define CTRL_HORIZONTAL_ANGLE_SAFE_MAX				   (65)			 /*最大允许倾斜角度*/
 
 /*======= 1.Altitude Hold(竖直定高) =======*/
 #define CTRL_HEIGHT_YAW_SPEED_FEEDFORWARD			   (SYS_ENABLE)  /*竖直速度前馈控制器*/
@@ -32,8 +32,7 @@
 
 
 /*======= 2.Position Hold(水平定点) =======*/
-#define CTRL_HORIZONTAL_SENSOR_MODE_REMOT_EXPECT_ANGLE (SYS_DISABLE) /*水平定点模式下，打杆直接给姿态期望角*/
-#define CTRL_HORIZONTAL_SENSOR_MODE_REMOT_EXPECT_SPEED (SYS_ENABLE)  /*水平定点模式下，打杆直接给姿态期望速度*/
+#define CTRL_HORIZONTAL_SENSOR_MODE_REMOT_EXPECT_ANGLE (SYS_DISABLE)  /*水平定点模式下,打杆直接给姿态期望角*/
 
 /*======= 3.怠速,起飞,着陆检测油门 =======*/
 /*怠速*/
@@ -42,8 +41,8 @@
 #define CTRL_IDEL_THROTTLE_VALUE			           (1150) 		 /*油门怠速,取接近起转油门值即可*/
 
 /*起飞*/
-#define CTRL_THROTTLE_START_TURN  				       (1100) 		 /*起转油门量，油门倾角补偿用，太大会导致过补偿*/
-#define CTRL_THROTTLE_START_FLY_VALUE  			       (1250) 		 /*起飞油门量*/
+#define CTRL_THROTTLE_START_TURN  				       (1100) 		 /*起转油门量,油门倾角补偿用，太大会导致过补偿*/
+#define CTRL_THROTTLE_START_FLY_VALUE  			       (1180) 		 /*起飞油门量*/
 
 /*悬停油门*/
 #define CTRL_THROTTLE_HOVER_ENABLE_STATUS			   (SYS_ENABLE)  /*默认悬停油门*/
@@ -73,6 +72,11 @@
 #define REMOT_THROTTLE_UP_CROSSOVER	   	               (500 + REMOT_THROTTLE_MID_DEADZONE * 0.5)	/*油门杆给定期望速度时,上行程临界值*/
 #define REMOT_ANGLE_DEADZONE_BUTTOM 	               (REMOT_ANGLE_MID - REMOT_ANGLE_MID_DEADZONE * 0.5) /*1450*/
 #define REMOT_ANGLE_DEADZONE_TOP    	               (REMOT_ANGLE_MID + REMOT_ANGLE_MID_DEADZONE * 0.5) /*1550*/
+
+/*======= 飞行任务 =======*/
+/*写入无限点位*/
+#define MISSION_LIMITLESS_POS_WRITE_MAX_NBR			   (10) /*无限位置最大允许写入个数*/
+
 
 #include "control_AltHold.h"	/*定高*/
 #include "control_PosHold.h"    /*定点*/

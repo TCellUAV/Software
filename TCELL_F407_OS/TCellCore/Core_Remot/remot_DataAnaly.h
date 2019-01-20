@@ -10,6 +10,7 @@
 #define REMOT_DATA_MIN_VALUE		(1000)	/*遥控数据最小值*/
 #define REMOT_DATA_MID_ERROR		(50)	/*摇杆置中误差*/
 #define REMOT_DATA_PRECISION		(30)	/*遥控数据精度*/
+#define REMOT_DATA_MIN_COMPENSATE	(100)	/*遥控最小值补偿(摇杆拉到最小位置时,容易出现0,因此可不必将摇杆拉到最小位置)*/
 
 typedef enum
 {

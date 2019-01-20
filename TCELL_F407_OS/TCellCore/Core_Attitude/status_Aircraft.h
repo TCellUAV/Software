@@ -43,6 +43,15 @@ typedef struct
 	UAV_FLY_TYPE BEFORE_WIRELESS_MISS;	/*失联前*/
 }Uav_Fly_Type;
 
+/*飞行器空中悬停状态*/
+typedef enum
+{
+	UAV_AIRSTOP_NOT             = 0x00, /*未悬停*/
+	UAV_AIRSTOP_ONLY_VERTICAL   = 0x0F, /*仅竖直方向悬停*/
+	UAV_AIRSTOP_ONLY_HORIZONTAL = 0xF0, /*仅水平方向悬停*/
+	UAV_AIRSTOP_BOTH_V_H		= 0xFF, /*竖直+水平方向悬停*/
+}UAV_AIRSTOP_TYPE;
+
 /*Home点设置状态*/
 typedef enum
 {
@@ -72,96 +81,6 @@ typedef enum
 }UAV_HCI_SHOW_STATUS;
 
 /*= 2.飞行器工作方式状态 =*/	
-/*飞行器飞行任务*/
-typedef enum
-{	
-	/*NULL*/
-	UAV_FLY_MISSION_NULL                = 00,   /*没有任务*/
-	
-	/*一键*/
-	UAV_FLY_MISSION_ONEKEY_FLY			= 01,	/*一键起飞*/
-	UAV_FLY_MISSION_ONEKEY_LAND_HOME    = 02,	/*一键返航/降落*/
-	
-	/*姿态模式下*/
-	UAV_FLY_MISSION_OPFLOW_FOLLOW_POINT = 06,	/*光流追点*/
-	UAV_FLY_MISSION_OPFLOW_FOLLOW_LINE  = 07,	/*光流巡线*/
-	
-	/*定点模式下*/
-	UAV_FLY_MISSION_GPS_WRITE_POS		= 10,   /*GPS写入当前点位*/
-	UAV_FLY_MISSION_GPS_PATROL_SKY      = 11,	/*GPS巡天*/
-}UAV_FLY_MISSION;
-
-/*任务有效状态*/
-typedef enum
-{
-	UAV_MISSION_DISABLE = 0,	/*任务无效*/	
-	UAV_MISSION_ENABLE  = 1,	/*任务有效*/
-}UAV_MISSION_ENABLE_STATUS;
-
-/*任务中目标点设置状态*/
-typedef enum
-{
-	UAV_MISSION_TARG_SET_NO = 0, /*目标点未设置*/
-	UAV_MISSION_TARG_SET_OK = 1, /*目标点已设置*/
-}UAV_MISSION_TARG_SET_STATUS;	
-
-/*任务中目标点到达状态*/
-typedef enum
-{
-	UAV_MISSION_TARG_REACH_NO = 0, /*目标点未到达*/
-	UAV_MISSION_TARG_REACH_OK = 1, /*目标点已到达*/
-}UAV_MISSION_TARG_REACH_STATUS;
-
-/*任务中改变系统参数状态(退出任务时需要恢复)*/
-typedef enum
-{
-	UAV_MISSION_CHANGE_SYSTEM_YES = 0, /*有改变*/
-	UAV_MISSION_CHANGE_SYSTEM_NOT = 1, /*无改变*/
-}UAV_MISSION_CHANGE_SYSTEM_STATUS;
-
-/*任务是否正在执行*/
-typedef enum
-{
-	UAV_MISSION_EXECUTE_NOT = 0, /*没执行*/
-	UAV_MISSION_EXECUTE_YES = 1, /*正在执行*/
-}UAV_MISSION_EXECUTE_STATUS;
-
-typedef struct
-{
-	UAV_MISSION_ENABLE_STATUS        ENABLE_STATUS;
-	UAV_MISSION_TARG_SET_STATUS      TARG_SET_STATUS;
-	UAV_MISSION_TARG_REACH_STATUS    TARG_REACH_STATUS;
-	UAV_MISSION_EXECUTE_STATUS       EXECUTE_STATUS;
-}Uav_Mission_Status;
-
-typedef struct
-{
-	Uav_Mission_Status FixedHeightFly;
-	Uav_Mission_Status LandHome;
-}Uav_Onekey_Mission;
-
-/*是否允许同时执行任务外的姿态控制*/
-typedef enum
-{
-	UAV_MISSION_ATTITUDE_CTRL_ENABLE  = 1, /*允许同时执行任务外的姿态控制*/
-	UAV_MISSION_ATTITUDE_CTRL_DISABLE = 0, /*禁止同时执行任务外的姿态控制*/
-}UAV_MISSION_ATTITUDE_CTRL_STATUS;
-
-typedef struct
-{
-	/*当前飞行任务*/
-	UAV_FLY_MISSION    			     CURRENT_FLY_MISSION;
-	
-	/*上次飞行任务*/
-	UAV_FLY_MISSION    				 LAST_FLY_MISSION;
-	
-	/*是否允许同时执行姿态控制*/
-	UAV_MISSION_ATTITUDE_CTRL_STATUS ATTITUDE_CTRL_STATUS;
-	
-	/*一键任务*/
-	Uav_Onekey_Mission 			     Onekey_Mission;
-}Uav_Current_Fly_Mission;
-
 /*竖直方向控制模式*/
 typedef enum
 {
@@ -249,8 +168,8 @@ typedef enum
 /*传感器/模块数据融合状态*/
 typedef enum
 {
-	UAV_SENMOD_FUSION_NO = 0,	/*未成功*/	
-	UAV_SENMOD_FUSION_OK = 1,	/*已成功*/
+	UAV_SENMOD_FUSION_START  = 0,	/*开始*/	
+	UAV_SENMOD_FUSION_FINISH = 1,	/*结束*/
 }UAV_SENMOD_FUSION_STATUS;
 
 /*传感器/模块可用于控制状态*/
@@ -309,8 +228,8 @@ typedef struct
 	UAV_SENMOD_WORK_STATUS          WORK_STATUS; /*工作状态*/     
 	UAV_VERTICAL_SENMOD_CURRENT_USE LAST_USE;    /*上次使用*/
 	UAV_VERTICAL_SENMOD_CURRENT_USE CURRENT_USE; /*当前使用*/	
-	Uav_Nofusion_Senmod_Status      Bero;		 /*气压计*/
-	Uav_Nofusion_Senmod_Status 	    Ultr;		 /*超声波*/
+	Uav_Fusion_Senmod_Status        Bero;		 /*气压计*/
+	Uav_Fusion_Senmod_Status 	    Ultr;		 /*超声波*/
 }Uav_Vertical_Senmod_Status;
 
 typedef struct
@@ -363,12 +282,12 @@ typedef struct
 	volatile UAV_LOCK_STATUS  		   	     LOCK_STATUS;				/*飞控锁定状态*/
 	volatile Uav_Land_Status   		   	     UavLandStatus;				/*飞行器着陆状态*/
 	volatile Uav_Fly_Type         	   	     UavFlyType;				/*飞行模式(仅作为上位机数据)*/
+	volatile UAV_AIRSTOP_TYPE				 AIRSTOP_TYPE;				/*空中悬停模式*/
 	volatile UAV_HOME_SET_STATUS  		   	 HOME_SET_STATUS;		    /*GPS HOME 点设置状态*/
 	volatile UAV_WIRELESS_CMC_STATUS   		 WIRELESS_CMC_STATUS;	    /*遥控和飞行器通信状态*/
 	volatile UAV_HCI_SHOW_STATUS			 HCI_SHOW_STATUS;			/*HCI SHOW*/
 										   
 	/*= 2.飞行器工作方式状态 =*/	
-	volatile Uav_Current_Fly_Mission		 UavCurrentFlyMission;		/*当前飞行任务*/
 	volatile Uav_Control_Mode 				 UavControlMode;			/*飞行器控制模式*/
 	volatile Uav_Senmod_Status				 UavSenmodStatus;			/*传感器/模块状态*/
 	
@@ -385,11 +304,14 @@ extern Uav_Status *g_psUav_Status;
 /*检测GPS是否可用(满足定位数据+数据融合成功)*/
 UAV_SENMOD_USE_CONTROL_STATUS status_GPS_Fix_Ava_Check(Uav_Status *uavStatus);
 
+/*获取当前无人机的姿态控制模式和所用传感器*/
+SYS_BOOLSTATUS check_uav_ctrl_and_sensor_use(Uav_Status *uavStatus, UAV_FLY_TYPE FLY_TYPE, UAV_VERTICAL_SENMOD_CURRENT_USE VER_SENMOD_USE, UAV_HORIZONTAL_SENMOD_CURRENT_USE HOR_SENMOD_USE);
+
 /*=== 检测遥控和无人机通信情况 ===*/
 #define CMC_DOG_FEED_FACTOR_10MS 	(1) /*10ms*/
 
 /*遥控与飞机通讯状态*/
-UAV_WIRELESS_CMC_STATUS status_check_aircraft_remot_communication(SimulateWatchDog *uavRemotCMCDog, Uav_Status *uavStatus);
+UAV_WIRELESS_CMC_STATUS status_check_uav_wireless(SimulateWatchDog *uavRemotCMCDog, Uav_Status *uavStatus);
 
 /*遥控与飞机通讯正常喂狗*/
 void security_Feed_CMC_Succ_Dog_10MS(u8 _10msFoc, SimulateWatchDog *uavRemotCMCDog);

@@ -187,3 +187,24 @@ UAV_FLY_MISSION safe_force_mission_get(Safe_Operation *safe_Operation)
 	return (safe_Operation->SAFE_FORCE_MISSION);
 }
 
+/*判断执行周期是否正确*/
+SYS_BOOLSTATUS safe_task_execute_period_is_true(fp32 realPeriodMs, fp32 expectPeriodMs)
+{
+	if (floor(realPeriodMs) <= expectPeriodMs)
+	{
+		return SYS_BOOL_TRUE;
+	}
+
+	return SYS_BOOL_FALSE;
+}
+
+/*观察OLED数据时,飞机强制锁定*/
+void safe_watch_oled_uav_auto_lock(Uav_Status *uavStatus, HciShowPage *hciShowPage)
+{
+	/*防止观察数据时误解锁*/	
+	if (hciShowPage->SHOW_DATA_STATUS == UAV_HCI_SHOW_ENABLE)
+	{
+		/*强制锁定*/
+		uavStatus->LOCK_STATUS = UAV_LOCK_YES;
+	}
+}
