@@ -78,22 +78,22 @@ typedef struct
 typedef struct
 {
 	/*飞行器状态*/
-    u16 			        	 	      heightHoldThrottle;       /*高度保持油门(用于定高)*/
-	u16					     		      throttleUpDownJudgeValue;	/*油门杆上推或者下推判断量*/
-	u16					     		      ctrlThrottle;				/*本次油门(非遥控期望油门,非PWM输出油门)*/	
-	u16					     		      lastCtrlThrottle;			/*上次油门(非遥控期望油门,非PWM输出油门)*/	
-	u16					     		      throttleOutput;			/*油门最终输出*/
-	Remot_Expect_Angle     		          RemotExpectAngle;			/*遥控值转期望角度值*/
-	ImuAttitude			     		      RemotExpectAutoAngle;		/*遥控期望自稳俯仰角,横滚角*/
-	GimbalAngle              		  	  GimbalExpectAngle;		/*万向节云台期望角度*/
-	volatile CTRL_AIRCRAFT_MOVE_TREND 	  AIRCRAFT_VER_MOVE_TREND;	/*飞行器竖直方向运动趋势*/
-	volatile CTRL_AIRCRAFT_MOVE_TREND     AIRCRAFT_HOR_MOVE_TREND;	/*飞行器水平方向运动趋势*/
-	volatile CTRL_AIRCRAFT_GO_HOME_STATUS GO_HOME_STATUS;			/*失联自动返航使能状态*/
-	volatile CTRL_AIRCRAFT_GO_HOME_SWITCH GO_HOME_SET;				/*自动返航设置状态*/
+    u16 			        	 	         heightHoldThrottle;        /*高度保持油门(用于定高)*/
+	u16					     		         throttleUpDownJudgeValue;	/*油门杆上推或者下推判断量*/
+	u16					     		         ctrlThrottle;				/*本次油门(非遥控期望油门,非PWM输出油门)*/	
+	u16					     		         lastCtrlThrottle;			/*上次油门(非遥控期望油门,非PWM输出油门)*/	
+	u16					     		         throttleOutput;			/*油门最终输出*/
+	Remot_Expect_Angle     		             RemotExpectAngle;			/*遥控值转期望角度值*/
+	ImuAttitude			     		         RemotExpectAutoAngle;		/*遥控期望自稳俯仰角,横滚角*/
+	GimbalAngle              		  	     GimbalExpectAngle;		    /*万向节云台期望角度*/
+	volatile CTRL_AIRCRAFT_MOVE_TREND 	     AIRCRAFT_VER_MOVE_TREND;	/*飞行器竖直方向运动趋势*/
+	volatile CTRL_AIRCRAFT_MOVE_TREND        AIRCRAFT_HOR_MOVE_TREND;	/*飞行器水平方向运动趋势*/
+	volatile CTRL_AIRCRAFT_GO_HOME_STATUS    GO_HOME_STATUS;			/*失联自动返航使能状态*/
+	volatile CTRL_AIRCRAFT_GO_HOME_SWITCH    GO_HOME_SET;				/*自动返航设置状态*/
 	
 	/*电机PWM输出*/
-	MotorPWMOutput		 	 		      CurMotorPwmOutput;		/*当前电机PWM输出*/
-	MotorPWMOutput	     	 		      LastMotorPwmOutput;		/*上次电机PWM输出*/
+	MotorPWMOutput		 	 		         CurMotorPwmOutput;			/*当前电机PWM输出*/
+	MotorPWMOutput	     	 		         LastMotorPwmOutput;			/*上次电机PWM输出*/
 }ControlAircraft;
 
 

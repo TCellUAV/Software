@@ -4,6 +4,7 @@
 #include "sys_Platform.h"
 #include "math_Function.h"
 
-fp32 get_earth_declination(fp32 lat, fp32 lon);
+/*获取当地地磁偏角*/
+fp32 get_earth_local_declination(fp32 lat, fp32 lon);
 
 #endif

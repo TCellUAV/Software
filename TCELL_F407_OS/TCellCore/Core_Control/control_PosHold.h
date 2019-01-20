@@ -5,7 +5,7 @@
 #include "control_Config.h"
 
 /*定点模式下,遥杆回中后,先用水平速度控制刹车,待刹停后再赋值GPS位置选点*/
-SYS_RETSTATUS horizontal_GPS_Get_Stop_Point_XY(Vector2f_Earth *stopPoint);
+SYS_RETSTATUS horizontal_GPS_Get_Stop_Point_XY(Vector2f_Nav *stopPoint);
 
 /*定点模式下,遥杆回中后,先用水平速度控制刹车,待刹停后再赋值光流位置选点*/
 SYS_RETSTATUS horizontal_OpticFlow_Get_Stop_Point_XY(Vector2f *stopPoint);

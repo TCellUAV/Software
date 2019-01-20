@@ -31,7 +31,7 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 	
 	/*Utc*/
 	memcpy(&(gpsData->LocalTime), &pvtData.UtcTime, sizeof(GPS_Time));	/*内容完全对应*/
-	gpsData->LocalTime.hour = pvtData.UtcTime.hour + 8;	/*北京时间: UTC+8*/
+	gpsData->LocalTime.hour = pvtData.UtcTime.hour + 8;			  	    /*北京时间: UTC+8*/
 	
 	/*定位类型*/
 	gpsData->POS_FIX_TYPE = pvtData.POS_FIX_TYPE;
@@ -98,24 +98,22 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 		(gpsData->quality <= 3.0f))
 	{
 		/*标记GPS数据可用*/
-		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_OK;		
+		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_OK;
+		
+		/*标记可以开始融合*/
+		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.FUSION_STATUS = UAV_SENMOD_FUSION_START;
 	}
 	else
 	{
 		/*标记GPS数据不可用*/		
-		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_NO;
-
-		/*GPS测得运动加速度清0*/
-		gpsData->DeltaSpeed.east  = 0;	 /*单位cm/s^2*/
-		gpsData->DeltaSpeed.north = 0;   /*单位cm/s^2*/
-		gpsData->DeltaSpeed.up    = 0;	 /*单位cm/s^2*/		
+		g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS = UAV_SENMOD_DATA_NO;	
 	}
 	
 	/*数据有效,且第一次使用状态无效*/
 	if ((g_psUav_Status->UavSenmodStatus.Horizontal.Gps.DATA_STATUS == UAV_SENMOD_DATA_OK) && \
 		(g_psUav_Status->UavSenmodStatus.Horizontal.Gps.FIRST_USE_AVA_STATUS != UAV_SENMOD_FIRST_USE_AVA_OK))
 	{
-		/*多次有效*/
+		/*多次有效,等待GPS信号稳定*/
 		if (sampleContinueTicks > 100)
 		{
 			g_psUav_Status->UavSenmodStatus.Horizontal.Gps.FIRST_USE_AVA_STATUS = UAV_SENMOD_FIRST_USE_AVA_OK;
@@ -124,10 +122,6 @@ void gps_fix_position_data_get(GpsM8nPvtData pvtData, GPS_Data *gpsData)
 		{
 			sampleContinueTicks++;
 		}
-	}
-	else /*快速削减*/
-	{
-		sampleContinueTicks /= 2;
 	}
 	
 	/*本次数据已用,重新标记为未更新*/
@@ -156,11 +150,11 @@ void gps_home_location_set(void)
 		strapdown_ins_reset(&g_sSinsReal, &g_sTOCSystem, EARTH_FRAME_X, g_psAttitudeAll->EarthFrameRelativeHome.east, 0);
 
 		/*复位惯导融合:导航系Y轴(正北)*/
-		strapdown_ins_reset(&g_sSinsReal, &g_sTOCSystem, EARTH_FRAME_Y, g_psAttitudeAll->EarthFrameRelativeHome.north, 0);	
+		strapdown_ins_reset(&g_sSinsReal, &g_sTOCSystem, EARTH_FRAME_Y, g_psAttitudeAll->EarthFrameRelativeHome.north, 0);			
 		
-		/*根据GPS定位获的当前位置的地磁偏角*/
-		g_psAttitudeAll->declination = get_earth_declination(g_psAttitudeAll->HomePos.Coordinate_f8.lat, \
-															 g_psAttitudeAll->HomePos.Coordinate_f8.lon);
+		/*获取GPS定位点的地磁偏角*/
+		g_psAttitudeAll->declination = get_earth_local_declination(g_psAttitudeAll->HomePos.Coordinate_f8.lat, \
+														   	       g_psAttitudeAll->HomePos.Coordinate_f8.lon);
 	}	
 }
 
@@ -172,12 +166,12 @@ UAV_HOME_SET_STATUS get_gps_home_set_status(Uav_Status *uavStatus)
 #endif
 
 /*两点间的二维距离*/
-Vector2s_Nav gps_Two_Pos_XY_Offset(GPS_Coordinate_s4 loc1, GPS_Coordinate_s4 loc2)
+Vector2f_Nav gps_Two_Pos_XY_Offset(GPS_Coordinate_s4 loc1, GPS_Coordinate_s4 loc2)
 {
-	Vector2s_Nav twoPosDelta;
+	Vector2f_Nav twoPosDelta;
 
-	twoPosDelta.lat = (loc2.lat - loc1.lat) * GPS_LOCATION_SCALING_FACTOR; 							   /*正北距离 m*/
-	twoPosDelta.lon = (loc2.lon - loc1.lon) * GPS_LOCATION_SCALING_FACTOR * gps_Longitude_Scale(loc2); /*正东距离 m*/	
+	twoPosDelta.north = (loc2.lat - loc1.lat) * GPS_LOCATION_SCALING_FACTOR; 							     /*正北距离 m*/
+	twoPosDelta.east  = (loc2.lon - loc1.lon) * GPS_LOCATION_SCALING_FACTOR * gps_Longitude_Scale(loc2);   /*正东距离 m*/	
 	return twoPosDelta;
 }
 
@@ -218,7 +212,7 @@ fp32 gps_Two_Pos_Segment_Distance(GPS_Coordinate_s4 loc1, GPS_Coordinate_s4 loc2
 /*机体(载体)坐标系，机体横滚+x正+roll、机体俯仰+(y正)+pitch 方向位置偏移*/
 void gps_Offset_Relative_To_Home(void)
 {
-	Vector2s_Nav locationDelta = {0};
+	Vector2f_Nav locationDelta = {0};
 	
 	/*根据当前GPS定位信息与Home点位置信息计算[导航座标系]正北、正东方向位置偏移*/
 	locationDelta = gps_Two_Pos_XY_Offset(g_psAttitudeAll->HomePos.Coordinate_s4, g_psAttitudeAll->GpsData.Coordinate_s4);
@@ -231,15 +225,15 @@ void gps_Offset_Relative_To_Home(void)
    得到的locationDelta.y大于0;
    ******************************************************************************/	
 	
-   locationDelta.lat *= 100; 	/*沿地理坐标系，正北(lat,y)方向位置偏移,单位为CM*/
-   locationDelta.lon *= 100;    /*沿地理坐标系，正东(lon,x)方向位置偏移,单位为CM*/
+   locationDelta.north *= 100;    /*沿地理坐标系，正北(lat,y)方向位置偏移,单位为CM*/
+   locationDelta.east  *= 100;    /*沿地理坐标系，正东(lon,x)方向位置偏移,单位为CM*/
 
-   g_psAttitudeAll->EarthFrameRelativeHome.north = locationDelta.lat; /*地理系下相对Home点正北位置偏移,CM*/	
-   g_psAttitudeAll->EarthFrameRelativeHome.east  = locationDelta.lon; /*地理系下相对Home点正东位置偏移,CM*/
+   g_psAttitudeAll->EarthFrameRelativeHome.north = locationDelta.north; /*地理系下相对Home点正北位置偏移,CM*/	
+   g_psAttitudeAll->EarthFrameRelativeHome.east  = locationDelta.east; /*地理系下相对Home点正东位置偏移,CM*/
 
    /*将无人机在导航坐标系下的沿着正北、正东方向的位置偏移旋转到当前航向的位置偏移:机头(俯仰)+横滚*/
-   g_psAttitudeAll->BodyFrameRelativeHome.x = locationDelta.lon * COS_YAW + locationDelta.lat * SIN_YAW;   /*横滚正向位置偏移,X轴正向*/	
-   g_psAttitudeAll->BodyFrameRelativeHome.y = -locationDelta.lon * SIN_YAW + locationDelta.lat * COS_YAW;  /*机头正向位置偏移,Y轴正向*/     
+   g_psAttitudeAll->BodyFrameRelativeHome.x = locationDelta.east * COS_YAW + locationDelta.north * SIN_YAW;   /*横滚正向位置偏移,X轴正向*/	
+   g_psAttitudeAll->BodyFrameRelativeHome.y = -locationDelta.east * SIN_YAW + locationDelta.north * COS_YAW;  /*机头正向位置偏移,Y轴正向*/     
 }
 #endif
 
@@ -355,6 +349,23 @@ void opflow_Offset_Relative_To_Home(OpFlowUpixelsLC306DataFrame OpFlowData, fp32
 #endif
 
 /*====== Bero和Ultr高度数据获取及处理(校准、滤波) ======*/
+/*获取气压计相对观测高度*/
+s32 baro_get_relative_altitude(fp32 currentPa, fp32 referencePa)
+{
+	fp32 A = 0, altM = 0;
+	s32 alt_cm = 0;
+	
+	if (referencePa != 0)	/*初始化为0,违背除法法则*/
+	{
+		A = powf((currentPa / referencePa), 1 / 5.257f);
+		altM = ((1 - A) * 6357000.0f) / (A + 161.1035f);	
+	}
+
+	alt_cm = (s32)(altM * 100.0f);	/*m -> cm*/
+	
+	return (alt_cm);
+}
+
 /*Bero Altitude数据获取和处理 */
 #if defined(HW_CUT__USE_MD_BERO)
 
@@ -364,7 +375,6 @@ vu16 g_BeroZeroSampleContinueTicks = 0;
 void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 {
 	fp32 beroDeltaT;
-	s32 rawAltitude;
 	
 	g_BeroUpdateContinueTicks++; /*PLATFORM_TASK_SCHEDULER_MIN_FOC_MS 执行一次*/
 	
@@ -392,19 +402,19 @@ void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 				if (g_BeroZeroSampleContinueTicks > 50)
 				{
 					/*设定参考点的气压值*/
-					g_psAttitudeAll->zeroPressure = g_sSpl06.Pressure;
+					g_psAttitudeAll->BaroData.zeroPressure = g_sSpl06.Pressure;
 				
 					/*标记气压计零参考点已设置且正确*/
 					uavStatus->UavSenmodStatus.Vertical.Bero.ZERO_REFERENCE_SET_STATUS = UAV_SENMOD_ZERO_REFERENCE_SET_OK;
 					
 					/*根据气压海拔关系,计算得到相对高度*/
-					rawAltitude = bsp_SPL06_Get_Altitude(&g_sSpl06, g_psAttitudeAll->zeroPressure);					
+					g_psAttitudeAll->BaroData.curAltitude = baro_get_relative_altitude(g_psAttitudeAll->BaroData.zeroPressure, g_psAttitudeAll->BaroData.zeroPressure);
 					
 					/*记录零参考点气压计高度值*/
-					g_psAttitudeAll->zeroBeroHeight = rawAltitude;					
+					g_psAttitudeAll->BaroData.zeroHeight = g_psAttitudeAll->BaroData.curAltitude;					
 					
 					/*复位惯导融合:Z轴(天)*/					
-					strapdown_ins_reset(&g_sSinsReal, &g_sTOCSystem, EARTH_FRAME_Z, rawAltitude, 0);
+					strapdown_ins_reset(&g_sSinsReal, &g_sTOCSystem, EARTH_FRAME_Z, g_psAttitudeAll->BaroData.curAltitude, 0);
 				}
 				else
 				{
@@ -414,10 +424,7 @@ void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 		
 			/*初始位置气压值有效,才标记竖直方向惯导数据有效*/
 			if (uavStatus->UavSenmodStatus.Vertical.Bero.ZERO_REFERENCE_SET_STATUS == UAV_SENMOD_ZERO_REFERENCE_SET_OK)
-			{
-				/*当前气压值*/
-				g_psAttitudeAll->curPressure = g_sSpl06.Pressure;
-				
+			{	
 				/*标记本次气压值为有效值*/
 				uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS = UAV_SENMOD_DATA_OK;
 				
@@ -426,19 +433,33 @@ void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 	
 				beroDeltaT = (g_psSystemPeriodExecuteTime->BeroAboveAltitude.DeltaTime) / 1000.0f; /*ms换算成s*/			
 
-				/*根据气压海拔关系,计算得到相对高度*/
-				rawAltitude = bsp_SPL06_Get_Altitude(&g_sSpl06, g_psAttitudeAll->zeroPressure);
+				/*原始气压值*/
+				g_psAttitudeAll->BaroData.rawPressure = g_sSpl06.Pressure;			
+
+				/*Bero Altitude: 2rd lpButterWorth FS:9HZ, FC:3HZ (气压计气压原始值巴特沃斯低通滤波)*/
+				g_psAttitudeAll->BaroData.filterPressure = filter_BaroAltitudeLpButterworth_Dp(g_psAttitudeAll->BaroData.rawPressure, &(g_sFilterTarg.BaroAboveLpBwBuff[0]), \
+																				               &(g_sFilterTarg.BaroAboveLpBwPara[FILTER_LPBW_BARO_9HZ_3HZ_IDX])); 				
+				
+				/*根据气压海拔关系,计算得到原始高度*/
+				g_psAttitudeAll->BaroData.rawAltitude = baro_get_relative_altitude(g_psAttitudeAll->BaroData.filterPressure, g_psAttitudeAll->BaroData.zeroPressure);
 			
-				/*Bero Altitude: 2rd lpButterWorth FS:9HZ, FC:3HZ (气压计观测高度巴特沃斯低通滤波)*/
-				g_psAttitudeAll->nowBeroAltitude = (s32)filter_BaroAltitudeLpButterworth_Dp(rawAltitude, &(g_sFilterTarg.BaroAboveLpBwBuff[0]), \
-																				            &(g_sFilterTarg.BaroAboveLpBwPara[FILTER_LPBW_BARO_9HZ_3HZ_IDX]));	
-			
+				/*判断当前是否是锁定状态,是则让观测高度一直为0*/
+				if (uavStatus->LOCK_STATUS == UAV_LOCK_YES)
+				{
+					/*每次锁定重置偏移量*/
+					g_psAttitudeAll->BaroData.obAltitudeOffset = 0 - g_psAttitudeAll->BaroData.rawAltitude;
+				}
+				
+				/*当前观测高度加上偏移量*/
+				g_psAttitudeAll->BaroData.curAltitude = g_psAttitudeAll->BaroData.rawAltitude + \
+														g_psAttitudeAll->BaroData.obAltitudeOffset;				
+				
 				/*计算气压计数据计算出的Z轴垂直向上方向上的速度(cm/s)*/
-				g_psAttitudeAll->beroClimbSpeed = (g_psAttitudeAll->nowBeroAltitude - \
-									               g_psAttitudeAll->lastBeroAltitude) / beroDeltaT;
+				g_psAttitudeAll->BaroData.climbSpeed = (g_psAttitudeAll->BaroData.curAltitude - \
+									                    g_psAttitudeAll->BaroData.lastAltitude) / beroDeltaT;
 			
 				/*本次观测高度,作为下次计算的上次观测高度*/
-				g_psAttitudeAll->lastBeroAltitude = g_psAttitudeAll->nowBeroAltitude;
+				g_psAttitudeAll->BaroData.lastAltitude = g_psAttitudeAll->BaroData.curAltitude;
 			}
 		}
 		else /*数据不合法,本次采样无效*/
@@ -447,7 +468,7 @@ void bero_altitude_data_get_and_dp(Uav_Status *uavStatus)
 			uavStatus->UavSenmodStatus.Vertical.Bero.DATA_STATUS = UAV_SENMOD_DATA_NO;			
 			
 			/*海拔高度设定为无效值*/
-			g_psAttitudeAll->nowBeroAltitude = SYS_NO_AVA_MARK;
+			g_psAttitudeAll->BaroData.curAltitude = SYS_NO_AVA_MARK;
 		}
 	}
 }
@@ -468,7 +489,6 @@ vu16 g_UltrZeroSampleContinueTicks = 0;
 void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 {
 	fp32 ultrDeltaT;
-	s16 rawAltitude;
 	
 	g_UltrUpdateContinueTicks++; /*PLATFORM_TASK_SCHEDULER_MIN_FOC_MS 执行一次*/
 
@@ -478,10 +498,10 @@ void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 		g_UltrUpdateContinueTicks = 0;
 		
 		/*获取超声波当前观测值,并开启下次测量值*/
-		rawAltitude = bsp_US100_Get_Distance(&g_sUs100);
+		g_psAttitudeAll->UltrData.rawAltitude = bsp_US100_Get_Distance(&g_sUs100);
 		
 		/*判断测距值是否为有效值*/
-		if (rawAltitude != SYS_NO_AVA_MARK)
+		if (g_psAttitudeAll->UltrData.rawAltitude != SYS_NO_AVA_MARK)
 		{
 			/*判断是否已设定超声波零参考点高度*/
 			if (uavStatus->UavSenmodStatus.Vertical.Ultr.ZERO_REFERENCE_SET_STATUS != UAV_SENMOD_ZERO_REFERENCE_SET_OK)				
@@ -490,7 +510,7 @@ void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 				if (g_UltrZeroSampleContinueTicks > 50)
 				{
 					/*设定超声波零参考点的高度*/
-					g_psAttitudeAll->zeroUltrHeight = rawAltitude;
+					g_psAttitudeAll->UltrData.zeroHeight = g_psAttitudeAll->UltrData.rawAltitude;
 					
 					/*标记超声波零参考点已设置且正确*/
 					uavStatus->UavSenmodStatus.Vertical.Ultr.ZERO_REFERENCE_SET_STATUS = UAV_SENMOD_ZERO_REFERENCE_SET_OK;
@@ -505,7 +525,7 @@ void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 			if (uavStatus->UavSenmodStatus.Vertical.Ultr.ZERO_REFERENCE_SET_STATUS == UAV_SENMOD_ZERO_REFERENCE_SET_OK)
 			{
 				/*距离在有效高度范围内*/
-				if ((0 < rawAltitude) && (rawAltitude <= SYS_ULTR_MAX_MEAS_DISTANCE))
+				if ((0 < g_psAttitudeAll->UltrData.rawAltitude) && (g_psAttitudeAll->UltrData.rawAltitude <= SYS_ULTR_MAX_MEAS_DISTANCE))
 				{
 					/*标记本次超声波观测高度为有效值*/
 					uavStatus->UavSenmodStatus.Vertical.Ultr.DATA_STATUS = UAV_SENMOD_DATA_OK;
@@ -516,14 +536,16 @@ void ultr_altitude_data_get_and_dp(Uav_Status *uavStatus)
 					ultrDeltaT = (g_psSystemPeriodExecuteTime->UltrAltitude.DeltaTime) / 1000.0f; /*ms换算成s*/
 
 					/*超声波数据 滑动窗口滤波*/			
-					g_psAttitudeAll->nowUltrAltitude = filter_Slider_Average_Dp(&(g_sFilterTarg.UltrSliderAverage), rawAltitude);
+					g_psAttitudeAll->UltrData.filterAltitude = filter_Slider_Average_Dp(&(g_sFilterTarg.UltrSliderAverage), g_psAttitudeAll->UltrData.rawAltitude);
 
+					g_psAttitudeAll->UltrData.curAltitude = g_psAttitudeAll->UltrData.filterAltitude;
+					
 					/*计算超声波数据计算出的Z轴垂直向上方向上的速度(cm/s)*/
-					g_psAttitudeAll->beroClimbSpeed = (g_psAttitudeAll->nowUltrAltitude - \
-													   g_psAttitudeAll->lastUltrAltitude) / ultrDeltaT;
+					g_psAttitudeAll->UltrData.climbSpeed = (g_psAttitudeAll->UltrData.curAltitude - \
+													        g_psAttitudeAll->UltrData.lastAltitude) / ultrDeltaT;
 			
 					/*本次观测高度,作为下次计算的上次观测高度*/
-					g_psAttitudeAll->lastUltrAltitude = g_psAttitudeAll->nowUltrAltitude;
+					g_psAttitudeAll->UltrData.lastAltitude = g_psAttitudeAll->UltrData.curAltitude;
 				}
 				else /*不在有效高度范围内*/
 				{

@@ -207,7 +207,7 @@ Yaw(欧拉角角,惯导方向,欧拉角绕z轴) - z(惯导元器件z方向) - xxxxxxxxxxxxxx      - 
 /*********************************************/
 
 /***** 传感器量程设置(重点,必须根据实际设置) ******/
-#define GPS_LOCATION_SCALING_FACTOR (0.011131884502145034f) /*1 经/纬度 实际距离 111千米*/
+#define GPS_LOCATION_SCALING_FACTOR (0.011131884502145034f)	/*1 经/纬度 实际距离 111千米*/
 #define MPU_ACC_RANGE	   			(4.0f / 32768.0f)		/*加速度量程:±4G*/
 #define MPU_GYRO_RANGE	   			(1000.0f / 32768.0f) 	/*陀螺仪量程:(±1000°/s)*/
 #define ACC_MAX_ONE_G	   			(8192.0f)			    /*量程*/
@@ -228,10 +228,7 @@ Yaw(欧拉角角,惯导方向,欧拉角绕z轴) - z(惯导元器件z方向) - xxxxxxxxxxxxxx      - 
 
 /*电子调速器(电调)*/
 #define ESC_MIN_PULSE_ZERO_SPEED_VALUE	               (1000) /*Electronic Speed Control最小脉冲宽度,零速度,电机停转状态*/
-#define ESC_MAX_PULSE_MAX_SPEED_VALUE	               (2000) /*Electronic Speed Control最大脉冲宽度,最大速度,电机转速最快状态*/
-										               
-/*电机转动驱动对象*/                                   
-#define MOTOR_TURN_DRIVE_TARGET_INDEX	               (0xFF) 		/*全部转动驱动(开关作用0x00即全部停转)*/ 
+#define ESC_MAX_PULSE_MAX_SPEED_VALUE	               (2000) /*Electronic Speed Control最大脉冲宽度,最大速度,电机转速最快状态*/										              
 										               
 /*遥控FLYSKY*/                                         
 #define REMOT_DATA_REAL_MIN_VALUE		               (1000)		/*遥控数据真实最小值(1000us)*/
@@ -245,10 +242,10 @@ Yaw(欧拉角角,惯导方向,欧拉角绕z轴) - z(惯导元器件z方向) - xxxxxxxxxxxxxx      - 
 
 /********* EEPROM保存数据的地址 **********/
 /*校准参数存储地址*/
-#define AT24CXX_STOR_ACC_SCALE_ADDR                    (45)										  /*Acc比例因子校准参数存储位置*/
-#define AT24CXX_STOR_ACC_OFFSET_ADDR                   (AT24CXX_STOR_ACC_SCALE_ADDR  + 12 + 4)	  /*Acc零偏校准参数存储位置*/
-#define AT24CXX_STOR_MAG_OFFSET_ADDR                   (AT24CXX_STOR_ACC_OFFSET_ADDR + 12 + 4)	  /*磁力计中心偏执校准参数存储位置*/
-#define AT24CXX_STOR_GPS_MAG_OFFSET_ADDR               (AT24CXX_STOR_MAG_OFFSET_ADDR + 12 + 4)	  /*GPS_磁力计中心偏执校准参数存储位置*/
+#define AT24CXX_STOR_ACC_SCALE_ADDR                    (45)										    /*Acc比例因子校准参数存储位置*/
+#define AT24CXX_STOR_ACC_OFFSET_ADDR                   (AT24CXX_STOR_ACC_SCALE_ADDR  + 12 + 4)	    /*Acc零偏校准参数存储位置*/
+#define AT24CXX_STOR_MAG_OFFSET_ADDR                   (AT24CXX_STOR_ACC_OFFSET_ADDR + 12 + 4)	    /*磁力计中心偏执校准参数存储位置*/
+#define AT24CXX_STOR_GPS_MAG_OFFSET_ADDR               (AT24CXX_STOR_MAG_OFFSET_ADDR + 12 + 4)	    /*GPS_磁力计中心偏执校准参数存储位置*/
 #define AT24CXX_STOR_PID_PARA_ADDR		               (AT24CXX_STOR_GPS_MAG_OFFSET_ADDR + 12 + 4)  /*PID系数存储位置*/
 /*****************************************/
 
@@ -259,6 +256,13 @@ typedef enum
 	SYS_RET_FAIL  = 1,
 	SYS_RET_BUSY  = 2,
 }SYS_RETSTATUS;
+
+/*bool状态*/
+typedef enum
+{
+	SYS_BOOL_TRUE  = 0,
+	SYS_BOOL_FALSE = 1,
+}SYS_BOOLSTATUS;
 
 /*返回值错误类型(检测错在第几步)*/
 typedef enum

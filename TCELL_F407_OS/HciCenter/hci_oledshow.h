@@ -57,7 +57,7 @@ typedef enum
 }HCI_SHOW_INIT_TARG;
 
 /*总共页数*/
-#define HCI_TOTAL_SHOW_PAGE_NUMBER			(12)  /*【需要根据实际修改】*/
+#define HCI_TOTAL_SHOW_PAGE_NUMBER			(13)  /*【需要根据实际修改】*/
 /*显示页面序号*/
 typedef enum
 {
@@ -73,6 +73,7 @@ typedef enum
 	HCI_SHOW_PAGE_9  = 9,
 	HCI_SHOW_PAGE_10 = 10,	
 	HCI_SHOW_PAGE_11 = 11,		
+	HCI_SHOW_PAGE_12 = 12,	
 }HCI_SHOW_PAGE_INDEX;
 
 /*页面框(固定位置)显示状态*/
@@ -153,8 +154,11 @@ void hci_Show_Remot_Status(void);
 void hci_Show_Sensor_Calib_Result(void);
 
 /*==== 4.飞行器大数据显示 ====*/
-/*N11.Gps home点数据*/
+/*No11.Gps home点数据*/
 void hci_Show_Gps_Home_Data(void);
+
+/*No12.控制模式和任务显示*/
+void hci_Show_Ctrl_Mission_Data(void);
 
 
 /*==== 5.传感器校准交互 ====*/

@@ -83,10 +83,17 @@ typedef enum
 	CTRL_GO_GOME_TRANSITION_SET_OK = 2,	/*过渡状态已设置*/
 }CTRL_GO_GOME_TRANSITION_SET_STATUS;
 
+/*着陆检测是否使能*/
+typedef enum
+{
+	CTRL_LAND_CHECK_ENABLE  = 0, /*着陆检测使能*/
+	CTRL_LAND_CHECK_DISABLE = 1, /*着陆检测失能*/
+}CTRL_LAND_CHECK_STATUS;
 
 typedef struct
 {
 	vu16								  	    land_throttle_min_check;	    /*着陆油门检测值*/
+	volatile CTRL_LAND_CHECK_STATUS             LAND_CHECK_STATUS;    	        /*是否允许着陆检测*/	
 	
 	volatile CTRL_GO_HOME_DISTANCE 			    HOME_DISTANCE;					/*离HOME点距离标定*/	
 	volatile CTRL_GO_HOME_PROCESS  			    LAST_GO_HOME_PROCESS;			/*上次返航流程*/
@@ -141,5 +148,10 @@ void ctrl_Land_Ground_Control(fp32 controlDeltaT, Uav_Status *uavStatus);
 
 /*得到相对目标点机体Pit、Rol方向偏移*/
 Vector2f_Nav land_Gps_Offset_Relative_To_Home(Vector2s_Nav targPos, Vector2s_Nav curPos);
+
+/*着陆返航控制*/
+extern ControlLand g_sControlLand;
+
+extern ControlLand *g_psControlLand;
 
 #endif

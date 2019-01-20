@@ -6,6 +6,7 @@
 ControlLand	g_sControlLand = 
 {
 	.verticalSpeedChangePeriod = 0,
+	.LAND_CHECK_STATUS         = CTRL_LAND_CHECK_ENABLE, /*着陆检测使能*/
 };
 
 ControlLand *g_psControlLand = &g_sControlLand;
@@ -24,10 +25,11 @@ UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus)
 	/*记录上次飞行状态*/
 	uavStatus->UavLandStatus.LastTime = uavStatus->UavLandStatus.ThisTime;
 	
-	/*1.当前油门输出,2.触地后无旋转(合角速度小于20deg/s),3.惯导竖直方向速度<±20cm/s,4.无水平手动操作*/
+	/*1.当前油门输出,2.触地后无旋转(合角速度小于20deg/s),3.允许着陆检测(非定高模式),4.惯导竖直方向速度<±20cm/s,5.无水平手动操作*/
 	if ((g_psControlAircraft->throttleOutput <= CTRL_LAND_CHECK_THROTTLE_THRESHOLD_MIN) && \
 		(g_GyroLenth <= 20.0f) && \
 		(math_Abs(g_psSinsReal->curSpeed[EARTH_FRAME_Z]) <= 20.0f) && \
+		(g_sControlLand.LAND_CHECK_STATUS == CTRL_LAND_CHECK_ENABLE) && \
 		(ctrl_Go_Home_Horizontal_Hand_Meddle() == CTRL_GO_HOME_HAND_MEDDLE_FALSE))
 	{
 		g_vu16LandCheckContinueTicks++; /*5ms执行一次*/	
@@ -56,10 +58,10 @@ UAV_LAND_STATUS ctrl_Landing_Status_Check(Uav_Status *uavStatus)
 		g_psControlAircraft->GO_HOME_STATUS = CTRL_AIRCRAFT_GO_HOME_DISABLE;
 		
 		/*着陆状态,禁止清除起飞任务*/
-		if ((uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION != UAV_FLY_MISSION_ONEKEY_FLY) && \
-			(uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION != UAV_FLY_MISSION_NULL))
+		if ((gs_Uav_Fly_Mission.CURRENT_FLY_MISSION != UAV_FLY_MISSION_ONEKEY_FLY) && \
+			(gs_Uav_Fly_Mission.CURRENT_FLY_MISSION != UAV_FLY_MISSION_NULL))
 		{
-			control_fly_mission_clear(uavStatus, uavStatus->UavCurrentFlyMission.CURRENT_FLY_MISSION);
+			control_fly_mission_clear(&gs_Uav_Fly_Mission, gs_Uav_Fly_Mission.CURRENT_FLY_MISSION);
 		}
 	}
 	else

@@ -1,14 +1,14 @@
 #include "control_PosHold.h"
 #include "control_Aircraft.h"
 
-Vector2f_Earth g_sUavGpsStopPoint = {0}; 		  /*GPS定点模式导航系中的刹车停止点*/
+Vector2f_Nav g_sUavGpsStopPoint = {0}; 		  /*GPS定点模式导航系中的刹车停止点*/
 Vector2f g_sUavOpticFlowStopPoint = {0}; 		  /*光流定点模式下刹车停止点*/
 
 Vector2f g_sHorizontalExpectAcc   = {0}; /*水平期望加速度*/
 Vector2f g_sHorizontalExpectAngle = {0}; /*水平期望角度*/
 
 /*定点模式下,遥杆回中后,先用水平速度控制刹车,待刹停后再赋值位置选点*/
-SYS_RETSTATUS horizontal_GPS_Get_Stop_Point_XY(Vector2f_Earth *stopPoint)
+SYS_RETSTATUS horizontal_GPS_Get_Stop_Point_XY(Vector2f_Nav *stopPoint)
 {
 	Vector2f_Nav curPos, curSpeed, curAcc;      /*导航系下当前位置,速度,加速度*/
 	fp32 resultantSpeed = 0, resultantAcc = 0;	/*合速度,合加速度*/
@@ -25,8 +25,8 @@ SYS_RETSTATUS horizontal_GPS_Get_Stop_Point_XY(Vector2f_Earth *stopPoint)
 	resultantSpeed = pythagorous2(curSpeed.north, curSpeed.east);
 	resultantAcc   = pythagorous2(curAcc.north, curAcc.east);
 	
-	/*合水平速度的小于等于20cm/s
-	  合水平加速度的小于等于40cm/s^2
+	/*合水平速度小于等于20cm/s
+	  合水平加速度小于等于40cm/s^2
 	  Cos_Pitch*Cos_Roll、单个方向水平姿态约为15deg，两个方向水平姿态角小于10deg(rMatrix[2][2] = COS_PITCH * COS_ROLL)*/
 	if ((resultantSpeed <= 20.0f) && (resultantAcc <= 40.0f) && (rMatrix[2][2] >= 0.97f))
 	{
@@ -98,7 +98,7 @@ void horizontal_Control_PosHold(fp32 controlDeltaT)
 	/*光流定点模式(切定点时判断)*/
 	else if (g_sUav_Status.UavSenmodStatus.Horizontal.CURRENT_USE == UAV_HORIZONTAL_SENMOD_CURRENT_OPTICFLOW)
 	{
-		horizontal_Control_OpticFlow_PosHold(controlDeltaT);
+//		horizontal_Control_OpticFlow_PosHold(controlDeltaT);
 	}	
 }
 
@@ -131,12 +131,18 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 				{
 					g_psPidSystem->LatitudePosition.expect  = g_sUavGpsStopPoint.north;
 					g_psPidSystem->LongitudePosition.expect = g_sUavGpsStopPoint.east;
+					
+					/*标记水平方向是悬停*/
+					g_psUav_Status->AIRSTOP_TYPE |= UAV_AIRSTOP_ONLY_HORIZONTAL;
 				}
 				else /*只采用水平速度刹车*/
 				{
 					/*水平刹车速度期望为0,即期望停住*/
 					g_psPidSystem->LatitudeSpeed.expect  = 0;
 					g_psPidSystem->LongitudeSpeed.expect = 0;
+					
+					/*标记水平方向非悬停*/
+					g_psUav_Status->AIRSTOP_TYPE &= UAV_AIRSTOP_ONLY_VERTICAL;					
 				}	
 			}
 			else /*水平位置靠水平速度环刹车后,更新水平位置期望,然后进入水平位置控制环*/
@@ -157,12 +163,12 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 															g_psAttitudeAll->EarthFramePosError.north * SIN_YAW;
 
 				/*机体坐标系下方向上期望刹车速度,这里为单比例运算不调用PID计算函数*/
-				g_psAttitudeAll->BodyFramePosError.pitch = math_Constrain(g_psAttitudeAll->BodyFramePosError.pitch, \
-																		  g_psPidSystem->LatitudePosition.errorMax, \
+				g_psAttitudeAll->BodyFramePosError.pitch = math_Constrain( g_psAttitudeAll->BodyFramePosError.pitch, \
+																		   g_psPidSystem->LatitudePosition.errorMax, \
 																		  -g_psPidSystem->LatitudePosition.errorMax); /*位置偏差限幅,单位cm*/
 
-				g_psAttitudeAll->BodyFramePosError.roll  = math_Constrain(g_psAttitudeAll->BodyFramePosError.roll, \
-																		  g_psPidSystem->LongitudePosition.errorMax, \
+				g_psAttitudeAll->BodyFramePosError.roll  = math_Constrain( g_psAttitudeAll->BodyFramePosError.roll, \
+																		   g_psPidSystem->LongitudePosition.errorMax, \
 																		  -g_psPidSystem->LongitudePosition.errorMax); /*位置偏差限幅,单位cm*/
 			
 				/*更新水平方向刹车速度:比例运算(水平位置控制输出)*/
@@ -177,7 +183,7 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 			}
 		}				
 	
-		/************************** 水平速度控制器 开始 ********************************/				
+		/************************** 水平速度控制器(定点) 开始 ********************************/				
 	    /*导航系的水平速度，转化到机体坐标系X-Y方向上*/
 		/*沿载体Pitch、Roll方向水平速度控制*/
 		g_vu16GpsHorizontalSpeedControlTicks++; /*PLATFORM_TASK_SCHEDULER_MIN_FOC_MS 执行一次*/
@@ -214,25 +220,25 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 			g_psPidSystem->RollAngle.expect  = g_sHorizontalExpectAngle.x;	/*与机头pitch垂直roll左右方向*/
 		}
 		
-		/************************** 水平速度控制器 结束 ********************************/
+		/************************** 水平速度控制器(定点) 结束 ********************************/
 	}
 	/*拨动摇杆,只进行水平速度控制,无水平位置控制*/
 	else if ((g_psControlAircraft->RemotExpectAngle.pitch != 0) || \
 			 (g_psControlAircraft->RemotExpectAngle.roll != 0)) 
 	{
 		/*分两种情况:
-		1、导航坐标系的航向速度控制;
+		1、载体坐标系的姿态角控制;
 		2、载体坐标系方向上的速度控制;*/
 		
 		/*推动方向杆,对应期望角度*/
 		if (CTRL_HORIZONTAL_SENSOR_MODE_REMOT_EXPECT_ANGLE == SYS_ENABLE)
 		{
 			g_psPidSystem->PitchAngle.expect = g_psControlAircraft->RemotExpectAutoAngle.pitch;
-			g_psPidSystem->RollAngle.expect  = g_psControlAircraft->RemotExpectAutoAngle.roll;					
+			g_psPidSystem->RollAngle.expect  = g_psControlAircraft->RemotExpectAutoAngle.roll;			
 		}
 		/*推动方向杆,对应给定载体坐标系的沿Pitch,Roll方向运动速度*/
-		/************************** 水平速度控制器 开始 ********************************/			
-		else if (CTRL_HORIZONTAL_SENSOR_MODE_REMOT_EXPECT_SPEED == SYS_ENABLE)
+		/************************** 水平速度控制器(摇杆控速) 开始 ********************************/			
+		else
 		{
 			/*ticks++*/
 			g_vu16GpsHorizontalSpeedControlTicks++; /*PLATFORM_TASK_SCHEDULER_MIN_FOC_MS 执行一次*/
@@ -244,11 +250,11 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 				
 				/*N向(沿PITCH方向)最大移动速度*/
 				g_psPidSystem->LatitudeSpeed.expect  = -(g_psControlAircraft->RemotExpectAutoAngle.pitch / REMOT_PITCH_ROLL_ANGLE_EXPECT_MAX) * \
-													     CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度*/
+													     CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度,前speed>0;后speed<0*/
 
 				/*E向(沿ROLL方向)最大移动速度*/
 				g_psPidSystem->LongitudeSpeed.expect =  (g_psControlAircraft->RemotExpectAutoAngle.roll / REMOT_PITCH_ROLL_ANGLE_EXPECT_MAX) * \
-													     CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度*/						
+													     CTRL_HORIZONTAL_MAX_MOVE_SPEED; /*最大期望速度,前speed>0;后speed<0*/						
 				
 				/*导航系的水平速度，转化到机体坐标系方向上*/
 				/*沿机体Pitch、Roll方向水平速度控制*/
@@ -279,7 +285,7 @@ void horizontal_Control_GPS_PosHold(fp32 controlDeltaT)
 			}
 		}
 		
-		/************************** 水平速度控制器 结束 ********************************/
+		/************************** 水平速度控制器(摇杆控速) 结束 ********************************/
 		/*推杆间隙,水平位置期望置0,遥控值直接给水平 速度/角度 期望*/
 		g_psPidSystem->LatitudePosition.expect  = 0;
 		g_psPidSystem->LongitudePosition.expect = 0;				
@@ -421,7 +427,7 @@ void horizontal_Control_OpticFlow_PosHold(fp32 controlDeltaT)
 		}
 		/*推动方向杆,对应给定载体坐标系的沿Pitch,Roll方向运动速度*/
 		/************************** 水平速度控制器 开始 ********************************/			
-		else if (CTRL_HORIZONTAL_SENSOR_MODE_REMOT_EXPECT_SPEED == SYS_ENABLE)
+		else
 		{
 			/*ticks++*/
 			g_vu16OpflowHorizontalSpeedControlTicks++; /*PLATFORM_TASK_SCHEDULER_MIN_FOC_MS 执行一次*/

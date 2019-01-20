@@ -65,7 +65,14 @@ AhrsAttitude g_sCircleAngle = {0};
 AhrsAttitude *g_psCircleAngle = &g_sCircleAngle;
 
 /*四元数值*/
-AhrsQuater g_sAhrsQuater = {0};
+AhrsQuater g_sAhrsQuater = 
+{
+	.q0 = 1.0f,
+	.q1 = 0,
+	.q2 = 0,
+	.q3 = 0,
+};
+
 AhrsQuater *g_psAhrsQuater = &g_sAhrsQuater;
 
 /*四元数初始化值*/
@@ -165,12 +172,6 @@ AhrsEulerInit* ahrs_get_init_euler(AhrsEulerInit* ahrsEulerInit)
 	/*加速度解算Pitch和Roll*/
 	g_psAhrsAttitude = ahrs_euler_by_acc(g_psAccAttitude);
 	
-	/*磁力计第一次倾角补偿值所需欧拉角正余弦值由加速度解算的欧拉角计算*/
-	SIN_PITCH = sin(g_psAhrsAttitude->pitch * DEG2RAD);
-	SIN_ROLL  = sin(g_psAhrsAttitude->roll  * DEG2RAD);
-	COS_PITCH = cos(g_psAhrsAttitude->pitch * DEG2RAD);
-	COS_ROLL  = cos(g_psAhrsAttitude->roll  * DEG2RAD);
-	
 	/*等待磁力计的yaw角数据稳定*/
 	for (i = 0; i < 5; i++)
 	{
@@ -181,10 +182,6 @@ AhrsEulerInit* ahrs_get_init_euler(AhrsEulerInit* ahrsEulerInit)
 
 		sys_DelayMs(5);
 	}
-	
-	/*计算Yaw的正余弦值*/
-	SIN_YAW = sin(g_psAhrsAttitude->yaw * DEG2RAD);
-	COS_YAW = cos(g_psAhrsAttitude->yaw * DEG2RAD);
 	
 	/*初始化欧拉角的度转弧度*/
 	ahrsEulerInit->rollInit  = g_psAhrsAttitude->roll  * DEG2RAD;
@@ -199,30 +196,16 @@ AhrsEulerInit* ahrs_get_init_euler(AhrsEulerInit* ahrsEulerInit)
 AhrsAttitude *ahrs_euler_by_acc(Acc3f *acc3f)
 {
 	fp32 ax, ay, az;
-	fp32 norm;
 	
 	ax = acc3f->x;
 	ay = acc3f->y;
 	az = acc3f->z;
 	
-	/*加速度数据转加速度*/
-	ax *= MPU_ACC_RANGE;
-	ay *= MPU_ACC_RANGE;
-	az *= MPU_ACC_RANGE;	
-	
-	/*加速度单位化*/
-	norm = sqrt(ax * ax + ay * ay + az * az);
-	
-	/*分量在标准单位上的投影*/
-	ax = ax / norm;
-	ay = ay / norm;
-	az = az / norm;	
-
 	/*pitch俯仰角_绕X轴旋转(弧度转度)*/
-	g_sAhrsAttitude.pitch = atan(ay / sqrt(ax * ax + az * az)) * RAD2DEG;	
+	g_sAhrsAttitude.pitch = atan(ay * math_InvSqrt(ax * ax + az * az)) * RAD2DEG;	
 	
 	/*roll横滚角_绕Y轴旋转(弧度转度)*/
-	g_sAhrsAttitude.roll  = -atan(ax / sqrt(ay * ay + az * az)) * RAD2DEG;
+	g_sAhrsAttitude.roll  = -atan(ax * math_InvSqrt(ay * ay + az * az)) * RAD2DEG;
 	
 	return &g_sAhrsAttitude;
 }
@@ -275,6 +258,7 @@ Vector4q g_sQuadHistory[QUAD_HISTORY_DEPTH] = {0};
 /*历史加速度*/
 #define ACC_HISTORY_DEPTH		(20)
 Vector3f g_sAccHistory[QUAD_HISTORY_DEPTH] = {0};
+#define ACC_HISTORY_SELECT 		(9)
 
 /*历史角速度*/
 #define GYRO_HISTORY_DEPTH		(10)
@@ -374,7 +358,7 @@ AhrsAttitude* ahrs_grades_calculat_attitude(AhrsQuater *ahrsQuater, Acc3f *attAc
 	/*{-sinθ          cosθsin Φ          cosθcosΦ}*/
 	g_yawGyroEarthFrame = -SIN_ROLL * attGyro->x + \
 						   COS_ROLL * SIN_PITCH * attGyro->y + \
-						   COS_PITCH * COS_ROLL *attGyro->z;
+						   COS_PITCH * COS_ROLL * attGyro->z;
 	
 	/*角速度反馈量的增量:历史buff[0] - 历史buff[1]*/
 	g_sGyroDelta.x = g_sGyroHistory[0].x - g_sGyroHistory[1].x;
@@ -400,15 +384,15 @@ AhrsAttitude* ahrs_grades_calculat_attitude(AhrsQuater *ahrsQuater, Acc3f *attAc
 		/*提取GPS运动加速度*/
 		if (get_effective_gravity_acc(g_psUav_Status, g_psAttitudeAll->GpsData) == SYS_RET_SUCC)
 		{
-			attAcc->x = g_sAccHistory[9].x - g_sGpsBodyMotionAcc.x;	/*剔除运动加速度*/
-			attAcc->y = g_sAccHistory[9].y - g_sGpsBodyMotionAcc.y;	/*剔除运动加速度*/
-			attAcc->z = g_sAccHistory[9].z - g_sGpsBodyMotionAcc.z;	/*剔除运动加速度*/			
+			attAcc->x = g_sAccHistory[ACC_HISTORY_SELECT].x - g_sGpsBodyMotionAcc.x;	/*剔除运动加速度*/
+			attAcc->y = g_sAccHistory[ACC_HISTORY_SELECT].y - g_sGpsBodyMotionAcc.y;	/*剔除运动加速度*/
+			attAcc->z = g_sAccHistory[ACC_HISTORY_SELECT].z - g_sGpsBodyMotionAcc.z;	/*剔除运动加速度*/			
 		}
 		else
 		{
-			attAcc->x = g_sAccHistory[9].x;
-			attAcc->y = g_sAccHistory[9].y;
-			attAcc->z = g_sAccHistory[9].z;
+			attAcc->x = g_sAccHistory[ACC_HISTORY_SELECT].x;
+			attAcc->y = g_sAccHistory[ACC_HISTORY_SELECT].y;
+			attAcc->z = g_sAccHistory[ACC_HISTORY_SELECT].z;
 		}
 	
 		/*加速度单位化并取倒数*/		
@@ -642,39 +626,7 @@ void ahrs_quaternion_init(AhrsQuater *ahrsQuater)
 
 /*更新方向余弦矩阵(n系->b系)*/
 void ahrs_compute_rotation_matrix(void)
-{
-/*  fp32 q1q1,q2q2,q3q3;
-    fp32 q0q1,q0q2,q0q3,q1q2,q1q3,q2q3;
-
-    q0_DCM=att.q[0];
-    q1_DCM=att.q[1];
-    q2_DCM=att.q[2];
-    q3_DCM=att.q[3];
-
-    q1q1 = sqf(q1_DCM );
-    q2q2 = sqf(q2_DCM );
-    q3q3 = sqf(q3_DCM );
-
-    q0q1 = q0_DCM  * q1_DCM ;
-    q0q2 = q0_DCM  * q2_DCM ;
-    q0q3 = q0_DCM  * q3_DCM ;
-    q1q2 = q1_DCM  * q2_DCM ;
-    q1q3 = q1_DCM  * q3_DCM ;
-    q2q3 = q2_DCM  * q3_DCM ;
-
-    rMat[0][0] = 1.0f - 2.0f * q2q2 - 2.0f * q3q3;
-    rMat[0][1] = 2.0f * (q1q2 -q0q3);
-    rMat[0][2] = 2.0f * (q1q3 +q0q2);
-
-    rMat[1][0] = 2.0f * (q1q2 +q0q3);
-    rMat[1][1] = 1.0f - 2.0f * q1q1 - 2.0f * q3q3;
-    rMat[1][2] = 2.0f * (q2q3 -q0q1);
-
-    rMat[2][0] = 2.0f * (q1q3 -q0q2);
-    rMat[2][1] = 2.0f * (q2q3 +q0q1);
-    rMat[2][2] = 1.0f - 2.0f * q1q1 - 2.0f * q2q2;
-  */	
-	
+{	
 	SIN_PITCH = sin(g_psAhrsAttitude->pitch * DEG2RAD);
 	SIN_ROLL  = sin(g_psAhrsAttitude->roll  * DEG2RAD);
 	SIN_YAW   = sin(g_psAhrsAttitude->yaw   * DEG2RAD);
@@ -702,7 +654,6 @@ void ahrs_compute_rotation_matrix(void)
 void ahrs_imu_data_get_and_dp(void)
 {
 	/***1. IMU原始值获取***/
-//
 #ifdef MD_IMU__MPU6050
 	/*获取加速度值*/
 	g_psAccRaw  = bsp_MPU6050_GetAcc(&g_sMpu6050);
@@ -719,10 +670,8 @@ void ahrs_imu_data_get_and_dp(void)
 	/*获取陀螺仪值*/
 	g_psGyroRaw = bsp_MPU6000_GetGyro(&g_sMpu6000);
 #endif
-//
 	
 	/***2. Acc原始数据校准及滤波*/
-//
 	/*Acc: 2rd lpButterWorth FS:200HZ, FC:1HZ (用于加速度计6面校准,和磁力计校准动作条件)*/
 	g_psAccCalib->x = (s16)(filter_AccFuncLpButterworth_Dp((fp32)g_psAccRaw->x, &(g_sFilterTarg.AccLpBwCalib[0]), \
 														   &(g_sFilterTarg.AccLpBwPara[FILTER_LPBW_ACC_200HZ_1HZ_IDX])));
@@ -733,30 +682,24 @@ void ahrs_imu_data_get_and_dp(void)
 
 	/*用于加速度计校准,确保数据每次都是更新的*/
 	g_psAccSensorDataStatus->calib = SENSOR_DATA_NEW;
-//	
 	
 	/*加速度数据椭球校准*/
-//
 	g_psAccCorrect = calib_Acc_Data_Dp(g_psAccRaw);
 	
 	/*加速度Origion*/
 	g_psAccOrigion->x = g_psAccCorrect->x;	
 	g_psAccOrigion->y = g_psAccCorrect->y;
 	g_psAccOrigion->z = g_psAccCorrect->z;
-//
 	
 	/*Acc: 2rd lpButterWorth FS:200HZ, FC:30HZ (用于惯导融合的加速度计量)*/
-//	
 	g_psAccSINS->x = filter_AccFuncLpButterworth_Dp(g_psAccOrigion->x, &(g_sFilterTarg.AccLpBwSINS[0]), \
 											        &(g_sFilterTarg.AccLpBwPara[FILTER_LPBW_ACC_200HZ_30HZ_IDX]));
 	g_psAccSINS->y = filter_AccFuncLpButterworth_Dp(g_psAccOrigion->y, &(g_sFilterTarg.AccLpBwSINS[1]), \
 											        &(g_sFilterTarg.AccLpBwPara[FILTER_LPBW_ACC_200HZ_30HZ_IDX]));
 	g_psAccSINS->z = filter_AccFuncLpButterworth_Dp(g_psAccOrigion->z, &(g_sFilterTarg.AccLpBwSINS[2]), \
 											        &(g_sFilterTarg.AccLpBwPara[FILTER_LPBW_ACC_200HZ_30HZ_IDX]));		
-//
 	
 	/*Acc: 2rd lpButterWorth FS:200HZ, FC:15HZ (用于控制反馈)*/
-//
 	g_psAccCtlFeedback->x = filter_AccFuncLpButterworth_Dp(g_psAccOrigion->x, &(g_sFilterTarg.AccLpBwFeedback[0]), \
 														   &(g_sFilterTarg.AccLpBwPara[FILTER_LPBW_ACC_200HZ_15HZ_IDX]));
 	g_psAccCtlFeedback->y = filter_AccFuncLpButterworth_Dp(g_psAccOrigion->y, &(g_sFilterTarg.AccLpBwFeedback[1]), \
@@ -784,10 +727,8 @@ void ahrs_imu_data_get_and_dp(void)
 	g_psSinsFilterFeedback->curAcc[EARTH_FRAME_Z] *= SINS_ACC_GRAVITY * MPU_ACC_RANGE;
 	g_psSinsFilterFeedback->curAcc[EARTH_FRAME_Z] -= SINS_ACC_GRAVITY;	/*减去Z轴重力加速度*/
 	g_psSinsFilterFeedback->curAcc[EARTH_FRAME_Z] *= 100;	/*m/s^2 -> cm/s^s*/
-//
 	
 	/*Acc: 2rd lpButterWorth(用于姿态解算)*/
-//
 	/*带阻滤波:FS:200HZ, BL:30HZ, BH:94HZ*/	
 //	g_psAccBwBF = filter_AccAttLpButterworth_Dp(g_psAccOrigion, g_sFilterTarg.AccBsBwBuff, \
 //											    &(g_sFilterTarg.AccBsBwPara[FILTER_BSBW_ACC_200HZ_30HZ_94HZ_IDX]));
@@ -795,18 +736,15 @@ void ahrs_imu_data_get_and_dp(void)
 	/*低通滤波:FS:200HZ, FC:30HZ */	
 	g_psAccBwLP = filter_AccAttLpButterworth_Dp(g_psAccOrigion, g_sFilterTarg.AccLpBwAttitude, \
 											    &(g_sFilterTarg.AccLpBwPara[FILTER_LPBW_ACC_200HZ_30HZ_IDX]));
-//												
+										
 												   
-	/****** 参与姿态解算的加速度数据 ******/
-//	
+	/****** 参与姿态解算的加速度数据 ******/	
 	g_psAccAttitude->x = g_psAccBwLP->x;
 	g_psAccAttitude->y = g_psAccBwLP->y;
 	g_psAccAttitude->z = g_psAccBwLP->z;
-//
 	
 	/***3. Gyro原始数据校准及滤波*/
 	/*陀螺仪数据减去零偏值*/
-//	
 #ifdef MD_IMU__MPU6050
 	g_psGyroCorrect->x = g_psGyroRaw->x - g_sMpu6050.GyroZero.x;
 	g_psGyroCorrect->y = g_psGyroRaw->y - g_sMpu6050.GyroZero.y;
@@ -818,7 +756,6 @@ void ahrs_imu_data_get_and_dp(void)
 	g_psGyroCorrect->y = g_psGyroRaw->y - g_sMpu6000.GyroZero.y;
 	g_psGyroCorrect->z = g_psGyroRaw->z - g_sMpu6000.GyroZero.z;
 #endif
-//
 
 	/*Gyro: 2rd lpButterWorth  (用于姿态解算和反馈)*/
 //	
@@ -838,8 +775,7 @@ void ahrs_imu_data_get_and_dp(void)
 	g_psGyroBwLP->y = filter_GyroFuncLpButterworth_Dp(g_psGyroCorrect->y, &(g_sFilterTarg.GyroLpBwBuff[1]), \
 												      &(g_sFilterTarg.GyroLpBwPara[FILTER_LPBW_GYRO_200HZ_51HZ_IDX]));														
 	g_psGyroBwLP->z = filter_GyroFuncLpButterworth_Dp(g_psGyroCorrect->z, &(g_sFilterTarg.GyroLpBwBuff[2]), \
-												      &(g_sFilterTarg.GyroLpBwPara[FILTER_LPBW_GYRO_200HZ_51HZ_IDX]));
-//													  
+												      &(g_sFilterTarg.GyroLpBwPara[FILTER_LPBW_GYRO_200HZ_51HZ_IDX]));											  
 		
 	/*参与姿态解算的角速度数据*/		
 	g_psGyroAttitude->x = g_psGyroCorrect->x;
@@ -907,8 +843,8 @@ void ahrs_mag_data_get_and_dp(void)
 	g_psMagAttitude->hx = g_psMagFilter->x * COS_ROLL + g_psMagFilter->z * SIN_ROLL;
 	
 	g_psMagAttitude->hy = g_psMagFilter->x * SIN_PITCH * SIN_ROLL + \
-						 g_psMagFilter->y * COS_PITCH - \
-						 g_psMagFilter->z * COS_ROLL * SIN_PITCH;
+						  g_psMagFilter->y * COS_PITCH - \
+						  g_psMagFilter->z * COS_ROLL * SIN_PITCH;
 
 	/*5.反正切得到磁力计观测Yaw(偏航)角度*/
 	g_psMagAttitude->magYaw = atan2(g_psMagAttitude->hx, g_psMagAttitude->hy) * RAD2DEG;
