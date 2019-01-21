@@ -8,8 +8,8 @@ typedef struct
 {
 	/*0.基础模块*/
 	u32 LED:1;
-	u32 KEY:1;
 	u32 RGB:1;
+	u32 BEEP:1;	
 	
 	/*1.数据存储*/
 	u32 STOR_FLASH:1;

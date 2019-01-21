@@ -975,32 +975,32 @@ void ctrl_auto_control_system_output(void)
 		if ((math_Abs(g_psAttitudeAll->Ahrs.pitch) <= CTRL_HORIZONTAL_ANGLE_SAFE_MAX) && \
 			(math_Abs(g_psAttitudeAll->Ahrs.roll) <= CTRL_HORIZONTAL_ANGLE_SAFE_MAX)) /*安全角度范围内,正常控制*/
 		{
-			msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH4, \
-								   g_psControlAircraft->CurMotorPwmOutput.channle1);
+			msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH4, \
+								        g_psControlAircraft->CurMotorPwmOutput.channle1);
 		
-			msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH3, \
-								   g_psControlAircraft->CurMotorPwmOutput.channle2);
+			msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH3, \
+								        g_psControlAircraft->CurMotorPwmOutput.channle2);
 		
-			msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH2, \
-								   g_psControlAircraft->CurMotorPwmOutput.channle3);
+			msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH2, \
+								        g_psControlAircraft->CurMotorPwmOutput.channle3);
 		
-			msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH1, \
-								   g_psControlAircraft->CurMotorPwmOutput.channle4);
+			msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH1, \
+								        g_psControlAircraft->CurMotorPwmOutput.channle4);
 		}
 		else /*非安全角度范围内,关闭电机,并锁定*/
 		{
 			/*关闭电机*/
-			msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH4, \
-		   	    			       ESC_MIN_PULSE_ZERO_SPEED_VALUE);
+			msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH4, \
+		   	    			            ESC_MIN_PULSE_ZERO_SPEED_VALUE);
 		
-			msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH3, \
-			  				       ESC_MIN_PULSE_ZERO_SPEED_VALUE);
+			msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH3, \
+			  				            ESC_MIN_PULSE_ZERO_SPEED_VALUE);
 		
-		    msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH2, \
-							       ESC_MIN_PULSE_ZERO_SPEED_VALUE);
+		    msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH2, \
+							            ESC_MIN_PULSE_ZERO_SPEED_VALUE);
 		
-		    msp_TimPwmOut_SetPluse(&g_sTimPwmOut_Motor, MSP_TIM_CH1, \
-							       ESC_MIN_PULSE_ZERO_SPEED_VALUE);
+		    msp_TimMultiPwmOut_SetPluse(&g_sTimMultiPwmOut, MSP_TIM_CH1, \
+							            ESC_MIN_PULSE_ZERO_SPEED_VALUE);
 		
 		   /*锁定状态*/
 		   g_sUav_Status.LOCK_STATUS = UAV_LOCK_YES;

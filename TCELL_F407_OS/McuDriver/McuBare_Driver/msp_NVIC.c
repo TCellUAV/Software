@@ -19,7 +19,7 @@ void msp_NVIC_Init(MSP_NVIC_GROUP mspNvicGroup)
 	NVIC_Init(&NVIC_InitStructure); 
 
 	/*TIM3定时器PWM输出*/
-	NVIC_InitStructure.NVIC_IRQChannel                   = g_sTimPwmOut_Motor.NVIC_IRQChannel;
+	NVIC_InitStructure.NVIC_IRQChannel                   = g_sTimMultiPwmOut.NVIC_IRQChannel;
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 1;   /*抢占优先级*/
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority        = 0;   /*响应优先级*/
 	NVIC_InitStructure.NVIC_IRQChannelCmd                = ENABLE;

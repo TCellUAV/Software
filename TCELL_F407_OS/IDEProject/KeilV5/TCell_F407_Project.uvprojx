@@ -740,6 +740,11 @@
               <FilePath>..\..\McuDriver\McuBare_Driver\msp_GPIO.c</FilePath>
             </File>
             <File>
+              <FileName>msp_MutGPIO.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\McuDriver\McuBare_Driver\msp_MutGPIO.c</FilePath>
+            </File>
+            <File>
               <FileName>msp_EXTI.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\McuDriver\McuBare_Driver\msp_EXTI.c</FilePath>
@@ -845,29 +850,9 @@
               <FilePath>..\..\BoardLib\_0_HumanComputerInter\bsp_HCI_OLED0_96.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_BASE_Key.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_1_OhterBase\bsp_BASE_Key.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_BASE_LED.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_1_OhterBase\bsp_BASE_LED.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_BASE_RGB.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_1_OhterBase\bsp_BASE_RGB.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_EEPROM_AT24CXX.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BoardLib\_2_EEPROM\bsp_EEPROM_AT24CXX.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_AHRS_MPU9250.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_3_AHRS\bsp_AHRS_MPU9250.c</FilePath>
             </File>
             <File>
               <FileName>bsp_IMU_MPU6050.c</FileName>
@@ -885,39 +870,14 @@
               <FilePath>..\..\BoardLib\_3_AHRS\bsp_MAG_HMC5883L.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_MAG_IST8310.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_3_AHRS\bsp_MAG_IST8310.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_MAG_HMC5983.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BoardLib\_3_AHRS\bsp_MAG_HMC5983.c</FilePath>
             </File>
             <File>
-              <FileName>bsp_BERO_BMP280.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_4_Berometer\bsp_BERO_BMP280.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_BERO_MS5611.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_4_Berometer\bsp_BERO_MS5611.c</FilePath>
-            </File>
-            <File>
               <FileName>bsp_BERO_SPL06.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\BoardLib\_4_Berometer\bsp_BERO_SPL06.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_ULTR_HCSR04.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_5_Ultrasonic\bsp_ULTR_HCSR04.c</FilePath>
-            </File>
-            <File>
-              <FileName>bsp_ULTR_RCWL1603.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\BoardLib\_5_Ultrasonic\bsp_ULTR_RCWL1603.c</FilePath>
             </File>
             <File>
               <FileName>bsp_ULTR_US100.c</FileName>

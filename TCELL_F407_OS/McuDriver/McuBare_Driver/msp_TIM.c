@@ -2,7 +2,8 @@
 #include "msp_GPIO.h"
 
 /**** TIM PWM(脉冲宽度调制) ****/
-void msp_TimPwmOut_Init(TimPwmOut *timPwmOut)
+/*MultiPwm*/
+void msp_TimMultiPwmOut_Init(TimMultiPwmOut *timPwmOut)
 {
 	GPIO_InitTypeDef 	    GPIO_InitStruct	;
 	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
@@ -123,14 +124,92 @@ void msp_TimPwmOut_Init(TimPwmOut *timPwmOut)
 //	TIM_CtrlPWMOutputs(timPwmOut->Tim, ENABLE);
 	
 	/*初始化PWM输出脉冲宽度,电调有效行程最小值(停转值)*/
-	msp_TimPwmOut_SetPluse(timPwmOut, MSP_TIM_CH1, ESC_MIN_PULSE_ZERO_SPEED_VALUE);
-	msp_TimPwmOut_SetPluse(timPwmOut, MSP_TIM_CH2, ESC_MIN_PULSE_ZERO_SPEED_VALUE);
-	msp_TimPwmOut_SetPluse(timPwmOut, MSP_TIM_CH3, ESC_MIN_PULSE_ZERO_SPEED_VALUE);
-	msp_TimPwmOut_SetPluse(timPwmOut, MSP_TIM_CH4, ESC_MIN_PULSE_ZERO_SPEED_VALUE);	
+	msp_TimMultiPwmOut_SetPluse(timPwmOut, MSP_TIM_CH1, ESC_MIN_PULSE_ZERO_SPEED_VALUE);
+	msp_TimMultiPwmOut_SetPluse(timPwmOut, MSP_TIM_CH2, ESC_MIN_PULSE_ZERO_SPEED_VALUE);
+	msp_TimMultiPwmOut_SetPluse(timPwmOut, MSP_TIM_CH3, ESC_MIN_PULSE_ZERO_SPEED_VALUE);
+	msp_TimMultiPwmOut_SetPluse(timPwmOut, MSP_TIM_CH4, ESC_MIN_PULSE_ZERO_SPEED_VALUE);	
 }
 
 /*PWM施加*/
-void msp_TimPwmOut_SetPluse(TimPwmOut *timPwmOut, MSP_TIM_CHANNLE TIM_CHANNLE, u16 Pulse)
+void msp_TimMultiPwmOut_SetPluse(TimMultiPwmOut *timPwmOut, MSP_TIM_CHANNLE TIM_CHANNLE, u16 Pulse)
+{
+	switch(TIM_CHANNLE)
+	{
+		case MSP_TIM_CH1:
+		{
+			TIM_SetCompare1(timPwmOut->Tim, Pulse);
+		}break;
+		
+		case MSP_TIM_CH2:
+		{
+			TIM_SetCompare2(timPwmOut->Tim, Pulse);		
+		}break;
+
+		case MSP_TIM_CH3:
+		{
+			TIM_SetCompare3(timPwmOut->Tim, Pulse);		
+		}break;
+		
+		case MSP_TIM_CH4:
+		{
+			TIM_SetCompare4(timPwmOut->Tim, Pulse);		
+		}break;
+
+		default:break;
+	}
+}
+
+/*SinglePwm*/
+void msp_TimSinglePwmOut_Init(TimSinglePwmOut *timPwmOut)
+{
+	GPIO_InitTypeDef 	    GPIO_InitStruct	;
+	TIM_TimeBaseInitTypeDef TIM_TimeBaseInitStruct;
+	TIM_OCInitTypeDef       TIM_OCInitStruct;	
+	
+	/*GPIO & TIM Channel config*/
+	/*GPIO config*/
+	GPIO_InitStruct.GPIO_Pin   = timPwmOut->Pin;
+	GPIO_InitStruct.GPIO_Mode  = GPIO_Mode_AF;
+	GPIO_InitStruct.GPIO_Speed = GPIO_High_Speed;
+	GPIO_InitStruct.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStruct.GPIO_PuPd  = GPIO_PuPd_UP;	
+	GPIO_Init(timPwmOut->GPIO, &GPIO_InitStruct);
+		
+	/*AF*/
+	GPIO_PinAFConfig(timPwmOut->GPIO, timPwmOut->PinSource, timPwmOut->GPIO_AF);
+		
+	/*Tim Channle config*/
+	TIM_OCInitStruct.TIM_OCMode      = TIM_OCMode_PWM1;   /*选择定时器模式:TIM脉冲宽度调制模式2*/
+	TIM_OCInitStruct.TIM_OutputState = TIM_OutputState_Enable; /*比较输出使能*/
+	TIM_OCInitStruct.TIM_OCPolarity  = TIM_OCPolarity_High; /*TIM输出比较极性高*/
+	TIM_OCInitStruct.TIM_Pulse       = 0;					  /*初始化0*/			
+	TIM_OC1Init(timPwmOut->Tim, &TIM_OCInitStruct); /*根据T指定的参数初始化外设TIMxOC1*/
+		
+	/*使能TIMx在CCR1上的预装载寄存器*/
+	TIM_OC1PreloadConfig(timPwmOut->Tim, TIM_OCPreload_Enable);		
+	
+	/*Tim config*/
+	TIM_TimeBaseInitStruct.TIM_Period            = timPwmOut->Period;		/*设定计数器自动重装值*/
+	TIM_TimeBaseInitStruct.TIM_Prescaler         = timPwmOut->Prescaler;	/*预分频器*/
+	TIM_TimeBaseInitStruct.TIM_ClockDivision     = timPwmOut->ClockDivision;/*置时钟分割:TDTS = Tck_tim*/
+	TIM_TimeBaseInitStruct.TIM_CounterMode       = TIM_CounterMode_Up;		/*TIM向上计数模式*/
+	TIM_TimeBaseInitStruct.TIM_RepetitionCounter = 0;				        /*重复比较次数更新事件*/
+	TIM_TimeBaseInit(timPwmOut->Tim, &TIM_TimeBaseInitStruct);
+	
+	/*使能TIMx_CHx在CCR2上的预装载寄存器*/
+	TIM_ARRPreloadConfig(timPwmOut->Tim, ENABLE);
+	
+	/*使能定时器*/
+	TIM_Cmd(timPwmOut->Tim, ENABLE);
+
+	/*开始启动定时器输出pwm,这句是高级定时器才有的,输出pwm必须打开*/
+//	TIM_CtrlPWMOutputs(timPwmOut->Tim, ENABLE);
+	
+	/*初始化PWM输出脉冲宽度,电调有效行程最小值(停转值)*/
+	msp_TimSinglePwmOut_SetPluse(timPwmOut, timPwmOut->CHANNLE, 0);
+}
+
+void msp_TimSinglePwmOut_SetPluse(TimSinglePwmOut *timPwmOut, MSP_TIM_CHANNLE TIM_CHANNLE, u16 Pulse)
 {
 	switch(TIM_CHANNLE)
 	{

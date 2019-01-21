@@ -130,14 +130,14 @@ CALIB_SIDE_INDEX calib_acc_sensor_check(void)
 			*******       *******
 			*     *       *     *
 			*  *  *       *  *  * 
-			*   * *       *     *
+			*     *       *   * *
 			*******       *******
-				  *                    
+				                *       
 		*/		
-		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
-			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MAX)      == REMOT_DATA_MAX))
+		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MAX)     == REMOT_DATA_MAX) && \
+			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MIN)    == REMOT_DATA_MIN) && \
+			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MID) == REMOT_DATA_MID) && \
+			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			/*目标面Tick++*/
 			g_sTopAccContinueTicks++;
@@ -290,14 +290,14 @@ CALIB_SIDE_INDEX calib_acc_sensor_check(void)
 			*******       *******
 			*     *       *     *
 			*  *  *       *  *  * 
-			* *   *       *     *
+			*     *       * *   *
 			*******       *******
-			*	                     
+			 	          *           
 		*/		
-		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
-			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MIN)      == REMOT_DATA_MIN))
+		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
+			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MIN)    == REMOT_DATA_MIN) && \
+			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MID) == REMOT_DATA_MID) && \
+			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			/*目标面Tick++*/
 			g_sUnderAccContinueTicks++;
@@ -329,14 +329,14 @@ CALIB_SIDE_INDEX calib_mag_sensor_check(void)
 		*******       *******
 		*     *       * *   *
 		*  *  *       *  *  * 
-		*   * *       *     *
+		* *   *       *     *
 		*******       *******
-		      *                    
-	*/	
+		*                     
+	*/
 	if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MIN)     == REMOT_DATA_MIN) && \
 		(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MAX)    == REMOT_DATA_MAX) && \
 		(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
-		(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MAX)      == REMOT_DATA_MAX))
+		(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MIN)      == REMOT_DATA_MIN))
 	{
 		/*满足条件目标Ticks累加*/
 		g_sEntryMagCalibContinueTicks++;
@@ -388,15 +388,15 @@ CALIB_SIDE_INDEX calib_mag_sensor_check(void)
 		/*					 	
 			*******       *******
 			*     *       *     *
-			*  *  *       *  *  * 
-			*   * *       *     *
+			*  *  *       *  *  *
+			*     *       *   * *
 			*******       *******
-				  *                    
+				                *       
 		*/		
-		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MIN) == REMOT_DATA_MIN) && \
-			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MAX)      == REMOT_DATA_MAX))
+		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MAX)     == REMOT_DATA_MAX) && \
+			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MIN)    == REMOT_DATA_MIN) && \
+			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MID) == REMOT_DATA_MID) && \
+			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			/*目标面Tick++*/
 			g_sTopMagContinueTicks++;
@@ -415,16 +415,16 @@ CALIB_SIDE_INDEX calib_mag_sensor_check(void)
 
 		/*2.判断第2面(侧面加计机头(Y轴)朝上)动作*/
 		/*		
-               *		
+                		     *
 			*******       *******
-			*  *  *       *     *
+			*     *       *  *  *
 		    *  *  *       *  *  * 
 			*     *       *     *
 			*******       *******
 		*/		
 		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MAX) == REMOT_DATA_MAX) && \
+			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MAX)    == REMOT_DATA_MAX) && \
+			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MID) == REMOT_DATA_MID) && \
 			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			/*目标面Tick++*/
@@ -446,14 +446,14 @@ CALIB_SIDE_INDEX calib_mag_sensor_check(void)
 		/*			
 			*******       *******
 			*     *       *     *
-		    *  *******    *  *  * 
+		    *  *  *       *  ********
 			*     *       *     *
 			*******       *******
 		*/		
-		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MID)     == REMOT_DATA_MID) && \
+		if ((remot_Data_Range(g_sRemotData.AttRoll, REMOT_DATA_MAX)     == REMOT_DATA_MAX) && \
 			(remot_Data_Range(g_sRemotData.AttPitch, REMOT_DATA_MID)    == REMOT_DATA_MID) && \
 			(remot_Data_Range(g_sRemotData.AttThrottle, REMOT_DATA_MID) == REMOT_DATA_MID) && \
-			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MAX)      == REMOT_DATA_MAX))
+			(remot_Data_Range(g_sRemotData.AttYaw, REMOT_DATA_MID)      == REMOT_DATA_MID))
 		{	
 			/*目标面Tick++*/
 			g_sFlankRollMagContinueTicks++;
@@ -466,7 +466,7 @@ CALIB_SIDE_INDEX calib_mag_sensor_check(void)
 			{
 				g_sFlankRollMagContinueTicks = 0;
 				
-				g_psMagCalibSystem->CUR_SIDE_INDEX = SIDE_INDEX_2ND; 
+				g_psMagCalibSystem->CUR_SIDE_INDEX = SIDE_INDEX_3RD; 
 			}
 		}	
 	}
@@ -516,7 +516,7 @@ void calib_Mag_Sensor_System_Reset(void)
 		for (j = POSITION_INDEX_1ST; j <= POSITION_INDEX_36TH; j++)
 		{
 			/*采集状态清0*/
-			g_psMagCalibSystem->POSITION_STATUS[i][j] = POSITION_SAMPLE_FAIL;
+			g_psMagCalibSystem->POSITION_STATUS[i][j]  = POSITION_SAMPLE_FAIL;		
 			
 			/*采集数据清0*/
 			g_psMagCalibSystem->sampleData[i][j].x = 0;
@@ -698,7 +698,8 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 	SYS_RETSTATUS retStatus = SYS_RET_FAIL;
 	static volatile CALIB_SIDE_INDEX LAST_SIDE = SIDE_INDEX_NULL;
 	
-	CALIB_POSITION_INDEX positionIndex;	/*角点*/
+	CALIB_POSITION_INDEX positionIndex = POSITION_INDEX_1ST; 	/*角点序号*/
+	
 	u32 magCalibSaveAddr = 0; /*磁力计校准参数保存地址*/
 
 	/*磁力计校准参数变量用于写入*/
@@ -753,14 +754,14 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 	/*允许开始采集,且没有采集过,就开始采集该面数据*/
 	if ((g_psMagCalibSystem->SAMPLE_STATUS == SAMPLE_DATA_START) && \
 		(g_psMagCalibSystem->SINGLE_STATUS[calibSideIndex] != SINGLE_SAMPLE_SUCC))
-	{
+	{	
 		/*Z轴竖直面角点数据采集*/
 		if (calibSideIndex == SIDE_INDEX_1ST)
-		{
+		{			
 			/*36个角点*/
 			for (positionIndex = POSITION_INDEX_1ST; positionIndex <= POSITION_INDEX_36TH; positionIndex++)
 			{
-				while(sampleZTimes < 10)	/*采集100次*/
+				while(sampleZTimes < 10)	/*连续采集10次数据*/
 				{
 					/*判断数据是否符合校准*/
 					if ((fabs(g_psCircleAngle->yaw - g_Mag360Define[positionIndex]) <= 5.0f) && \
@@ -782,48 +783,51 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 					/*标记本次是采样过程*/
 					g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_SAMPLEING;
 					
-					/*用OLED显示陀螺仪校准过程*/
+					/*用OLED显示磁力计采样过程*/
 					hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
-																			  g_psMagCalibSystem->SAMPLE_PROCESS, \
-																			  (u16)g_psCircleAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
-																			  g_psAccCalib->z, 0);						
+											   g_psMagCalibSystem->SAMPLE_PROCESS, \
+										       (u16)g_psCircleAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
+										       g_psAccCalib->z, 0);						
 				}
 				
-				/*标计当前面&当前角点数据采集完毕*/
+				/*标计当前面的当前角点数据采集完毕*/
 				g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex] = POSITION_SAMPLE_SUCC;	
 			
 				/*平均值赋值*/
 				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].x = (fp32)sampleZSum.x / sampleZTimes;	
 				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].y = (fp32)sampleZSum.y / sampleZTimes;
 				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].z = (fp32)sampleZSum.z / sampleZTimes;	
-								
-				/*计数器清0*/
-				sampleZTimes = 0;
 				
-				/*磁力计最小二乘法计算*/
+				/*清0*/
+				sampleZTimes = 0;
+				sampleZSum.x = 0;
+				sampleZSum.y = 0;
+				sampleZSum.z = 0;				
+
+				/*最小二乘法计算*/
 				calib_mag_sensor_lsiv_accumulate(&(g_psMagCalibSystem->Mag_Calib_LSIV), g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex]);
-				calib_mag_sensor_lsiv_calculate(&(g_psMagCalibSystem->Mag_Calib_LSIV), 36 * 3, 0.0f, &(g_psMagCalibSystem->Sphere));
+				calib_mag_sensor_lsiv_calculate(&(g_psMagCalibSystem->Mag_Calib_LSIV), 36 * 3, 0.0f, &(g_psMagCalibSystem->Sphere));				
 				
 				/*标记本次是采样结果*/
-				g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_RESULT;			
+				g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_RESULT;
 				
-				/*用OLED显示陀螺仪校准结果*/
+				/*用OLED显示磁力计采样结果*/
 				hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
-																	      g_psMagCalibSystem->SAMPLE_PROCESS, \
-																		  (u16)g_psCircleAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
-																		  g_psAccCalib->z, 1500);				
+				   					       g_psMagCalibSystem->SAMPLE_PROCESS, \
+									       (u16)g_psCircleAngle->yaw, (u16)g_Mag360Define[positionIndex], 5, \
+									       g_psAccCalib->z, 1500);				
 			}
 			
-			/*本次采样结束*/
-			g_psMagCalibSystem->SAMPLE_STATUS = SAMPLE_DATA_FINISH;
+			/*整个面的36个角点全部采集完毕,本次采样结束*/
+			g_psMagCalibSystem->SAMPLE_STATUS = SAMPLE_DATA_FINISH;				
 		}
 		/*Y轴竖直面角点数据采集,且只允许成功采集一次*/
 		else if (calibSideIndex == SIDE_INDEX_2ND)
 		{
 			/*36个角点*/
 			for (positionIndex = POSITION_INDEX_1ST; positionIndex <= POSITION_INDEX_36TH; positionIndex++)
-			{
-				while(sampleYTimes < 10)	/*采集100次*/
+			{			
+				while(sampleYTimes < 10)	/*连续采集10次数据*/
 				{
 					/*判断数据是否符合校准*/
 					if ((fabs(g_psCircleAngle->roll - g_Mag360Define[positionIndex]) <= 5.0f) && \
@@ -844,15 +848,15 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 					
 					/*标记本次是采样过程*/
 					g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_SAMPLEING;
-					
-					/*用OLED显示陀螺仪校准过程*/
+				
+					/*用OLED显示磁力计采样过程*/
 					hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
-																			  g_psMagCalibSystem->SAMPLE_PROCESS, \
-																			  (u16)g_psCircleAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
-																			  g_psAccCalib->y, 0);					
+											   g_psMagCalibSystem->SAMPLE_PROCESS, \
+										       (u16)g_psCircleAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
+									           g_psAccCalib->y, 0);					
 				}
 			
-				/*标计当前面&当前角点数据采集完毕*/
+				/*标计当前面的当前角点数据采集完毕*/
 				g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex] = POSITION_SAMPLE_SUCC;	
 			
 				/*平均值赋值*/
@@ -861,33 +865,31 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].z = (fp32)sampleYSum.z / sampleYTimes;
 				
 				/*计数器清0*/
-				sampleYTimes = 0;
-
-				/*磁力计最小二乘法计算*/
-				calib_mag_sensor_lsiv_accumulate(&(g_psMagCalibSystem->Mag_Calib_LSIV), g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex]);
-				calib_mag_sensor_lsiv_calculate(&(g_psMagCalibSystem->Mag_Calib_LSIV), 36 * 3, 0.0f, &(g_psMagCalibSystem->Sphere));
+				sampleYTimes = 0;	
+				sampleYSum.x = 0;
+				sampleYSum.y = 0;
+				sampleYSum.z = 0;				
 				
 				/*标记本次是采样结果*/
-				g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_RESULT;			
-				
-				/*用OLED显示陀螺仪校准结果*/
-				hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
-																	      g_psMagCalibSystem->SAMPLE_PROCESS, \
-																		  (u16)g_psCircleAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
-																		  g_psAccCalib->y, 1500);
-			}
+				g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_RESULT;	
 
-			/*采样结束*/
+				/*用OLED显示磁力计采样结果*/
+				hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
+				   					       g_psMagCalibSystem->SAMPLE_PROCESS, \
+									       (u16)g_psCircleAngle->roll, (u16)g_Mag360Define[positionIndex], 5, \
+									       g_psAccCalib->y, 1500);				
+			}
+			
+			/*整个面的36个角点全部采集完毕,本次采样结束*/
 			g_psMagCalibSystem->SAMPLE_STATUS = SAMPLE_DATA_FINISH;			
-		}
-		
+		}			
 		/*X轴竖直面角点数据采集,且只允许成功采集一次*/
 		else if (calibSideIndex == SIDE_INDEX_3RD)
 		{
 			/*36个角点*/
 			for (positionIndex = POSITION_INDEX_1ST; positionIndex <= POSITION_INDEX_36TH; positionIndex++)
-			{
-				while(sampleYTimes < 10)	/*采集100次*/
+			{					
+				while(sampleXTimes < 10)	/*连续采集10次数据*/
 				{
 					/*判断数据是否符合校准*/
 					if ((fabs(g_psCircleAngle->pitch - g_Mag360Define[positionIndex]) <= 5.0f) && \
@@ -900,7 +902,7 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 						sampleXSum.z += g_psMagRaw->z;
 			
 						/*采集次数++*/
-						sampleYTimes++;
+						sampleXTimes++;
 				
 						/*确保每次用于校准的数据都是最新的*/
 						g_psMagSensorDataStatus->calib = SENSOR_DATA_OLD;					
@@ -909,42 +911,41 @@ SYS_RETSTATUS calib_mag_sensor_dp(CALIB_SIDE_INDEX calibSideIndex)
 					/*标记本次是采样过程*/
 					g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_SAMPLEING;
 					
-					/*用OLED显示陀螺仪校准过程*/
+					/*用OLED显示磁力计采样过程*/
 					hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
-																			  g_psMagCalibSystem->SAMPLE_PROCESS, \
-																			  (u16)g_psCircleAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
-																			  g_psAccCalib->x, 0);					
+							 	 		       g_psMagCalibSystem->SAMPLE_PROCESS, \
+										       (u16)g_psCircleAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
+										       g_psAccCalib->x, 0);					
 				}
 			
-				/*标计当前面&当前角点数据采集完毕*/
+				/*标计当前面的当前角点数据采集完毕*/
 				g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex] = POSITION_SAMPLE_SUCC;	
 			
 				/*平均值赋值*/
-				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].x = (fp32)sampleYSum.x / sampleYTimes;	
-				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].y = (fp32)sampleYSum.y / sampleYTimes;
-				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].z = (fp32)sampleYSum.z / sampleYTimes;
-				
+				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].x = (fp32)sampleXSum.x / sampleXTimes;	
+				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].y = (fp32)sampleXSum.y / sampleXTimes;
+				g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex].z = (fp32)sampleXSum.z / sampleXTimes;	
+
 				/*计数器清0*/
-				sampleYTimes = 0;	
-				
-				/*磁力计最小二乘法计算*/
-				calib_mag_sensor_lsiv_accumulate(&(g_psMagCalibSystem->Mag_Calib_LSIV), g_psMagCalibSystem->sampleData[calibSideIndex][positionIndex]);
-				calib_mag_sensor_lsiv_calculate(&(g_psMagCalibSystem->Mag_Calib_LSIV), 36 * 3, 0.0f, &(g_psMagCalibSystem->Sphere));				
+				sampleXTimes = 0;	
+				sampleXSum.x = 0;
+				sampleXSum.y = 0;
+				sampleXSum.z = 0;				
 				
 				/*标记本次是采样结果*/
-				g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_RESULT;			
-				
-				/*用OLED显示陀螺仪校准结果*/
+				g_psMagCalibSystem->SAMPLE_PROCESS = SAMPLE_PROCESS_RESULT;		
+
+				/*用OLED显示磁力计采样结果*/
 				hci_Show_Mag_Calib_Process(calibSideIndex, positionIndex, g_psMagCalibSystem->POSITION_STATUS[calibSideIndex][positionIndex], \
-																	      g_psMagCalibSystem->SAMPLE_PROCESS, \
-																		  (u16)g_psCircleAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
-																		  g_psAccCalib->x, 1500);
+										   g_psMagCalibSystem->SAMPLE_PROCESS, \
+										   (u16)g_psCircleAngle->pitch, (u16)g_Mag360Define[positionIndex], 5, \
+										   g_psAccCalib->x, 1500);				
 			}
 
-			/*采样结束*/
-			g_psMagCalibSystem->SAMPLE_STATUS = SAMPLE_DATA_FINISH;			
-		}		
-	}
+			/*整个面的36个角点全部采集完毕,本次采样结束*/
+			g_psMagCalibSystem->SAMPLE_STATUS = SAMPLE_DATA_FINISH;				
+		}
+	}		
 
 	/*判断第一面(顶面)36个角点是否采集完毕*/
 	if (calib_sample_status_check((u8*)&(g_psMagCalibSystem->POSITION_STATUS[SIDE_INDEX_1ST]), POSITION_SAMPLE_SUCC, 36) == SYS_RET_SUCC)
@@ -1342,45 +1343,45 @@ void calib_mag_sensor_lsiv_calculate(Mag_Calib_LSIV *magLSIV, u32 maxIterations,
 	fp32 aA, aB, aC, nA, nB, nC, dA, dB, dC;
 
 	//Iterate N times, ignore stop condition.
-	unsigned int n = 0;
+	u32 n = 0;
 
 	while(n < maxIterations) 
 	{
-		  n++;
+		n++;
 
-		  //Compute denominator:
-		  aA = Q2 + 16.0f * (A2 - 2.0f * A * x_sum + x_sum2);
-		  aB = Q2 + 16.0f * (B2 - 2.0f * B * y_sum + y_sum2);
-		  aC = Q2 + 16.0f * (C2 - 2.0f * C * z_sum + z_sum2);
-		  aA = (aA == 0.0f) ? 1.0f : aA;
-		  aB = (aB == 0.0f) ? 1.0f : aB;
-		  aC = (aC == 0.0f) ? 1.0f : aC;
+		//Compute denominator:
+	    aA = Q2 + 16.0f * (A2 - 2.0f * A * x_sum + x_sum2);
+		aB = Q2 + 16.0f * (B2 - 2.0f * B * y_sum + y_sum2);
+		aC = Q2 + 16.0f * (C2 - 2.0f * C * z_sum + z_sum2);
+		aA = (aA == 0.0f) ? 1.0f : aA;
+		aB = (aB == 0.0f) ? 1.0f : aB;
+		aC = (aC == 0.0f) ? 1.0f : aC;
 
-		  //Compute next iteration
-		  nA = A - ((F2 + 16.0f * (B * XY + C * XZ + x_sum * (-A2 - Q0) + A * (x_sum2 + Q1 - C * z_sum - B * y_sum))) / aA);
-		  nB = B - ((F3 + 16.0f * (A * XY + C * YZ + y_sum * (-B2 - Q0) + B * (y_sum2 + Q1 - A * x_sum - C * z_sum))) / aB);
-		  nC = C - ((F4 + 16.0f * (A * XZ + B * YZ + z_sum * (-C2 - Q0) + C * (z_sum2 + Q1 - A * x_sum - B * y_sum))) / aC);
+	    //Compute next iteration
+		nA = A - ((F2 + 16.0f * (B * XY + C * XZ + x_sum * (-A2 - Q0) + A * (x_sum2 + Q1 - C * z_sum - B * y_sum))) / aA);
+		nB = B - ((F3 + 16.0f * (A * XY + C * YZ + y_sum * (-B2 - Q0) + B * (y_sum2 + Q1 - A * x_sum - C * z_sum))) / aB);
+		nC = C - ((F4 + 16.0f * (A * XZ + B * YZ + z_sum * (-C2 - Q0) + C * (z_sum2 + Q1 - A * x_sum - B * y_sum))) / aC);
 
-		  //Check for stop condition
-		  dA = (nA - A);
-		  dB = (nB - B);
-		  dC = (nC - C);
+		//Check for stop condition
+		dA = (nA - A);
+		dB = (nB - B);
+		dC = (nC - C);
 
-		  if ((dA * dA + dB * dB + dC * dC) <= delta) { break; }
+		if ((dA * dA + dB * dB + dC * dC) <= delta) { break; }
 
-		  //Compute next iteration's values
-		  A = nA;
-		  B = nB;
-		  C = nC;
-		  A2 = A * A;
-		  B2 = B * B;
-		  C2 = C * C;
-		  QS = A2 + B2 + C2;
-		  QB = -2.0f * (A * x_sum + B * y_sum + C * z_sum);
-		  Rsq = F0 + QB + QS;
-		  Q0 = 0.5f * (QS - Rsq);
-		  Q1 = F1 + Q0;
-		  Q2 = 8.0f * (QS - Rsq + QB + F0);
+		//Compute next iteration's values
+		A = nA;
+		B = nB;
+		C = nC;
+		A2 = A * A;
+		B2 = B * B;
+	    C2 = C * C;
+		QS = A2 + B2 + C2;
+		QB = -2.0f * (A * x_sum + B * y_sum + C * z_sum);
+		Rsq = F0 + QB + QS;
+		Q0 = 0.5f * (QS - Rsq);
+		Q1 = F1 + Q0;
+		Q2 = 8.0f * (QS - Rsq + QB + F0);
 	}
 
 	Sphere->a = A;

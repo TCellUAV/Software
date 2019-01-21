@@ -46,7 +46,7 @@ static u8 thread_base_module_stack[RTOS_THREAD_STACK_BASE_MODULE];
 static struct rt_thread base_module_thread;	
 
 void rt_entry_thread_base_module(void* parameter)
-{
+{	
 	while(1)
 	{
 		/*等待信号量被释放*/
@@ -66,8 +66,13 @@ void rt_entry_thread_base_module(void* parameter)
 		#endif
 		
 		/*RGB*/
-		#ifdef HW_CUT__USE_RGB  
-		thread_rgb_ctrl(parameter);
+		#ifdef HW_CUT__USE_RGB
+		bsp_rgb_work_list_show(&g_sRgb);
+		#endif		
+		
+		/*BEEP*/
+		#ifdef HW_CUT__USE_BEEP
+	
 		#endif		
 	}
 }                                     
@@ -113,7 +118,7 @@ static struct rt_thread euler_angle_calculate_thread;
 
 void rt_entry_thread_euler_angle_calculate(void* parameter)
 {
-	while(1)
+	while(1) 
 	{
 		/*等待信号量被释放*/
 		rt_sem_take(&euler_angle_sem, RT_WAITING_FOREVER);

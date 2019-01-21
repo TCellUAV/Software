@@ -45,6 +45,6 @@ extern Safe_Operation gs_SafeOperation;
 extern Safe_Operation *gps_SafeOperation;
 
 /*OLED显示数据时禁止解锁*/
-#define SAFE_FORBID_UNLOCK_WHEN_OLED_SHOW			(SYS_ENABLE)
+#define SAFE_FORBID_UNLOCK_WHEN_OLED_SHOW			(SYS_DISABLE)
 
 #endif

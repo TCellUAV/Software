@@ -143,7 +143,7 @@ typedef struct
 	fp32 z2x_sum;
 	fp32 z2y_sum;	
 	
-	u32 size;
+	u32  size;
 }Mag_Calib_LSIV;
 
 /*磁力计校准零偏*/
@@ -171,21 +171,21 @@ typedef struct
 /*磁力计校准系统*/
 typedef struct
 {
-	volatile ENTRY_CALIB_STATUS     ENTRY_STATUS;		     /*磁力计进入校准的状态*/
-	volatile SAMPLE_DATA_STATUS	    SAMPLE_STATUS;		     /*磁力计采样状态*/	
-	volatile SAMPLE_PROCESS_TYPE    SAMPLE_PROCESS;			 /*当前是采样过程/结果*/	
-	volatile SINGLE_SAMPLE_STATUS   SINGLE_STATUS[3];	     /*单次任务采样完成状态(磁计3个面)*/
-	volatile POSITION_SAMPLE_STATUS POSITION_STATUS[3][36];  /*角点采样完成状态(磁计3个面,36个角点)*/
-	volatile WHOLE_SAMPLE_STATUS    WHOLE_STATUS;		     /*整体采样完成状态*/
-	volatile CALIB_SIDE_INDEX       CUR_SIDE_INDEX;	     	 /*当前校准面序号*/
-	volatile CALIB_SIDE_INDEX       GONNA_SIDE_INDEX;		 /*将要校准面序号*/		
-	volatile RESULT_CALIB_STATUS    RESULT_STATUS;			 /*最后校准结果*/		
-	CALIB_POSITION_INDEX            POSITION_INDEX;    		 /*校准方位序号*/
-	Mag3f				            sampleData[3][36];	     /*3个面采集的数据*/ 
+	volatile ENTRY_CALIB_STATUS     ENTRY_STATUS;		         /*磁力计进入校准的状态*/
+	volatile SAMPLE_DATA_STATUS	    SAMPLE_STATUS;		         /*磁力计采样状态*/	
+	volatile SAMPLE_PROCESS_TYPE    SAMPLE_PROCESS;			     /*当前是采样过程/结果*/	
+	volatile SINGLE_SAMPLE_STATUS   SINGLE_STATUS[3];	         /*单次任务采样完成状态(磁计3个面)*/
+	volatile POSITION_SAMPLE_STATUS POSITION_STATUS[3][36];  /*当前角点采样完成状态(磁计3个面,36个角点)*/
+	volatile WHOLE_SAMPLE_STATUS    WHOLE_STATUS;		         /*整体采样完成状态*/
+	volatile CALIB_SIDE_INDEX       CUR_SIDE_INDEX;	     	     /*当前校准面序号*/
+	volatile CALIB_SIDE_INDEX       GONNA_SIDE_INDEX;		     /*将要校准面序号*/		
+	volatile RESULT_CALIB_STATUS    RESULT_STATUS;			     /*最后校准结果*/		
+	CALIB_POSITION_INDEX            POSITION_INDEX;    		     /*校准方位序号*/
+	Mag3f				            sampleData[3][36];	         /*3个面采集的数据*/ 
 
 	/*磁力计校准特征*/	
-	Mag_Calib_LSIV					Mag_Calib_LSIV;			 /*磁力计最小二乘中间变量*/
-	Vector4f						Sphere;					 /*球参数*/
+	Mag_Calib_LSIV					Mag_Calib_LSIV;			     /*磁力计最小二乘中间变量*/
+	Vector4f						Sphere;					     /*球参数*/
 }MagCalibSystem;
 
 

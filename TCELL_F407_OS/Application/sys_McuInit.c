@@ -1,6 +1,26 @@
 #include "sys_McuInit.h"
 
-/*=== 0.数据存储 ===*/
+/*=== 0.基础模块 ===*/
+
+/*RGB*/
+#if defined(HW_CUT__USE_RGB)
+/*level(电平型)*/
+#if defined(RGB_LEVEL_TYPE)
+MSP_TricolorGpio g_sLevelRgbGpio = {0};
+#endif
+
+/*clock(时序型)*/
+#if defined(RGB_CLOCK_TYPE)
+MSP_Mut3Gpio g_sClockRgbGpio = {0};
+#endif
+#endif
+
+/*BEEP*/
+#if defined(HW_CUT__USE_BEEP)
+TimSinglePwmOut g_sBeepPwmOut = {0};
+#endif
+
+/*=== 1.数据存储 ===*/
 /*MCU FLASH*/
 #if defined(HW_CUT__USE_FLASH_STOR)
 #endif
@@ -24,7 +44,7 @@ SSP_SimI2C g_sEePromSimI2C = {0};
 #if defined(HW_CUT__USE_TFSD_STOR)
 #endif
 
-/*=== 1.IMU + 磁力计 ===*/
+/*=== 2.IMU + 磁力计 ===*/
 /*IMU I2C*/
 #if defined(HW_CUT__USE_MD_IMU)
 #if defined(STD_PROTOCOL_HARDWARE_I2C)
@@ -70,7 +90,7 @@ SSP_SimI2C g_sGpsMagSimI2C = {0};
 #endif
 #endif
 
-/*=== 2.气压计 ===*/
+/*=== 3.气压计 ===*/
 /*BERO I2C*/
 #if defined(HW_CUT__USE_MD_BERO)
 #if defined(STD_PROTOCOL_HARDWARE_I2C)
@@ -86,7 +106,7 @@ SSP_SimI2C g_sBeroSimI2C = {0};
 #endif
 #endif
 
-/*=== 3.超声波 ===*/
+/*=== 4.超声波 ===*/
 #if defined(HW_CUT__USE_ULTR)
 /*ULTR UART*/
 MSP_Uart g_sUltrUart = 
@@ -97,7 +117,7 @@ MSP_Uart g_sUltrUart =
 };
 #endif
 
-/*=== 4.GPS ===*/
+/*=== 5.GPS ===*/
 #if defined(HW_CUT__USE_GPS)
 /*GPS UART*/
 MSP_Uart g_sGpsUart = 
@@ -108,7 +128,7 @@ MSP_Uart g_sGpsUart =
 };
 #endif
 
-/*=== 5.光流 ===*/
+/*=== 6.光流 ===*/
 #if defined(HW_CUT__USE_OPTICFLOW)
 /*OPTICALFLOW UART*/
 MSP_Uart g_sOpticalFlowUart = 
@@ -119,7 +139,7 @@ MSP_Uart g_sOpticalFlowUart =
 };
 #endif
 
-/*=== 6.人机交互 ===*/
+/*=== 7.人机交互 ===*/
 #if defined(HW_CUT__USE_HCI_OLED)
 /*OLED SIMSPI*/
 SSP_SimSPI g_sOledSimSPI = {0};
@@ -131,6 +151,54 @@ void sys_Mcu_Peripheral_Init(void)
 	SYS_RCC_TREE gpioRccTree;
 	SYS_RCC_TREE periphRccTree;
 
+/*======= RGB GPIO =======*/
+#if defined(HW_CUT__USE_RGB)
+	#if defined(RGB_LEVEL_TYPE)
+	/*r*/
+	g_sLevelRgbGpio.Red.GPIO     	    = GPIOE;
+	g_sLevelRgbGpio.Red.GPIO_Pin 	    = GPIO_Pin_2;
+	g_sLevelRgbGpio.Red.Mode 			= GPIO_Mode_OUT;	
+	g_sLevelRgbGpio.Red.PuPd 			= GPIO_PuPd_NOPULL;		
+	g_sLevelRgbGpio.Red.OType 		    = GPIO_OType_PP;	
+	g_sLevelRgbGpio.Red.Speed 		    = GPIO_High_Speed;		
+	g_sLevelRgbGpio.Red.RCC_Periph_GPIO = RCC_AHB1Periph_GPIOE;
+	
+	/*g*/
+	g_sLevelRgbGpio.Green.GPIO     		  = GPIOE;
+	g_sLevelRgbGpio.Green.GPIO_Pin 		  = GPIO_Pin_1;
+	g_sLevelRgbGpio.Green.Mode 			  = GPIO_Mode_OUT;	
+	g_sLevelRgbGpio.Green.PuPd 			  = GPIO_PuPd_NOPULL;		
+	g_sLevelRgbGpio.Green.OType 		  = GPIO_OType_PP;	
+	g_sLevelRgbGpio.Green.Speed 		  = GPIO_High_Speed;	
+	g_sLevelRgbGpio.Green.RCC_Periph_GPIO = RCC_AHB1Periph_GPIOE;	
+	
+	/*b*/
+	g_sLevelRgbGpio.Blue.GPIO     		 = GPIOE;
+	g_sLevelRgbGpio.Blue.GPIO_Pin 		 = GPIO_Pin_0;
+	g_sLevelRgbGpio.Blue.Mode 			 = GPIO_Mode_OUT;	
+	g_sLevelRgbGpio.Blue.PuPd 			 = GPIO_PuPd_NOPULL;		
+	g_sLevelRgbGpio.Blue.OType 		     = GPIO_OType_PP;	
+	g_sLevelRgbGpio.Blue.Speed 		     = GPIO_High_Speed;	
+	g_sLevelRgbGpio.Blue.RCC_Periph_GPIO = RCC_AHB1Periph_GPIOE;		
+	
+	gpioRccTree	= SYS_RCC_AHB1;			/*设定GPIO时钟树*/
+	
+	/*RCC Init*/
+	sys_Peripheral_RCC_Init(gpioRccTree, g_sLevelRgbGpio.Red.RCC_Periph_GPIO, ENABLE);
+	sys_Peripheral_RCC_Init(gpioRccTree, g_sLevelRgbGpio.Green.RCC_Periph_GPIO, ENABLE);
+	sys_Peripheral_RCC_Init(gpioRccTree, g_sLevelRgbGpio.Blue.RCC_Periph_GPIO, ENABLE);	
+	
+	/*GPIO Init*/
+	msp_Peripheral_GPIO_Init(SYS_GPIO_GENERAL, &g_sLevelRgbGpio.Red);
+	msp_Peripheral_GPIO_Init(SYS_GPIO_GENERAL, &g_sLevelRgbGpio.Green);
+	msp_Peripheral_GPIO_Init(SYS_GPIO_GENERAL, &g_sLevelRgbGpio.Blue);	
+	#endif
+	
+
+	#if defined(RGB_CLOCK_TYPE)
+	#endif	
+#endif
+	
 /*======= SIMI2C =======*/
 /*->1.IMU I2C Init: RCC + GPIO*/
 #if defined(HW_CUT__USE_MD_IMU)
@@ -820,7 +888,7 @@ TimPwmIn g_sTimPwmIn_Attitude =
 #endif
 
 /*=== TIM_PWM_OUT ===*/
-TimPwmOut g_sTimPwmOut_Motor =
+TimMultiPwmOut g_sTimMultiPwmOut =
 {
 	.Tim 				 = TIM3,
 	.Resource 			 = MSP_SRC_TIM3,
@@ -935,14 +1003,14 @@ void sys_mcu_tim_init(void)
 	periphRccTree = SYS_RCC_APB1;	/*设定Tim时钟树*/
 	
 	/*RCC Init*/
-	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimPwmOut_Motor.RCC_Periph_CH1_GPIO, ENABLE);
-	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimPwmOut_Motor.RCC_Periph_CH2_GPIO, ENABLE);
-	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimPwmOut_Motor.RCC_Periph_CH3_GPIO, ENABLE);
-	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimPwmOut_Motor.RCC_Periph_CH4_GPIO, ENABLE);
-	sys_Peripheral_RCC_Init(periphRccTree, g_sTimPwmOut_Motor.RCC_Periph_Tim, ENABLE);	
+	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimMultiPwmOut.RCC_Periph_CH1_GPIO, ENABLE);
+	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimMultiPwmOut.RCC_Periph_CH2_GPIO, ENABLE);
+	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimMultiPwmOut.RCC_Periph_CH3_GPIO, ENABLE);
+	sys_Peripheral_RCC_Init(gpioRccTree, g_sTimMultiPwmOut.RCC_Periph_CH4_GPIO, ENABLE);
+	sys_Peripheral_RCC_Init(periphRccTree, g_sTimMultiPwmOut.RCC_Periph_Tim, ENABLE);	
 	
-	/*TimPwmOut Init*/
-	msp_Peripheral_GPIO_Init(SYS_GPIO_PWM_OUT, &g_sTimPwmOut_Motor);
+	/*TimMultiPwmOut Init*/
+	msp_Peripheral_GPIO_Init(SYS_GPIO_PWM_OUT, &g_sTimMultiPwmOut);
 }
 
 /*=== EXTI Init ===*/
@@ -1029,57 +1097,56 @@ void msp_Peripheral_GPIO_Init(SYS_GPIO_PURPOSE gpioPurpose, void *gpioPeriphStru
 {
 	switch(gpioPurpose)
 	{
-		case SYS_GPIO_OUT:
+		/*GPIO通用*/
+		case SYS_GPIO_GENERAL:
 		{
-			
-		}break;
-		
-		case SYS_GPIO_INP_D:
-		{
-
-		}break;		
-		
-		case SYS_GPIO_INP_U:
-		{
-
+			MSP_General_Gpio *pGpio = gpioPeriphStruct;
+			msp_GPIO_Init(pGpio);
 		}break;
 
+		/*外部中断*/
 		case SYS_GPIO_EXTI:
 		{
 			MSP_Exti *pExti = gpioPeriphStruct;
 			msp_EXTI_Init(pExti);
 		}break;
 
+		/*PWM输入*/
 		case SYS_GPIO_PWM_IN:
 		{
 			TimPwmIn *pTimPwmIn = gpioPeriphStruct;
 			msp_TimPwmIn_Init(pTimPwmIn);
 		}break;
 
+		/*PWM输出*/
 		case SYS_GPIO_PWM_OUT:
 		{
-			TimPwmOut *pTimPwmOut = gpioPeriphStruct;
-			msp_TimPwmOut_Init(pTimPwmOut);
+			TimMultiPwmOut *pTimMultiPwmOut = gpioPeriphStruct;
+			msp_TimMultiPwmOut_Init(pTimMultiPwmOut);
 		}break;		
 		
+		/*串口*/
 		case SYS_GPIO_UART:
 		{
 			MSP_Uart *pUart = gpioPeriphStruct;
 			msp_Uart_Init(pUart);
 		}break;
 		
+		/*硬件I2C*/
 		case SYS_GPIO_I2C:
 		{
 			MSP_I2c *pI2C = gpioPeriphStruct;		
 			msp_I2c_Init(pI2C);			
 		}break;
 
+		/*模拟I2C*/
 		case SYS_GPIO_SIMI2C:
 		{
 			SSP_SimI2C *pSimI2C = gpioPeriphStruct;
 			ssp_SimI2C_Init(pSimI2C);
 		}break;
 
+		/*模拟SPI*/
 		case SYS_GPIO_SIMSPI:
 		{
 			SSP_SimSPI *pSimSPI = gpioPeriphStruct;
