@@ -6,10 +6,10 @@ BSP_US100 g_sUs100 =
 };
 
 /*串口发送Buff*/
-u8 	g_Us100TxBuff[ULTR_US100_TX_BUFF_LENTH] = {0};
+u8 g_Us100TxBuff[ULTR_US100_TX_BUFF_LENTH] = {0};
 
 /*串口接收Buff*/
-u8 	g_Us100RxBuff[ULTR_US100_RX_BUFF_LENTH] = {0};	
+u8 g_Us100RxBuff[ULTR_US100_RX_BUFF_LENTH] = {0};	
 
 /*超声波模块初始化*/
 #if defined(HW_CUT__USE_ULTR)

@@ -31,4 +31,6 @@ typedef struct
 	GPIOSpeed_TypeDef Speed;
 }MSP_General_Gpio;
 
+void msp_GPIO_Init(MSP_General_Gpio *gpio);
+
 #endif

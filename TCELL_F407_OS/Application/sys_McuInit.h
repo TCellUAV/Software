@@ -18,6 +18,7 @@ the complicated initialization is put here, and used directly later.
 #include "sys_Debug.h"
 
 #include "msp_GPIO.h"
+#include "msp_MutGPIO.h"
 #include "msp_EXTI.h"
 #include "msp_UART.h"
 #include "msp_DMA.h"
@@ -41,9 +42,7 @@ typedef enum
 /*GPIO初始化类型*/
 typedef enum
 {
-	SYS_GPIO_OUT     = 1, 
-	SYS_GPIO_INP_D   = 2,
-	SYS_GPIO_INP_U   = 3,
+	SYS_GPIO_GENERAL = 1, 
 	SYS_GPIO_EXTI    = 4,
 	SYS_GPIO_PWM_IN  = 5,
 	SYS_GPIO_PWM_OUT = 6,	
@@ -68,7 +67,26 @@ void sys_Peripheral_RCC_Init(SYS_RCC_TREE rccTree, u32 rccPeriph, FunctionalStat
 /*外设&GPIO初始化*/
 void msp_Peripheral_GPIO_Init(SYS_GPIO_PURPOSE gpioPurpose, void *gpioPeriphStruct);
 
-/*=== 0.数据存储 ===*/
+/*=== 0.基础模块 ===*/
+/*RGB*/
+#if defined(HW_CUT__USE_RGB)
+/*level(电平型)*/
+#if defined(RGB_LEVEL_TYPE)
+extern MSP_TricolorGpio g_sLevelRgbGpio;
+#endif
+
+/*clock(时序型)*/
+#if defined(RGB_CLOCK_TYPE)
+extern  g_sClockRgbGpio;
+#endif
+#endif
+
+/*BEEP*/
+#if defined(HW_CUT__USE_BEEP)
+extern TimSinglePwmOut g_sBeepPwmOut;
+#endif
+
+/*=== 1.数据存储 ===*/
 /*MCU FLASH*/
 #if defined(HW_CUT__USE_FLASH_STOR)
 
@@ -90,7 +108,7 @@ extern SSP_SimI2C g_sEePromSimI2C;
 
 #endif
 
-/*=== 1.IMU + 磁力计 ===*/
+/*=== 2.IMU + 磁力计 ===*/
 /*IMU I2C*/
 #if defined(HW_CUT__USE_MD_IMU)
 #if defined(STD_PROTOCOL_HARDWARE_I2C)
@@ -124,7 +142,7 @@ extern SSP_SimI2C g_sGpsMagSimI2C;
 #endif
 #endif
 
-/*=== 2.气压计 ===*/
+/*=== 3.气压计 ===*/
 /*BERO I2C*/
 #if defined(HW_CUT__USE_MD_BERO)
 #if defined(STD_PROTOCOL_HARDWARE_I2C)
@@ -136,25 +154,25 @@ extern SSP_SimI2C g_sBeroSimI2C;
 #endif
 #endif
 
-/*=== 3.超声波 ===*/
+/*=== 4.超声波 ===*/
 #if defined(HW_CUT__USE_ULTR)
 /*ULTR UART*/
 extern MSP_Uart g_sUltrUart;
 #endif
 
-/*=== 4.GPS ===*/
+/*=== 5.GPS ===*/
 #if defined(HW_CUT__USE_GPS)
 /*GPS UART*/
 extern MSP_Uart g_sGpsUart;
 #endif
 
-/*=== 5.光流 ===*/
+/*=== 6.光流 ===*/
 #if defined(HW_CUT__USE_OPTICFLOW)
 /*OPTICALFLOW UART*/
 extern MSP_Uart g_sOpticalFlowUart;
 #endif
 
-/*=== 6.人机交互 ===*/
+/*=== 7.人机交互 ===*/
 #if defined(HW_CUT__USE_HCI_OLED)
 /*OLED SIMSPI*/
 extern SSP_SimSPI g_sOledSimSPI;
@@ -179,7 +197,7 @@ extern TimPwmIn g_sTimPwmIn_Attitude;
 
 /*=== TIM_PWM_OUT ===*/
 /*PWM_Out通道中的Motor部分*/
-extern TimPwmOut g_sTimPwmOut_Motor;
+extern TimMultiPwmOut g_sTimMultiPwmOut;
 
 /*EXTI Init*/
 #if defined(REMOTE_DATA_RECV__PPM)

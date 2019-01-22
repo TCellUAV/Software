@@ -64,10 +64,37 @@ typedef struct
 	u16 		     CH4_PinSource;		
 	
 	u8 				 GPIO_AF;		
-}TimPwmOut;
+}TimMultiPwmOut;
 
-void msp_TimPwmOut_Init(TimPwmOut *timPwmOut);
-void msp_TimPwmOut_SetPluse(TimPwmOut *timPwmOut, MSP_TIM_CHANNLE TIM_CHANNLE, u16 Pulse);
+typedef struct
+{
+	TIM_TypeDef 	 *Tim;
+	MSP_TIM_RESOURCE Resource;
+	u8 				 NVIC_IRQChannel;
+	u32              RCC_Periph_Tim;
+	u32 			 RCC_Tree_Mhz;
+	u32 			 Prescaler;
+	u32 			 Period;
+	u32 			 ClockDivision;
+	
+	/*GPIO*/
+	GPIO_TypeDef 	 *GPIO;
+	u16 		 	 Pin;
+	u32 		     RCC_Periph_GPIO;
+	u16 		     PinSource;	
+	
+	u8 				 GPIO_AF;	
+
+	MSP_TIM_CHANNLE  CHANNLE;
+}TimSinglePwmOut;
+
+/*MultiPwm*/
+void msp_TimMultiPwmOut_Init(TimMultiPwmOut *timPwmOut);
+void msp_TimMultiPwmOut_SetPluse(TimMultiPwmOut *timPwmOut, MSP_TIM_CHANNLE TIM_CHANNLE, u16 Pulse);
+
+/*SinglePwm*/
+void msp_TimSinglePwmOut_Init(TimSinglePwmOut *timPwmOut);
+void msp_TimSinglePwmOut_SetPluse(TimSinglePwmOut *timPwmOut, MSP_TIM_CHANNLE TIM_CHANNLE, u16 Pulse);
 
 /**** TIM PWM_In(脉冲宽度调制输入) ****/
 typedef struct

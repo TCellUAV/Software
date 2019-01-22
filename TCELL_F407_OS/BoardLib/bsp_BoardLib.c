@@ -75,18 +75,18 @@ SYS_RETERR bsp_BASE_Module_Init(BSP_BoardStatus *boardStatus)
 	/*LED Init*/
 	boardStatus->LED = bsp_Led_Init();
 #endif
-	
-#ifdef HW_CUT__USE_KEY
-	/*KEY Init*/
-	boardStatus->KEY = bsp_Key_Init();
-#endif
 
 #ifdef HW_CUT__USE_RGB
 	/*RGB Init*/
-	boardStatus->RGB = bsp_RGB_Init();
+	boardStatus->RGB = bsp_RGB_Init(&g_sRgb);
 #endif
 	
-	errRet = bsp_Mut_Module_Init_Result((SYS_RETERR)boardStatus->LED, (SYS_RETERR)boardStatus->KEY, (SYS_RETERR)boardStatus->RGB, (SYS_RETERR)0);
+#ifdef HW_CUT__USE_BEEP
+	/*BEEP Init*/
+	boardStatus->BEEP = bsp_BEEP_Init(&g_sBeep);
+#endif	
+	
+	errRet = bsp_Mut_Module_Init_Result((SYS_RETERR)boardStatus->LED, (SYS_RETERR)boardStatus->RGB, (SYS_RETERR)boardStatus->BEEP, (SYS_RETERR)0);
 	
 	return errRet;
 }

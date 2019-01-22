@@ -2,7 +2,6 @@
 #define _SYS_BOARDMAP_H_
 
 #include "sys_Platform.h"
-#include "bsp_BoardLib.h"
 
 #define BSP_TOTAL_MODULE_TYPE_NUMBER		(8) /*板载器件类数量*/
 
@@ -21,21 +20,26 @@
 /*===================== 硬件裁剪 =====================*/
 /*=== 0.基础模块 ===*/
 #if 0
-	/*LED*/
+	/*LED(不需要选型)*/
 	#define HW_CUT__USE_LED
 	#include "bsp_BASE_LED.h"
 #endif
 
 #if 0 
-	/*KEY*/
+	/*KEY(不需要选型)*/
 	#define HW_CUT__USE_KEY
 	#include "bsp_BASE_KEY.h"
 #endif
 
-#if 0
+#if 0 
 	/*RGB*/
 	#define HW_CUT__USE_RGB
-	#include "bsp_BASE_RGB.h"
+#endif
+
+#if 0
+	/*BEEP(不需要选型)*/
+	#define HW_CUT__USE_BEEP
+	#include "bsp_BASE_BEEP.h"
 #endif
 
 /*=== 1.数据存储 ===*/
@@ -102,7 +106,21 @@
 
 
 /*===================== 器件选型 =====================*/
-/*=== 0.数据存储 ===*/
+/*=== 0.基础模块 ===*/
+#if defined(HW_CUT__USE_RGB)
+	#if 1
+		#define RGB_LEVEL_TYPE
+		/*level(电平型)*/		
+		#include "bsp_BASE_RGB.h"	
+	#endif
+	
+	#if 0
+		/*clock(时序型)*/
+		#define RGB_CLOCK_TYPE
+	#endif		
+#endif
+
+/*=== 1.数据存储 ===*/
 /*MCU FLASH*/
 #if defined(HW_CUT__USE_FLASH_STOR)
 	#if 1
@@ -128,7 +146,7 @@
 	#endif
 #endif
 
-/*=== 1.IMU + 磁力计 ===*/
+/*=== 2.IMU + 磁力计 ===*/
 #if defined(HW_CUT__USE_MD_IMU)	/*模块 IMU*/
 	#if 1
 		/*MPU6050*/
@@ -203,7 +221,7 @@
 	#endif
 #endif	
 
-/*=== 2.气压计 ===*/
+/*=== 3.气压计 ===*/
 #if defined(HW_CUT__USE_MD_BERO)
 	#if 1
 		/*SPL06-001*/	
@@ -245,7 +263,7 @@
 #endif
 
 
-/*=== 3.超声波 ===*/
+/*=== 4.超声波 ===*/
 #if defined(HW_CUT__USE_ULTR)
 	#if 1
 		/*US100*/	
@@ -266,7 +284,7 @@
 	#endif
 #endif
 
-/*=== 4.GPS ===*/
+/*=== 5.GPS ===*/
 #if defined(HW_CUT__USE_GPS)
 	#if 1
 		/*MD M8N*/
@@ -281,7 +299,7 @@
 	#endif
 #endif
 
-/*=== 5.光流 ===*/
+/*=== 6.光流 ===*/
 #if defined(HW_CUT__USE_OPTICFLOW)
 	#if 1
 		/*UPIXELS*/	
@@ -296,7 +314,7 @@
 	#endif
 #endif
 
-/*=== 6.人机交互 ===*/
+/*=== 7.人机交互 ===*/
 #if defined(HW_CUT__USE_HCI_OLED)
 	#if 1
 		/*0.96*/
